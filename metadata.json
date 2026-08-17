@@ -1,0 +1,6 @@
+{
+  "name": "GEAPI-FE",
+  "description": "Sistema da Gerência de Análise e Processamento de Infrações para monitoramento e gestão de equipamentos de fiscalização eletrônica.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
