@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 130" width="520" height="130">
+  <defs>
+    <!-- Blue Arrow Gradient -->
+    <linearGradient id="blueArrowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="60%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    
+    <!-- Green Arrow Gradient -->
+    <linearGradient id="greenArrowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a3e635" />
+      <stop offset="60%" stop-color="#65a30d" />
+      <stop offset="100%" stop-color="#4d7c0f" />
+    </linearGradient>
+
+    <!-- Gold Crown Gradient -->
+    <linearGradient id="goldCrown" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fde047" />
+      <stop offset="100%" stop-color="#ca8a04" />
+    </linearGradient>
+  </defs>
+
+  <!-- Transparent / White Canvas -->
+  <rect width="520" height="130" fill="none" />
+
+  <!-- ==================== LEFT: BHTRANS LOGO ==================== -->
+  <g transform="translate(15, 12)">
+    <!-- Blue Upper Loop / Arrow -->
+    <path d="M 22 46 C 18 20, 50 10, 85 10 L 108 10 C 122 18, 118 34, 98 34 L 62 34 C 48 34, 42 42, 42 48 C 42 54, 50 54, 62 54 L 102 54 L 88 40 L 122 54 L 88 68 L 102 54" fill="url(#blueArrowGrad)" />
+
+    <!-- Green Lower Loop / Arrow -->
+    <path d="M 108 36 C 112 62, 80 72, 45 72 L 22 72 C 8 64, 12 48, 32 48 L 68 48 C 82 48, 88 40, 88 34 C 88 28, 80 28, 68 28 L 28 28 L 42 42 L 8 28 L 42 14 L 28 28" fill="url(#greenArrowGrad)" />
+
+    <!-- BHTRANS Wordmark -->
+    <text x="5" y="104" font-family="'Arial Black', 'Trebuchet MS', 'Helvetica Neue', sans-serif" font-weight="900" font-style="italic" font-size="29" fill="#2d2d2d" letter-spacing="-1">BHTRANS</text>
+  </g>
+
+  <!-- ==================== CENTER: BRASÃO DE BELO HORIZONTE ==================== -->
+  <g transform="translate(208, 10)">
+    <!-- Coroa Mural (Mural Crown with 5 Towers) -->
+    <path d="M 12 24 L 12 8 L 20 8 L 20 14 L 28 14 L 28 8 L 36 8 L 36 14 L 44 14 L 44 8 L 52 8 L 52 14 L 60 14 L 60 8 L 68 8 L 68 24 Z" fill="url(#goldCrown)" stroke="#a16207" stroke-width="1.2" />
+    <!-- Crown Base Band -->
+    <path d="M 10 24 L 70 24 L 66 30 L 14 30 Z" fill="#ca8a04" stroke="#854d0e" stroke-width="1" />
+    <!-- Gate Portals -->
+    <rect x="22" y="16" width="4" height="8" rx="2" fill="#854d0e" />
+    <rect x="38" y="16" width="4" height="8" rx="2" fill="#854d0e" />
+    <rect x="54" y="16" width="4" height="8" rx="2" fill="#854d0e" />
+
+    <!-- Main Shield Outline -->
+    <path d="M 14 30 L 66 30 L 66 65 C 66 84, 40 95, 40 95 C 40 95, 14 84, 14 65 Z" fill="#ffffff" stroke="#ca8a04" stroke-width="2.2" />
+
+    <!-- Upper Half: Yellow Field with Red Triangle (Inconfidência) -->
+    <path d="M 16 32 L 64 32 L 64 60 L 16 60 Z" fill="#facc15" />
+    <polygon points="40,36 28,54 52,54" fill="#dc2626" />
+
+    <!-- Lower Half: Blue Sky, Sun & Green Serra do Curral -->
+    <path d="M 16 60 L 64 60 L 64 65 C 64 82, 40 93, 40 93 C 40 93, 16 82, 16 65 Z" fill="#0284c7" />
+    <!-- Golden Sun & Rays -->
+    <circle cx="40" cy="71" r="9" fill="#facc15" />
+    <path d="M 40 58 L 40 61 M 31 62 L 33 64 M 49 62 L 47 64 M 28 71 L 31 71 M 52 71 L 49 71" stroke="#facc15" stroke-width="2" stroke-linecap="round" />
+    <!-- Green Serra do Curral Mountain Silhouette -->
+    <path d="M 16 75 C 26 67, 34 71, 40 68 C 48 65, 56 70, 64 74 L 64 65 C 64 82, 40 93, 40 93 C 40 93, 16 82, 16 65 Z" fill="#16a34a" />
+
+    <!-- Red Ribbon Scroll at Bottom -->
+    <path d="M 4 90 C 16 83, 64 83, 76 90 L 73 98 C 60 91, 20 91, 7 98 Z" fill="#dc2626" stroke="#991b1b" stroke-width="1" />
+    <!-- Ribbon End Swirls -->
+    <path d="M 4 90 L 0 94 L 7 98 Z" fill="#b91c1c" />
+    <path d="M 76 90 L 80 94 L 73 98 Z" fill="#b91c1c" />
+    <!-- Ribbon Dates Text -->
+    <text x="40" y="95.5" font-family="'Arial', sans-serif" font-weight="700" font-size="5" fill="#ffffff" text-anchor="middle" letter-spacing="0.2">17-12-1893  BELO HORIZONTE  12-12-1897</text>
+  </g>
+
+  <!-- ==================== RIGHT: PREFEITURA BELO HORIZONTE ==================== -->
+  <g transform="translate(302, 20)">
+    <text x="0" y="38" font-family="'Impact', 'Arial Black', 'Helvetica Neue', sans-serif" font-weight="900" font-size="40" fill="#2d2d2d" letter-spacing="0.5">PREFEITURA</text>
+    <text x="0" y="78" font-family="'Impact', 'Arial Black', 'Helvetica Neue', sans-serif" font-weight="900" font-size="37" fill="#2d2d2d" letter-spacing="-0.5">BELO HORIZONTE</text>
+  </g>
+</svg>

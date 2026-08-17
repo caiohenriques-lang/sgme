@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+.custom-leaflet-marker-clean {
+  background: transparent !important;
+  border: none !important;
+}
+
+.custom-leaflet-marker-clean:hover {
+  z-index: 99999 !important;
+}
+
+.custom-leaflet-marker-clean > div {
+  transition: transform 0.15s ease-in-out;
+}
+
+.custom-leaflet-marker-clean > div:hover {
+  transform: scale(1.2);
+}

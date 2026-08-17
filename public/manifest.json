@@ -1,0 +1,31 @@
+{
+  "short_name": "GEAPI FE",
+  "name": "GEAPI FE - Fiscalização Eletrônica BHTRANS",
+  "description": "Sistema da Gerência de Análise e Processamento de Infrações",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "display": "standalone",
+  "orientation": "any",
+  "scope": "/"
+}

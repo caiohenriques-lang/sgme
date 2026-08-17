@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Fundo seguro para PWA (Maskable) -->
+  <rect width="512" height="512" rx="96" fill="#1E3A8A" />
+  <!-- Placa de regulamentação R-19 (Fundo Branco, Borda Vermelha) -->
+  <circle cx="256" cy="256" r="210" fill="#FFFFFF" stroke="#DC2626" stroke-width="44" />
+  <!-- Texto 50 -->
+  <text
+    x="256"
+    y="270"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="#0F172A"
+    font-size="200"
+    font-weight="900"
+    font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+    letter-spacing="-4"
+  >
+    50
+  </text>
+  <!-- Texto km/h -->
+  <text
+    x="256"
+    y="375"
+    text-anchor="middle"
+    fill="#475569"
+    font-size="56"
+    font-weight="800"
+    font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+  >
+    km/h
+  </text>
+</svg>
