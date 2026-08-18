@@ -1,6 +1,10 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { EquipmentRecord } from '../types';
-import { exportFilteredRecordsPDF, exportSingleRecordPDF } from '../utils/pdfExport';
+import {
+  exportFilteredRecordsPDF,
+  exportSingleRecordPDF,
+  exportCompleteIndicatorsPDF,
+} from '../utils/pdfExport';
 import { SpeedLimit50Icon } from './SpeedLimit50Icon';
 import {
   BarChart,
@@ -34,6 +38,12 @@ import {
   Award,
   Route,
   X,
+  Building2,
+  ListFilter,
+  Calendar,
+  CalendarDays,
+  Loader2,
+  FileText,
 } from 'lucide-react';
 
 interface IndicatorsViewProps {
@@ -42,6 +52,11 @@ interface IndicatorsViewProps {
   resetSignal?: number;
   onClearAllFilters?: () => void;
 }
+
+type SummarySortField = 'label' | 'count' | 'faixas' | 'addresses' | 'pctEquip' | 'pctFaixas';
+type CorredorSortField = 'name' | 'count' | 'faixas' | 'tiposFormatted';
+type AnoSortField = 'ano' | 'count' | 'faixas' | 'pctFaixas';
+type MesSortField = 'mes' | 'count' | 'faixas' | 'pctFaixas';
 
 const COLORS = [
   '#2563eb', // blue-600
@@ -73,6 +88,24 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
   const [pageSize, setPageSize] = useState(15);
   const [sortField, setSortField] = useState<keyof EquipmentRecord>('CÓDIGO');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  // Summary Table Sort States
+  const [contratoSortField, setContratoSortField] = useState<SummarySortField>('faixas');
+  const [contratoSortOrder, setContratoSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  const [tipoTableSortField, setTipoTableSortField] = useState<SummarySortField>('faixas');
+  const [tipoTableSortOrder, setTipoTableSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  const [corredorSortField, setCorredorSortField] = useState<CorredorSortField>('count');
+  const [corredorSortOrder, setCorredorSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  const [anoSortField, setAnoSortField] = useState<AnoSortField>('ano');
+  const [anoSortOrder, setAnoSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  const [mesSortField, setMesSortField] = useState<MesSortField>('mes');
+  const [mesSortOrder, setMesSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
 
   // Reset chart filters when global reset signal changes
   useEffect(() => {
@@ -319,6 +352,428 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
     );
   };
 
+  // --- Summary Tables Calculations ---
+  const tableTotals = useMemo(() => {
+    const totalEquipments = filteredByChartRecords.length;
+    const totalFaixas = filteredByChartRecords.reduce((acc, r) => acc + (r.FAIXAS || 0), 0);
+    const uniqueAddressSet = new Set<string>();
+    filteredByChartRecords.forEach((r) => {
+      const addr = (r['ENDEREÇO COMPLETO'] || '').trim().toLowerCase();
+      if (addr) uniqueAddressSet.add(addr);
+    });
+
+    return {
+      equipments: totalEquipments,
+      faixas: totalFaixas,
+      addresses: uniqueAddressSet.size,
+    };
+  }, [filteredByChartRecords]);
+
+  // 1. Group by CONTRATO
+  const contratoTableSummary = useMemo(() => {
+    const map = new Map<
+      string,
+      { contrato: string; faixas: number; addresses: Set<string>; count: number }
+    >();
+
+    filteredByChartRecords.forEach((r) => {
+      const key = (r.CONTRATO || '').trim() || 'Não Informado';
+      if (!map.has(key)) {
+        map.set(key, { contrato: key, faixas: 0, addresses: new Set(), count: 0 });
+      }
+      const item = map.get(key)!;
+      item.faixas += r.FAIXAS || 0;
+      item.count += 1;
+      const addr = (r['ENDEREÇO COMPLETO'] || '').trim().toLowerCase();
+      if (addr) item.addresses.add(addr);
+    });
+
+    const list = Array.from(map.values());
+
+    return list.sort((a, b) => {
+      let valA: number | string = 0;
+      let valB: number | string = 0;
+
+      switch (contratoSortField) {
+        case 'label':
+          valA = a.contrato;
+          valB = b.contrato;
+          break;
+        case 'count':
+        case 'pctEquip':
+          valA = a.count;
+          valB = b.count;
+          break;
+        case 'faixas':
+        case 'pctFaixas':
+          valA = a.faixas;
+          valB = b.faixas;
+          break;
+        case 'addresses':
+          valA = a.addresses.size;
+          valB = b.addresses.size;
+          break;
+      }
+
+      if (typeof valA === 'number' && typeof valB === 'number') {
+        return contratoSortOrder === 'asc' ? valA - valB : valB - valA;
+      }
+      return contratoSortOrder === 'asc'
+        ? String(valA).localeCompare(String(valB))
+        : String(valB).localeCompare(String(valA));
+    });
+  }, [filteredByChartRecords, contratoSortField, contratoSortOrder]);
+
+  // 2. Group by TIPO
+  const tipoTableSummary = useMemo(() => {
+    const map = new Map<
+      string,
+      { tipo: string; faixas: number; addresses: Set<string>; count: number }
+    >();
+
+    filteredByChartRecords.forEach((r) => {
+      const key = (r.TIPO || '').trim() || 'Não Informado';
+      if (!map.has(key)) {
+        map.set(key, { tipo: key, faixas: 0, addresses: new Set(), count: 0 });
+      }
+      const item = map.get(key)!;
+      item.faixas += r.FAIXAS || 0;
+      item.count += 1;
+      const addr = (r['ENDEREÇO COMPLETO'] || '').trim().toLowerCase();
+      if (addr) item.addresses.add(addr);
+    });
+
+    const list = Array.from(map.values());
+
+    return list.sort((a, b) => {
+      let valA: number | string = 0;
+      let valB: number | string = 0;
+
+      switch (tipoTableSortField) {
+        case 'label':
+          valA = a.tipo;
+          valB = b.tipo;
+          break;
+        case 'count':
+        case 'pctEquip':
+          valA = a.count;
+          valB = b.count;
+          break;
+        case 'faixas':
+        case 'pctFaixas':
+          valA = a.faixas;
+          valB = b.faixas;
+          break;
+        case 'addresses':
+          valA = a.addresses.size;
+          valB = b.addresses.size;
+          break;
+      }
+
+      if (typeof valA === 'number' && typeof valB === 'number') {
+        return tipoTableSortOrder === 'asc' ? valA - valB : valB - valA;
+      }
+      return tipoTableSortOrder === 'asc'
+        ? String(valA).localeCompare(String(valB))
+        : String(valB).localeCompare(String(valA));
+    });
+  }, [filteredByChartRecords, tipoTableSortField, tipoTableSortOrder]);
+
+  const anoTotals = useMemo(() => {
+    const totalEquip = filteredByChartRecords.length;
+    const totalFaixas = filteredByChartRecords.reduce((acc, r) => acc + (r.FAIXAS || 0), 0);
+    return { totalEquip, totalFaixas };
+  }, [filteredByChartRecords]);
+
+  // 3. Group by ANO (Faixas Implantadas por Ano - Todos os Equipamentos do Filtro Ativo)
+  const anoSummary = useMemo(() => {
+    const map = new Map<string, { ano: string; faixas: number; count: number }>();
+
+    filteredByChartRecords.forEach((r) => {
+      const rawAno = (r.ANO || '').toString().trim();
+      const key = rawAno || 'Não Informado';
+      if (!map.has(key)) {
+        map.set(key, { ano: key, faixas: 0, count: 0 });
+      }
+      const item = map.get(key)!;
+      item.faixas += r.FAIXAS || 0;
+      item.count += 1;
+    });
+
+    const list = Array.from(map.values());
+
+    return list.sort((a, b) => {
+      let valA: number | string = 0;
+      let valB: number | string = 0;
+
+      switch (anoSortField) {
+        case 'ano':
+          valA = a.ano;
+          valB = b.ano;
+          break;
+        case 'count':
+          valA = a.count;
+          valB = b.count;
+          break;
+        case 'faixas':
+        case 'pctFaixas':
+          valA = a.faixas;
+          valB = b.faixas;
+          break;
+      }
+
+      if (typeof valA === 'number' && typeof valB === 'number') {
+        return anoSortOrder === 'asc' ? valA - valB : valB - valA;
+      }
+
+      return anoSortOrder === 'asc'
+        ? String(valA).localeCompare(String(valB), undefined, { numeric: true })
+        : String(valB).localeCompare(String(valA), undefined, { numeric: true });
+    });
+  }, [filteredByChartRecords, anoSortField, anoSortOrder]);
+
+  // Group by MÊS/ANO (Faixas Implantadas por Mês - Todos os Equipamentos do Filtro Ativo)
+  const mesSummary = useMemo(() => {
+    const map = new Map<
+      string,
+      { mes: string; sortKey: number; faixas: number; count: number }
+    >();
+
+    filteredByChartRecords.forEach((r) => {
+      const rawDate = (r['Data início operação'] || '').trim();
+      let key = 'Não Informado';
+      let sortKey = 999999;
+
+      if (rawDate) {
+        const parts = rawDate.split('/');
+        if (parts.length === 3) {
+          const month = parseInt(parts[1], 10);
+          const year = parseInt(parts[2], 10);
+          if (!isNaN(month) && !isNaN(year) && month >= 1 && month <= 12) {
+            const mStr = month.toString().padStart(2, '0');
+            key = `${mStr}/${year}`;
+            sortKey = year * 100 + month;
+          }
+        } else if (parts.length === 2) {
+          const month = parseInt(parts[0], 10);
+          const year = parseInt(parts[1], 10);
+          if (!isNaN(month) && !isNaN(year) && month >= 1 && month <= 12) {
+            const mStr = month.toString().padStart(2, '0');
+            key = `${mStr}/${year}`;
+            sortKey = year * 100 + month;
+          }
+        }
+      }
+
+      // If date was not parsed, fallback to ANO if available
+      if (key === 'Não Informado') {
+        const rawAno = (r.ANO || '').toString().trim();
+        if (rawAno && /^\d{4}$/.test(rawAno)) {
+          const y = parseInt(rawAno, 10);
+          key = `Não inf./${y}`;
+          sortKey = y * 100;
+        }
+      }
+
+      if (!map.has(key)) {
+        map.set(key, { mes: key, sortKey, faixas: 0, count: 0 });
+      }
+      const item = map.get(key)!;
+      item.faixas += r.FAIXAS || 0;
+      item.count += 1;
+    });
+
+    const list = Array.from(map.values());
+
+    return list.sort((a, b) => {
+      let valA: number | string = 0;
+      let valB: number | string = 0;
+
+      switch (mesSortField) {
+        case 'mes':
+          valA = a.sortKey;
+          valB = b.sortKey;
+          break;
+        case 'count':
+          valA = a.count;
+          valB = b.count;
+          break;
+        case 'faixas':
+        case 'pctFaixas':
+          valA = a.faixas;
+          valB = b.faixas;
+          break;
+      }
+
+      if (typeof valA === 'number' && typeof valB === 'number') {
+        return mesSortOrder === 'asc' ? valA - valB : valB - valA;
+      }
+
+      return mesSortOrder === 'asc'
+        ? String(valA).localeCompare(String(valB), undefined, { numeric: true })
+        : String(valB).localeCompare(String(valA), undefined, { numeric: true });
+    });
+  }, [filteredByChartRecords, mesSortField, mesSortOrder]);
+
+  // 4. Group by CORREDOR (Ranking TOP 20)
+  const corredorSummary = useMemo(() => {
+    const map = new Map<
+      string,
+      { corredor: string; count: number; faixas: number; tiposMap: Map<string, number> }
+    >();
+
+    filteredByChartRecords.forEach((r) => {
+      const corredorRaw = (r.CORREDOR || '').trim();
+      const key = corredorRaw ? corredorRaw : 'Sem Corredor / Não Informado';
+
+      if (!map.has(key)) {
+        map.set(key, { corredor: key, count: 0, faixas: 0, tiposMap: new Map() });
+      }
+      const item = map.get(key)!;
+      item.count += 1;
+      item.faixas += r.FAIXAS || 0;
+
+      const t = (r.TIPO || 'OUTROS').trim();
+      item.tiposMap.set(t, (item.tiposMap.get(t) || 0) + 1);
+    });
+
+    const list = Array.from(map.values()).map((i) => {
+      const tiposFormatted = Array.from(i.tiposMap.entries())
+        .map(([t, count]) => `${t}: ${count}`)
+        .join(' | ');
+
+      return {
+        name: i.corredor,
+        count: i.count,
+        faixas: i.faixas,
+        tiposFormatted,
+      };
+    });
+
+    list.sort((a, b) => {
+      let valA: number | string = 0;
+      let valB: number | string = 0;
+
+      switch (corredorSortField) {
+        case 'name':
+          valA = a.name;
+          valB = b.name;
+          break;
+        case 'count':
+          valA = a.count;
+          valB = b.count;
+          break;
+        case 'faixas':
+          valA = a.faixas;
+          valB = b.faixas;
+          break;
+        case 'tiposFormatted':
+          valA = a.tiposFormatted;
+          valB = b.tiposFormatted;
+          break;
+      }
+
+      if (typeof valA === 'number' && typeof valB === 'number') {
+        return corredorSortOrder === 'asc' ? valA - valB : valB - valA;
+      }
+      return corredorSortOrder === 'asc'
+        ? String(valA).localeCompare(String(valB))
+        : String(valB).localeCompare(String(valA));
+    });
+
+    return list.slice(0, 20); // Top 20
+  }, [filteredByChartRecords, corredorSortField, corredorSortOrder]);
+
+  const handleContratoTableSort = (field: SummarySortField) => {
+    if (contratoSortField === field) {
+      setContratoSortOrder(contratoSortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setContratoSortField(field);
+      setContratoSortOrder('desc');
+    }
+  };
+
+  const handleTipoTableSort = (field: SummarySortField) => {
+    if (tipoTableSortField === field) {
+      setTipoTableSortOrder(tipoTableSortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setTipoTableSortField(field);
+      setTipoTableSortOrder('desc');
+    }
+  };
+
+  const handleCorredorTableSort = (field: CorredorSortField) => {
+    if (corredorSortField === field) {
+      setCorredorSortOrder(corredorSortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setCorredorSortField(field);
+      setCorredorSortOrder('desc');
+    }
+  };
+
+  const handleAnoTableSort = (field: AnoSortField) => {
+    if (anoSortField === field) {
+      setAnoSortOrder(anoSortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setAnoSortField(field);
+      setAnoSortOrder('desc');
+    }
+  };
+
+  const handleMesTableSort = (field: MesSortField) => {
+    if (mesSortField === field) {
+      setMesSortOrder(mesSortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setMesSortField(field);
+      setMesSortOrder(field === 'mes' ? 'asc' : 'desc');
+    }
+  };
+
+  const handleExportIndicatorsPDF = async () => {
+    try {
+      setIsExportingPDF(true);
+
+      const contratoSummaryData = contratoTableSummary.map((c) => ({
+        label: c.contrato,
+        count: c.count,
+        faixas: c.faixas,
+        addresses: c.addresses.size,
+        pctEquip: tableTotals.equipments > 0 ? (c.count / tableTotals.equipments) * 100 : 0,
+        pctFaixas: tableTotals.faixas > 0 ? (c.faixas / tableTotals.faixas) * 100 : 0,
+      }));
+
+      const tipoSummaryData = tipoTableSummary.map((t) => ({
+        label: t.tipo,
+        count: t.count,
+        faixas: t.faixas,
+        addresses: t.addresses.size,
+        pctEquip: tableTotals.equipments > 0 ? (t.count / tableTotals.equipments) * 100 : 0,
+        pctFaixas: tableTotals.faixas > 0 ? (t.faixas / tableTotals.faixas) * 100 : 0,
+      }));
+
+      await exportCompleteIndicatorsPDF({
+        records: filteredByChartRecords,
+        metrics,
+        contratoSummary: contratoSummaryData,
+        tipoSummary: tipoSummaryData,
+        anoSummary,
+        mesSummary,
+        corredorSummary,
+        filterDescription: hasActiveChartFilter
+          ? [
+              selectedChartContrato ? `Contrato ${selectedChartContrato}` : '',
+              selectedChartTipo ? `Tipo ${selectedChartTipo}` : '',
+              selectedChartCorredor ? `Corredor ${selectedChartCorredor}` : '',
+            ].filter(Boolean).join(' | ')
+          : undefined,
+      });
+    } catch (err) {
+      console.error('Erro ao exportar relatório completo de indicadores:', err);
+    } finally {
+      setIsExportingPDF(false);
+    }
+  };
+
   const hasActiveChartFilter =
     selectedChartContrato !== null ||
     selectedChartTipo !== null ||
@@ -335,7 +790,41 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
   }
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="space-y-6 pb-8 min-w-0">
+      
+      {/* Top Banner with Full Report Export Option */}
+      <div className="bg-slate-900 text-white rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-md border border-slate-800">
+        <div>
+          <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+            <BarChart2 className="w-5 h-5 text-blue-400" />
+            Painel Executivo de Indicadores
+          </h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Consolidação estatística, contratos, tipos, evolução cronológica e corredores ({filteredByChartRecords.length} equipamentos)
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={handleExportIndicatorsPDF}
+            disabled={isExportingPDF}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 disabled:opacity-75 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+            title="Exportar toda a aba de indicadores em PDF oficial timbrado"
+          >
+            {isExportingPDF ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin text-blue-200" />
+                <span>Gerando Relatório...</span>
+              </>
+            ) : (
+              <>
+                <FileDown className="w-4 h-4 text-blue-100" />
+                <span>Exportar Relatório de Indicadores (PDF)</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
       
       {/* Interactive Chart Filter Banner */}
       {hasActiveChartFilter && (
@@ -489,10 +978,10 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
       </div>
 
       {/* Charts Row 1: 3 Gráficos em Grid 3x1 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div id="indicators-charts-contrato" className="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-white p-2 rounded-2xl">
 
         {/* Chart 1: Faixas por Contrato */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+        <div id="chart-card-contrato-faixas" className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2 pb-3 border-b border-slate-100">
               <div>
@@ -537,7 +1026,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
         </div>
 
         {/* Chart 2: Equipamentos por Contrato */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+        <div id="chart-card-contrato-equip" className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2 pb-3 border-b border-slate-100">
               <div>
@@ -582,7 +1071,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
         </div>
 
         {/* Chart 3: Locais Fiscalizados por Contrato */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+        <div id="chart-card-contrato-locais" className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2 pb-3 border-b border-slate-100">
               <div>
@@ -629,9 +1118,9 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
       </div>
 
       {/* Chart Row 2: Gráficos por Tipo em Grid 2x1 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+      <div id="indicators-charts-tipo" className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6 bg-white p-2 rounded-2xl">
         {/* Chart 4: Faixas por Tipo de Equipamento (BAR CHART COM RÓTULO) */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+        <div id="chart-card-tipo-faixas" className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2 pb-3 border-b border-slate-100">
               <div>
@@ -677,7 +1166,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
         </div>
 
       {/* Chart Row 2: Locais Fiscalizados por Tipo */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+      <div id="chart-card-tipo-locais" className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
         <div>
           <div className="flex items-center justify-between mb-2 pb-3 border-b border-slate-100">
             <div>
@@ -719,6 +1208,598 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
           </ResponsiveContainer>
         </div>
       </div>
+      </div>
+
+      {/* Table 1: Resumo Por Contrato */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        <div className="p-4 sm:p-5 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="p-1.5 bg-blue-100 text-blue-700 rounded-lg">
+              <Building2 className="w-4 h-4" />
+            </span>
+            <div>
+              <h3 className="text-sm sm:text-base font-bold text-slate-900">
+                Resumo por Contrato
+              </h3>
+            </div>
+          </div>
+          <span className="text-xs text-slate-500 font-medium bg-white px-2.5 py-1 rounded-lg border border-slate-200 self-start sm:self-auto">
+            {contratoTableSummary.length} contratos
+          </span>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-center text-xs">
+            <thead className="bg-slate-100/90 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[11px]">
+              <tr>
+                <th
+                  scope="col"
+                  onClick={() => handleContratoTableSort('label')}
+                  className="px-4 py-3 cursor-pointer hover:bg-slate-200/80 transition-colors text-center"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>Contrato</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  onClick={() => handleContratoTableSort('count')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>Equipamentos</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  onClick={() => handleContratoTableSort('faixas')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>Faixas</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  onClick={() => handleContratoTableSort('addresses')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>Locais</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  onClick={() => handleContratoTableSort('pctEquip')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>% Equip.</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  onClick={() => handleContratoTableSort('pctFaixas')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>% Faixas</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200/70 text-slate-800">
+              {contratoTableSummary.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-4 py-8 text-center text-slate-400 italic">
+                    Nenhum registro encontrado para os filtros selecionados.
+                  </td>
+                </tr>
+              ) : (
+                contratoTableSummary.map((item, idx) => {
+                  const pctEquip = tableTotals.equipments > 0 ? (item.count / tableTotals.equipments) * 100 : 0;
+                  const pctFaixas = tableTotals.faixas > 0 ? (item.faixas / tableTotals.faixas) * 100 : 0;
+
+                  return (
+                    <tr key={item.contrato} className={idx % 2 === 0 ? 'bg-white hover:bg-slate-50/80' : 'bg-slate-50/40 hover:bg-slate-50/90'}>
+                      <td className="px-4 py-3 font-semibold text-slate-900 text-center">
+                        {item.contrato}
+                      </td>
+                      <td className="px-4 py-3 text-center font-mono font-medium text-slate-800">
+                        {item.count.toLocaleString('pt-BR')}
+                      </td>
+                      <td className="px-4 py-3 text-center font-mono font-bold text-blue-700">
+                        {item.faixas.toLocaleString('pt-BR')}
+                      </td>
+                      <td className="px-4 py-3 text-center font-mono text-slate-700">
+                        {item.addresses.size.toLocaleString('pt-BR')}
+                      </td>
+                      <td className="px-4 py-3 text-center font-mono text-slate-600">
+                        {pctEquip.toFixed(1)}%
+                      </td>
+                      <td className="px-4 py-3 text-center font-mono text-slate-600">
+                        {pctFaixas.toFixed(1)}%
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+            {contratoTableSummary.length > 0 && (
+              <tfoot className="bg-slate-100 font-bold text-slate-900 border-t-2 border-slate-300 text-xs">
+                <tr>
+                  <td className="px-4 py-3 uppercase text-center">Total Geral</td>
+                  <td className="px-4 py-3 text-center font-mono">{tableTotals.equipments.toLocaleString('pt-BR')}</td>
+                  <td className="px-4 py-3 text-center font-mono text-blue-800">{tableTotals.faixas.toLocaleString('pt-BR')}</td>
+                  <td className="px-4 py-3 text-center font-mono">{tableTotals.addresses.toLocaleString('pt-BR')}</td>
+                  <td className="px-4 py-3 text-center font-mono">100.0%</td>
+                  <td className="px-4 py-3 text-center font-mono">100.0%</td>
+                </tr>
+              </tfoot>
+            )}
+          </table>
+        </div>
+      </div>
+
+      {/* Table 2: Resumo Por TIPO */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        <div className="p-4 sm:p-5 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="p-1.5 bg-emerald-100 text-emerald-700 rounded-lg">
+              <ListFilter className="w-4 h-4" />
+            </span>
+            <div>
+              <h3 className="text-sm sm:text-base font-bold text-slate-900">
+                Resumo por Tipo de Equipamento
+              </h3>
+            </div>
+          </div>
+          <span className="text-xs text-slate-500 font-medium bg-white px-2.5 py-1 rounded-lg border border-slate-200 self-start sm:self-auto">
+            {tipoTableSummary.length} tipos
+          </span>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-center text-xs">
+            <thead className="bg-slate-100/90 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[11px]">
+              <tr>
+                <th
+                  scope="col"
+                  onClick={() => handleTipoTableSort('label')}
+                  className="px-4 py-3 cursor-pointer hover:bg-slate-200/80 transition-colors text-center"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>Tipo de Equipamento</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  onClick={() => handleTipoTableSort('count')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>Equipamentos</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  onClick={() => handleTipoTableSort('faixas')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>Faixas</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  onClick={() => handleTipoTableSort('addresses')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>Locais</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  onClick={() => handleTipoTableSort('pctEquip')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>% Equip.</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  onClick={() => handleTipoTableSort('pctFaixas')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>% Faixas</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200/70 text-slate-800">
+              {tipoTableSummary.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-4 py-8 text-center text-slate-400 italic">
+                    Nenhum registro encontrado para os filtros selecionados.
+                  </td>
+                </tr>
+              ) : (
+                tipoTableSummary.map((item, idx) => {
+                  const pctEquip = tableTotals.equipments > 0 ? (item.count / tableTotals.equipments) * 100 : 0;
+                  const pctFaixas = tableTotals.faixas > 0 ? (item.faixas / tableTotals.faixas) * 100 : 0;
+
+                  return (
+                    <tr key={item.tipo} className={idx % 2 === 0 ? 'bg-white hover:bg-slate-50/80' : 'bg-slate-50/40 hover:bg-slate-50/90'}>
+                      <td className="px-4 py-3 font-semibold text-slate-900 text-center">
+                        {item.tipo}
+                      </td>
+                      <td className="px-4 py-3 text-center font-mono font-medium text-slate-800">
+                        {item.count.toLocaleString('pt-BR')}
+                      </td>
+                      <td className="px-4 py-3 text-center font-mono font-bold text-emerald-700">
+                        {item.faixas.toLocaleString('pt-BR')}
+                      </td>
+                      <td className="px-4 py-3 text-center font-mono text-slate-700">
+                        {item.addresses.size.toLocaleString('pt-BR')}
+                      </td>
+                      <td className="px-4 py-3 text-center font-mono text-slate-600">
+                        {pctEquip.toFixed(1)}%
+                      </td>
+                      <td className="px-4 py-3 text-center font-mono text-slate-600">
+                        {pctFaixas.toFixed(1)}%
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+            {tipoTableSummary.length > 0 && (
+              <tfoot className="bg-slate-100 font-bold text-slate-900 border-t-2 border-slate-300 text-xs">
+                <tr>
+                  <td className="px-4 py-3 uppercase text-center">Total Geral</td>
+                  <td className="px-4 py-3 text-center font-mono">{tableTotals.equipments.toLocaleString('pt-BR')}</td>
+                  <td className="px-4 py-3 text-center font-mono text-emerald-800">{tableTotals.faixas.toLocaleString('pt-BR')}</td>
+                  <td className="px-4 py-3 text-center font-mono">{tableTotals.addresses.toLocaleString('pt-BR')}</td>
+                  <td className="px-4 py-3 text-center font-mono">100.0%</td>
+                  <td className="px-4 py-3 text-center font-mono">100.0%</td>
+                </tr>
+              </tfoot>
+            )}
+          </table>
+        </div>
+      </div>
+
+      {/* Table 3: Faixas Implantadas por Ano */}
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+        <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="p-2 bg-purple-100 text-purple-700 rounded-xl">
+              <Calendar className="w-5 h-5" />
+            </span>
+            <h3 className="text-sm sm:text-base font-bold text-slate-900">
+              Faixas Implantadas por Ano
+            </h3>
+          </div>
+          <span className="text-xs text-slate-500 font-medium bg-white px-2.5 py-1 rounded-lg border border-slate-200">
+            {anoSummary.length} anos
+          </span>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-center text-xs">
+            <thead className="bg-slate-100/90 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[11px]">
+              <tr>
+                <th
+                  scope="col"
+                  onClick={() => handleAnoTableSort('ano')}
+                  className="px-4 py-3 cursor-pointer hover:bg-slate-200/80 transition-colors text-center"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>Ano</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  onClick={() => handleAnoTableSort('count')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>Equipamentos</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  onClick={() => handleAnoTableSort('faixas')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>Faixas</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  onClick={() => handleAnoTableSort('pctFaixas')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>% Faixas</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200/70 text-slate-800">
+              {anoSummary.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-4 py-8 text-center text-slate-400 italic">
+                    Nenhum registro encontrado para os filtros selecionados.
+                  </td>
+                </tr>
+              ) : (
+                anoSummary.map((item, idx) => {
+                  const pctFaixas = anoTotals.totalFaixas > 0 ? (item.faixas / anoTotals.totalFaixas) * 100 : 0;
+
+                  return (
+                    <tr key={item.ano} className={idx % 2 === 0 ? 'bg-white hover:bg-slate-50/80' : 'bg-slate-50/40 hover:bg-slate-50/90'}>
+                      <td className="px-4 py-3 font-semibold text-slate-900 text-center">
+                        {item.ano}
+                      </td>
+                      <td className="px-4 py-3 text-center font-mono font-medium text-slate-800">
+                        {item.count.toLocaleString('pt-BR')}
+                      </td>
+                      <td className="px-4 py-3 text-center font-mono font-bold text-purple-700">
+                        {item.faixas.toLocaleString('pt-BR')}
+                      </td>
+                      <td className="px-4 py-3 text-center font-mono text-slate-600">
+                        {pctFaixas.toFixed(1)}%
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+            {anoSummary.length > 0 && (
+              <tfoot className="bg-slate-100 font-bold text-slate-900 border-t-2 border-slate-300 text-xs">
+                <tr>
+                  <td className="px-4 py-3 uppercase text-center">Total Geral</td>
+                  <td className="px-4 py-3 text-center font-mono">{anoTotals.totalEquip.toLocaleString('pt-BR')}</td>
+                  <td className="px-4 py-3 text-center font-mono text-purple-800">{anoTotals.totalFaixas.toLocaleString('pt-BR')}</td>
+                  <td className="px-4 py-3 text-center font-mono">100.0%</td>
+                </tr>
+              </tfoot>
+            )}
+          </table>
+        </div>
+      </div>
+
+      {/* Table: Faixas Implantadas por Mês */}
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+        <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="p-2 bg-indigo-100 text-indigo-700 rounded-xl">
+              <CalendarDays className="w-5 h-5" />
+            </span>
+            <h3 className="text-sm sm:text-base font-bold text-slate-900">
+              Faixas Implantadas por Mês
+            </h3>
+          </div>
+          <span className="text-xs text-slate-500 font-medium bg-white px-2.5 py-1 rounded-lg border border-slate-200">
+            {mesSummary.length} meses
+          </span>
+        </div>
+
+        <div className="overflow-x-auto max-h-80 overflow-y-auto">
+          <table className="w-full text-center text-xs">
+            <thead className="bg-slate-100/95 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[11px] sticky top-0 z-10 shadow-xs">
+              <tr>
+                <th
+                  scope="col"
+                  onClick={() => handleMesTableSort('mes')}
+                  className="px-4 py-3 cursor-pointer hover:bg-slate-200/80 transition-colors text-center"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>Mês/Ano</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  onClick={() => handleMesTableSort('count')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>Equipamentos</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  onClick={() => handleMesTableSort('faixas')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>Faixas</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  onClick={() => handleMesTableSort('pctFaixas')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>% Faixas</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200/70 text-slate-800">
+              {mesSummary.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-4 py-8 text-center text-slate-400 italic">
+                    Nenhum registro encontrado para os filtros selecionados.
+                  </td>
+                </tr>
+              ) : (
+                mesSummary.map((item, idx) => {
+                  const pctFaixas = anoTotals.totalFaixas > 0 ? (item.faixas / anoTotals.totalFaixas) * 100 : 0;
+
+                  return (
+                    <tr key={item.mes} className={idx % 2 === 0 ? 'bg-white hover:bg-slate-50/80' : 'bg-slate-50/40 hover:bg-slate-50/90'}>
+                      <td className="px-4 py-3 font-semibold text-slate-900 text-center font-mono">
+                        {item.mes}
+                      </td>
+                      <td className="px-4 py-3 text-center font-mono font-medium text-slate-800">
+                        {item.count.toLocaleString('pt-BR')}
+                      </td>
+                      <td className="px-4 py-3 text-center font-mono font-bold text-indigo-700">
+                        {item.faixas.toLocaleString('pt-BR')}
+                      </td>
+                      <td className="px-4 py-3 text-center font-mono text-slate-600">
+                        {pctFaixas.toFixed(1)}%
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+            {mesSummary.length > 0 && (
+              <tfoot className="bg-slate-100 font-bold text-slate-900 border-t-2 border-slate-300 text-xs sticky bottom-0 z-10 shadow-xs">
+                <tr>
+                  <td className="px-4 py-3 uppercase text-center">Total Geral</td>
+                  <td className="px-4 py-3 text-center font-mono">{anoTotals.totalEquip.toLocaleString('pt-BR')}</td>
+                  <td className="px-4 py-3 text-center font-mono text-indigo-800">{anoTotals.totalFaixas.toLocaleString('pt-BR')}</td>
+                  <td className="px-4 py-3 text-center font-mono">100.0%</td>
+                </tr>
+              </tfoot>
+            )}
+          </table>
+        </div>
+      </div>
+
+      {/* Table 4: Ranking TOP 20 Corredores */}
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+        <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Award className="w-5 h-5 text-amber-600" />
+            <div>
+              <h3 className="font-bold text-sm text-slate-900 uppercase tracking-wider">
+                Ranking TOP 20 Corredores
+              </h3>
+              <p className="text-[11px] text-slate-500 font-normal">
+                Corredores viários com maior volume de fiscalização
+              </p>
+            </div>
+          </div>
+          <span className="text-xs font-semibold text-slate-500 bg-slate-200/60 px-2.5 py-1 rounded-full">
+            {corredorSummary.length} Corredores
+          </span>
+        </div>
+
+        <div className="overflow-x-auto max-h-96 overflow-y-auto">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-slate-100/90 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[11px] sticky top-0 z-10">
+              <tr>
+                <th scope="col" className="px-4 py-3 text-center w-12">#</th>
+                <th
+                  scope="col"
+                  onClick={() => handleCorredorTableSort('name')}
+                  className="px-4 py-3 cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center gap-1">
+                    <span>Corredor</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  onClick={() => handleCorredorTableSort('count')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>Equipamentos</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  onClick={() => handleCorredorTableSort('faixas')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>Faixas</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  onClick={() => handleCorredorTableSort('tiposFormatted')}
+                  className="px-4 py-3 cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center gap-1">
+                    <span>TIPOS DE FISCALIZAÇÃO PRESENTE</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200/70 text-slate-800">
+              {corredorSummary.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-4 py-8 text-center text-slate-400 italic">
+                    Nenhum corredor encontrado para a seleção atual.
+                  </td>
+                </tr>
+              ) : (
+                corredorSummary.map((item, idx) => (
+                  <tr key={item.name} className={idx % 2 === 0 ? 'bg-white hover:bg-slate-50/80' : 'bg-slate-50/40 hover:bg-slate-50/90'}>
+                    <td className="px-4 py-3 text-center font-bold">
+                      <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs ${
+                        idx === 0 ? 'bg-amber-100 text-amber-800 border border-amber-300 font-extrabold' :
+                        idx === 1 ? 'bg-slate-200 text-slate-700 border border-slate-300' :
+                        idx === 2 ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                        'text-slate-500'
+                      }`}>
+                        {idx + 1}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 font-semibold text-slate-900">
+                      {item.name}
+                    </td>
+                    <td className="px-4 py-3 text-center font-mono font-medium text-slate-800">
+                      {item.count.toLocaleString('pt-BR')}
+                    </td>
+                    <td className="px-4 py-3 text-center font-mono font-bold text-amber-700">
+                      {item.faixas.toLocaleString('pt-BR')}
+                    </td>
+                    <td className="px-4 py-3 text-slate-600 text-xs">
+                      {item.tiposFormatted}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* MIRROR LIST BELOW EVERYTHING (LISTA DE EQUIPAMENTOS) */}
@@ -789,74 +1870,74 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
         </div>
 
         {/* Data Table */}
-        <div className="overflow-x-auto min-h-[300px]">
-          <table className="w-full text-xs text-left">
-            <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200">
+        <div className="w-full overflow-hidden min-h-[300px]">
+          <table className="w-full table-fixed text-[11px] sm:text-xs text-left">
+            <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200 text-[10px] sm:text-[11px]">
               <tr>
                 <th
                   onClick={() => handleSort('CÓDIGO')}
-                  className="py-3 px-3 cursor-pointer hover:bg-slate-200 transition-colors whitespace-nowrap text-center"
+                  className="w-[8%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
                 >
-                  <div className="flex items-center justify-center gap-1">
+                  <div className="flex items-center justify-center gap-0.5">
                     <span>Código</span>
-                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                   </div>
                 </th>
                 <th
                   onClick={() => handleSort('CONTRATO')}
-                  className="py-3 px-3 cursor-pointer hover:bg-slate-200 transition-colors whitespace-nowrap text-center"
+                  className="w-[8%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
                 >
-                  <div className="flex items-center justify-center gap-1">
+                  <div className="flex items-center justify-center gap-0.5">
                     <span>Contrato</span>
-                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                   </div>
                 </th>
                 <th
                   onClick={() => handleSort('TIPO')}
-                  className="py-3 px-3 cursor-pointer hover:bg-slate-200 transition-colors whitespace-nowrap"
+                  className="w-[9%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-left"
                 >
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-0.5">
                     <span>Tipo</span>
-                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                   </div>
                 </th>
                 <th
                   onClick={() => handleSort('FAIXAS')}
-                  className="py-3 px-3 cursor-pointer hover:bg-slate-200 transition-colors whitespace-nowrap text-center"
+                  className="w-[5%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
                 >
-                  <div className="flex items-center justify-center gap-1">
+                  <div className="flex items-center justify-center gap-0.5">
                     <span>Faixas</span>
-                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                   </div>
                 </th>
                 <th
                   onClick={() => handleSort('Situação')}
-                  className="py-3 px-3 cursor-pointer hover:bg-slate-200 transition-colors whitespace-nowrap"
+                  className="w-[9%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-left"
                 >
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-0.5">
                     <span>Situação</span>
-                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                   </div>
                 </th>
                 <th
                   onClick={() => handleSort('ENDEREÇO COMPLETO')}
-                  className="py-3 px-3 min-w-[200px] cursor-pointer hover:bg-slate-200 transition-colors"
+                  className="w-[43%] py-2.5 px-1.5 cursor-pointer hover:bg-slate-200 transition-colors text-left"
                 >
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-0.5">
                     <span>Endereço Completo</span>
-                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                   </div>
                 </th>
                 <th
                   onClick={() => handleSort('BAIRRO')}
-                  className="py-3 px-3 cursor-pointer hover:bg-slate-200 transition-colors whitespace-nowrap text-center"
+                  className="w-[12%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
                 >
-                  <div className="flex items-center justify-center gap-1">
+                  <div className="flex items-center justify-center gap-0.5">
                     <span>Bairro</span>
-                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                   </div>
                 </th>
-                <th className="py-3 px-3 text-center whitespace-nowrap">Ações</th>
+                <th className="w-[6%] py-2.5 px-1 text-center">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-800">
@@ -873,23 +1954,23 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                     className="hover:bg-blue-50/50 transition-colors cursor-pointer group"
                     onClick={() => onSelectRecord && onSelectRecord(r)}
                   >
-                    <td className="py-2.5 px-3 font-bold text-slate-900 group-hover:text-blue-700 whitespace-nowrap text-center">
+                    <td className="py-2 px-1 font-bold text-slate-900 group-hover:text-blue-700 text-center truncate">
                       {r.CÓDIGO || '-'}
                     </td>
-                    <td className="py-2.5 px-3 font-medium text-slate-700 whitespace-nowrap text-center">
+                    <td className="py-2 px-1 font-medium text-slate-700 text-center truncate">
                       {r.CONTRATO || '-'}
                     </td>
-                    <td className="py-2.5 px-3 whitespace-nowrap">
-                      <span className="inline-block bg-slate-100 text-slate-800 font-semibold px-2 py-0.5 rounded text-[11px] border border-slate-200">
+                    <td className="py-2 px-1 truncate">
+                      <span className="inline-block bg-slate-100 text-slate-800 font-semibold px-1.5 py-0.5 rounded text-[10px] border border-slate-200 truncate max-w-full">
                         {r.TIPO || '-'}
                       </span>
                     </td>
-                    <td className="py-2.5 px-3 text-center font-bold text-blue-700 whitespace-nowrap">
+                    <td className="py-2 px-1 text-center font-bold text-blue-700">
                       {r.FAIXAS}
                     </td>
-                    <td className="py-2.5 px-3 text-[11px] whitespace-nowrap">
+                    <td className="py-2 px-1 text-[10px] truncate">
                       <span
-                        className={`inline-block px-2 py-0.5 rounded-full font-medium ${
+                        className={`inline-block px-1.5 py-0.5 rounded-full font-medium truncate max-w-full ${
                           r.Situação?.includes('Em operação')
                             ? 'bg-emerald-100 text-emerald-800'
                             : r.Situação?.includes('Desligado')
@@ -900,25 +1981,27 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                         {r.Situação?.replace('\n', ' ') || '-'}
                       </span>
                     </td>
-                    <td className="py-2.5 px-3 font-normal text-slate-800 max-w-xs truncate">
+                    <td className="py-2 px-1.5 font-normal text-slate-800 break-words whitespace-normal leading-snug">
                       {r['ENDEREÇO COMPLETO'] || '-'}
                     </td>
-                    <td className="py-2.5 px-3 text-slate-600 whitespace-nowrap text-center">{r.BAIRRO || '-'}</td>
-                    <td className="py-2.5 px-3 text-center whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-center gap-1">
+                    <td className="py-2 px-1 text-slate-600 text-center break-words whitespace-normal leading-snug">
+                      {r.BAIRRO || '-'}
+                    </td>
+                    <td className="py-2 px-1 text-center" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-center gap-0.5">
                         <button
                           onClick={() => onSelectRecord && onSelectRecord(r)}
-                          className="p-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg transition-colors"
+                          className="p-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded transition-colors"
                           title="Ver Ficha Completa do Equipamento"
                         >
-                          <Eye className="w-3.5 h-3.5" />
+                          <Eye className="w-3 h-3" />
                         </button>
                         <button
                           onClick={() => exportSingleRecordPDF(r)}
-                          className="p-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg transition-colors"
+                          className="p-1 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded transition-colors"
                           title="Exportar PDF deste registro"
                         >
-                          <FileDown className="w-3.5 h-3.5" />
+                          <FileDown className="w-3 h-3" />
                         </button>
                       </div>
                     </td>

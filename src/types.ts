@@ -26,6 +26,7 @@ export interface EquipmentRecord {
   Observações: string;
   COORD_LAT_LONG: string;
   'Código Sem Faixa (kopp)': string;
+  'REG. OBJ'?: string;
   
   // Parsed coordinates if valid
   lat?: number;
@@ -56,4 +57,4 @@ export interface FilterState {
   onlyWithCoords: boolean;
 }
 
-export type ActiveTab = 'mapa' | 'indicadores' | 'tabela' | 'resumo' | 'relatorios';
+export type ActiveTab = 'mapa' | 'indicadores' | 'tabela' | 'relatorios';

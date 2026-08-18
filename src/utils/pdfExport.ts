@@ -1,9 +1,113 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import html2canvas from 'html2canvas';
 import { EquipmentRecord } from '../types';
 import { captureMap } from './mapExport';
 
 let cachedLogoDataUrl: string | null = null;
+
+async function captureChartCard(elementId: string): Promise<string | null> {
+  const el = document.getElementById(elementId);
+  if (!el) {
+    console.warn(`Elemento #${elementId} não encontrado.`);
+    return null;
+  }
+
+  try {
+    const rect = el.getBoundingClientRect();
+    const width = el.offsetWidth || rect.width || 400;
+    const height = el.offsetHeight || rect.height || 320;
+
+    const canvas = await html2canvas(el, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: false,
+      backgroundColor: '#ffffff',
+      logging: false,
+      width: width,
+      height: height,
+      onclone: (clonedDoc, clonedElement) => {
+        clonedElement.style.backgroundColor = '#ffffff';
+        clonedElement.style.width = `${width}px`;
+        clonedElement.style.height = `${height}px`;
+        clonedElement.style.overflow = 'visible';
+
+        const wrappers = clonedElement.querySelectorAll('.recharts-wrapper, .recharts-responsive-container');
+        wrappers.forEach((w) => {
+          const htmlW = w as HTMLElement;
+          htmlW.style.width = `${width - 40}px`;
+          htmlW.style.height = `${height - 70}px`;
+          htmlW.style.position = 'relative';
+        });
+
+        const origSvgs = el.querySelectorAll('svg');
+        const clonedSvgs = clonedElement.querySelectorAll('svg');
+        origSvgs.forEach((origSvg, i) => {
+          const clonedSvg = clonedSvgs[i];
+          if (clonedSvg) {
+            const svgRect = origSvg.getBoundingClientRect();
+            const w = origSvg.clientWidth || svgRect.width || width - 40;
+            const h = origSvg.clientHeight || svgRect.height || height - 70;
+            clonedSvg.setAttribute('width', String(w));
+            clonedSvg.setAttribute('height', String(h));
+            clonedSvg.style.width = `${w}px`;
+            clonedSvg.style.height = `${h}px`;
+            clonedSvg.style.overflow = 'visible';
+          }
+        });
+      },
+    });
+
+    return canvas.toDataURL('image/jpeg', 0.95);
+  } catch (err) {
+    console.error(`Erro ao capturar card #${elementId}:`, err);
+    return null;
+  }
+}
+
+export async function captureIndicatorsCharts(): Promise<{
+  cardContratoFaixas: string | null;
+  cardContratoEquip: string | null;
+  cardContratoLocais: string | null;
+  cardTipoFaixas: string | null;
+  cardTipoLocais: string | null;
+}> {
+  try {
+    // Aguarda a renderização e estabilização dos gráficos Recharts
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    const [
+      cardContratoFaixas,
+      cardContratoEquip,
+      cardContratoLocais,
+      cardTipoFaixas,
+      cardTipoLocais,
+    ] = await Promise.all([
+      captureChartCard('chart-card-contrato-faixas'),
+      captureChartCard('chart-card-contrato-equip'),
+      captureChartCard('chart-card-contrato-locais'),
+      captureChartCard('chart-card-tipo-faixas'),
+      captureChartCard('chart-card-tipo-locais'),
+    ]);
+
+    return {
+      cardContratoFaixas,
+      cardContratoEquip,
+      cardContratoLocais,
+      cardTipoFaixas,
+      cardTipoLocais,
+    };
+  } catch (err) {
+    console.error('Falha geral ao capturar gráficos dos indicadores:', err);
+    return {
+      cardContratoFaixas: null,
+      cardContratoEquip: null,
+      cardContratoLocais: null,
+      cardTipoFaixas: null,
+      cardTipoLocais: null,
+    };
+  }
+}
 
 async function getLogoDataUrl(): Promise<string | null> {
   if (cachedLogoDataUrl) return cachedLogoDataUrl;
@@ -121,41 +225,40 @@ export async function exportSingleRecordPDF(record: EquipmentRecord) {
         ['CONTRATADA', record.CONTRATADA],
         ['CÓDIGO', record.CÓDIGO],
         ['Nº DE SÉRIE', record['Nº DE SÉRIE']],
-        ['COD LOG', record['COD LOG']],
       ]
     },
     {
-      title: 'Localização & Infraestrutura',
+      title: 'Localização & Georreferenciamento',
       fields: [
-        ['ENDEREÇO COMPLETO', record['ENDEREÇO COMPLETO']],
-        ['CORREDOR', record.CORREDOR],
+        ['CÓDIGO DO LOGRADOURO', record['COD LOG']],
+        ['ENDEREÇO', record['ENDEREÇOS DOS EQUIPAMENTOS'] || record['ENDEREÇO COMPLETO']],
         ['SENTIDO', record.SENTIDO],
         ['BAIRRO', record.BAIRRO],
         ['REGIONAL', record.REGIONAL],
-        ['COORD_LAT_LONG', record.COORD_LAT_LONG],
+        ['COORDENADAS GEOGRÁFICAS', record.COORD_LAT_LONG],
       ]
     },
     {
-      title: 'Especificações Operacionais',
+      title: 'Especificações Técnicas e Operação',
       fields: [
         ['TIPO', record.TIPO],
         ['FAIXAS', record.FAIXAS ? String(record.FAIXAS) : ''],
-        ['Velocidade Fiscalizada', record['Velocidade Fiscalizada']],
-        ['Situação', record.Situação],
+        ['VELOCIDADE FISCALIZADA', record['Velocidade Fiscalizada']],
+        ['SITUAÇÃO', record.Situação],
         ['CONDIÇÃO', record.CONDIÇÃO],
-        ['DIF Pareado', record['DIF Pareado']],
+        ['DIF PAREADO', record['DIF Pareado']],
         ['OS', record.OS],
-        ['ANO', record.ANO],
+        ['REGISTRO DE OBJETO', (record.TIPO || '').toUpperCase().trim() === 'CEV' ? '' : (record['REG. OBJ'] || record.rawFields?.['REG. OBJ'] || record.rawFields?.['REG. OBJ.'] || '')],
       ]
     },
     {
-      title: 'Datas, Aferição & Observações',
+      title: 'Datas Importantes',
       fields: [
-        ['Data de Início de Operação', record['Data início operação']],
-        ['Data de Aceite', record['Data de aceite']],
-        ['Data da Aferição', record['Data da Aferição']],
-        ['Data de Vencimento da Aferição', record['Data de Vencimento da Aferição']],
-        ['Observações', record.Observações],
+        ['DATA DE INÍCIO DE OPERAÇÃO', record['Data início operação']],
+        ['DATA DE ACEITE', record['Data de aceite']],
+        ['DATA DA AFERIÇÃO', record['Data da Aferição']],
+        ['DATA DE VENCIMENTO DA AFERIÇÃO', record['Data de Vencimento da Aferição']],
+        ['OBSERVAÇÕES', record.Observações],
       ]
     }
   ];
@@ -348,7 +451,7 @@ export async function exportFilteredRecordsPDF(records: EquipmentRecord[], filte
         doc.text(`Página ${data.pageNumber} | Total de registros: ${records.length}`, 10, 22, { maxWidth: maxTextWidth });
       }
 
-      addCustomFooter(doc, pageWidth, pageHeight, `Página ${data.pageNumber}`);
+      addCustomFooter(doc, pageWidth, doc.internal.pageSize.getHeight(), `Página ${data.pageNumber}`);
     }
   });
 
@@ -612,13 +715,13 @@ export async function exportCustomReportPDF(records: EquipmentRecord[], filtersA
   renderHorizontalChart('Faixas por Tipo', tipoArray.map(c => ({label: c[0], val: c[1].faixas})), 12, cursorY, colW * 1.5, [16, 185, 129]);
   renderHorizontalChart('Locais por Tipo', tipoLocaisArray.map(c => ({label: c[0], val: c[1].locais.size})), 12 + (colW * 1.5), cursorY, colW * 1.5, [139, 92, 246]);
 
+  // Footer for Page 1
+  addCustomFooter(doc, pageWidth, doc.internal.pageSize.getHeight(), 'Página 1');
+
   // ----------- PAGE 2: MAPA -----------
-  const mapElement = document.querySelector('.leaflet-container') as HTMLElement;
-  if (mapElement) {
-    try {
-      const canvas = await html2canvas(mapElement, { useCORS: true, logging: false });
-      const mapDataUrl = canvas.toDataURL('image/jpeg', 0.8);
-      
+  try {
+    const mapDataUrl = await captureMap(records);
+    if (mapDataUrl) {
       doc.addPage();
       
       // Bottom border line for header
@@ -651,10 +754,11 @@ export async function exportCustomReportPDF(records: EquipmentRecord[], filtersA
       doc.setLineWidth(0.5);
       doc.rect(12, 35, 186, 139.5);
 
-      addCustomFooter(doc, pageWidth, doc.internal.pageSize.getHeight(), `Página ${doc.internal.getNumberOfPages()}`);
-    } catch (e) {
-      console.error('Erro ao gerar mapa pro PDF', e);
+      const currentPageNum = (doc.internal as any).getNumberOfPages ? (doc.internal as any).getNumberOfPages() : 2;
+      addCustomFooter(doc, pageWidth, doc.internal.pageSize.getHeight(), `Página ${currentPageNum}`);
     }
+  } catch (e) {
+    console.error('Erro ao gerar mapa pro PDF', e);
   }
   // ----------- PAGE 3+... DADOS DOS EQUIPAMENTOS -----------
   
@@ -704,41 +808,40 @@ export async function exportCustomReportPDF(records: EquipmentRecord[], filtersA
           ['CONTRATADA', record.CONTRATADA],
           ['CÓDIGO', record.CÓDIGO],
           ['Nº DE SÉRIE', record['Nº DE SÉRIE']],
-          ['COD LOG', record['COD LOG']],
         ]
       },
       {
-        title: 'Localização & Infraestrutura',
+        title: 'Localização & Georreferenciamento',
         fields: [
-          ['ENDEREÇO COMPLETO', record['ENDEREÇO COMPLETO']],
-          ['CORREDOR', record.CORREDOR],
+          ['CÓDIGO DO LOGRADOURO', record['COD LOG']],
+          ['ENDEREÇO', record['ENDEREÇOS DOS EQUIPAMENTOS'] || record['ENDEREÇO COMPLETO']],
           ['SENTIDO', record.SENTIDO],
           ['BAIRRO', record.BAIRRO],
           ['REGIONAL', record.REGIONAL],
-          ['COORD_LAT_LONG', record.COORD_LAT_LONG],
+          ['COORDENADAS GEOGRÁFICAS', record.COORD_LAT_LONG],
         ]
       },
       {
-        title: 'Especificações Operacionais',
+        title: 'Especificações Técnicas e Operação',
         fields: [
           ['TIPO', record.TIPO],
           ['FAIXAS', record.FAIXAS ? String(record.FAIXAS) : ''],
-          ['Velocidade Fiscalizada', record['Velocidade Fiscalizada'] || record.rawFields['VELOCIDADE']],
-          ['Situação', record.Situação],
+          ['VELOCIDADE FISCALIZADA', record['Velocidade Fiscalizada'] || record.rawFields?.['VELOCIDADE'] || record.rawFields?.['Velocidade Fiscalizada'] || ''],
+          ['SITUAÇÃO', record.Situação],
           ['CONDIÇÃO', record.CONDIÇÃO],
-          ['DIF Pareado', record['DIF Pareado']],
+          ['DIF PAREADO', record['DIF Pareado']],
           ['OS', record.OS],
-          ['ANO', record.ANO],
+          ['REGISTRO DE OBJETO', (record.TIPO || '').toUpperCase().trim() === 'CEV' ? '' : (record['REG. OBJ'] || record.rawFields?.['REG. OBJ'] || record.rawFields?.['REG. OBJ.'] || '')],
         ]
       },
       {
-        title: 'Datas, Aferição & Observações',
+        title: 'Datas Importantes',
         fields: [
-          ['Data de Início de Operação', formatDate(record['Data início operação'] || record.rawFields['INÍCIO OPERAÇÃO'])],
-          ['Data de Aceite', formatDate(record['Data de aceite'] || record.rawFields['DATA DO ACEITE'])],
-          ['Data da Aferição', formatDate(record['Data da Aferição'] || record.rawFields['DATA DA AFERIÇÃO'])],
-          ['Data de Vencimento da Aferição', formatDate(record['Data de Vencimento da Aferição'] || record.rawFields['DATA DO VENCIMENTO DA AFERIÇÃO'])],
-          ['Observações', record.Observações || record.rawFields['OBSERVAÇÃO']],
+          ['DATA DE INÍCIO DE OPERAÇÃO', formatDate(record['Data início operação'] || record.rawFields['INÍCIO OPERAÇÃO'])],
+          ['DATA DE ACEITE', formatDate(record['Data de aceite'] || record.rawFields['DATA DO ACEITE'])],
+          ['DATA DA AFERIÇÃO', formatDate(record['Data da Aferição'] || record.rawFields['DATA DA AFERIÇÃO'])],
+          ['DATA DE VENCIMENTO DA AFERIÇÃO', formatDate(record['Data de Vencimento da Aferição'] || record.rawFields['DATA DO VENCIMENTO DA AFERIÇÃO'])],
+          ['OBSERVAÇÕES', record.Observações || record.rawFields['OBSERVAÇÃO']],
         ]
       }
     ];
@@ -791,3 +894,583 @@ export async function exportCustomReportPDF(records: EquipmentRecord[], filtersA
 
   doc.save(`Relatorio_Demanda_${Date.now()}.pdf`);
 }
+
+export interface IndicatorsReportData {
+  records: EquipmentRecord[];
+  metrics: {
+    totalEquipments: number;
+    totalFaixas: number;
+    totalUniqueLocations: number;
+    equipmentsOperacao: number;
+    equipmentsImplantacao: number;
+    equipmentsRelocacao: number;
+    faixasOperacao: number;
+    faixasImplantacao: number;
+    faixasRelocacao: number;
+    uniqueLocationsOperacao: number;
+    uniqueLocationsImplantacao: number;
+    uniqueLocationsRelocacao: number;
+  };
+  contratoSummary: { label: string; count: number; faixas: number; addresses: number; pctEquip: number; pctFaixas: number }[];
+  tipoSummary: { label: string; count: number; faixas: number; addresses: number; pctEquip: number; pctFaixas: number }[];
+  anoSummary: { ano: string; count: number; faixas: number }[];
+  mesSummary: { mes: string; count: number; faixas: number }[];
+  corredorSummary: { rank?: number; name: string; count: number; faixas: number; tiposFormatted?: string }[];
+  filterDescription?: string;
+}
+
+export async function exportCompleteIndicatorsPDF(data: IndicatorsReportData) {
+  const {
+    records,
+    metrics,
+    contratoSummary,
+    tipoSummary,
+    anoSummary,
+    mesSummary,
+    corredorSummary,
+    filterDescription
+  } = data;
+
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const logoDataUrl = await getLogoDataUrl();
+
+  const renderHeader = (pageTitle: string, subTitleText?: string) => {
+    // White Header Background
+    doc.setFillColor(255, 255, 255);
+    doc.rect(0, 0, pageWidth, 28, 'F');
+
+    doc.setDrawColor(226, 232, 240);
+    doc.setLineWidth(0.5);
+    doc.line(10, 27, pageWidth - 10, 27);
+
+    // Top Right Logo Timbre (PNG)
+    if (logoDataUrl) {
+      try {
+        const logoWidth = 48;
+        const logoHeight = 12;
+        const logoX = pageWidth - 10 - logoWidth;
+        doc.addImage(logoDataUrl, 'PNG', logoX, 7, logoWidth, logoHeight);
+      } catch (e) {
+        console.warn('Não foi possível renderizar a logo no PDF:', e);
+      }
+    }
+
+    const maxTextWidth = logoDataUrl ? pageWidth - 10 - 48 - 14 : pageWidth - 20;
+
+    doc.setTextColor(15, 23, 42); // slate-900
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10.5);
+    doc.text('GERÊNCIA DE ANÁLISE E PROCESSAMENTO DE INFRAÇÕES - GEAPI', 10, 9, { maxWidth: maxTextWidth });
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(30, 41, 59); // slate-800
+    doc.text(pageTitle, 10, 15, { maxWidth: maxTextWidth });
+
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 116, 139); // slate-500
+    const metaText = subTitleText || `Emissão: ${new Date().toLocaleString('pt-BR')} | Filtro Ativo: ${filterDescription || 'Todos os Registros'} (${records.length} equipamentos)`;
+    doc.text(metaText, 10, 22, { maxWidth: maxTextWidth });
+  };
+
+  // Render Page 1 Header
+  renderHeader('Fiscalização Eletrônica — Relatório Completo de Indicadores');
+
+  let currentY = 32;
+
+  // 1. KPI Metric Summary Boxes
+  const boxWidth = (pageWidth - 20 - 8) / 3;
+  const boxHeight = 17;
+
+  // Box 1: Faixas
+  doc.setDrawColor(191, 219, 254);
+  doc.setFillColor(241, 245, 249);
+  doc.roundedRect(10, currentY, boxWidth, boxHeight, 1.5, 1.5, 'FD');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7);
+  doc.setTextColor(37, 99, 235);
+  doc.text('TOTAL DE FAIXAS FISCALIZADAS', 13, currentY + 4.5);
+  doc.setFontSize(13);
+  doc.setTextColor(15, 23, 42);
+  doc.text(metrics.totalFaixas.toLocaleString('pt-BR'), 13, currentY + 10.5);
+  doc.setFontSize(6.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(71, 85, 105);
+  doc.text(`Operação: ${metrics.faixasOperacao} | Impl.: ${metrics.faixasImplantacao} | Reloc.: ${metrics.faixasRelocacao}`, 13, currentY + 14.5);
+
+  // Box 2: Locais Únicos
+  doc.setDrawColor(167, 243, 208);
+  doc.setFillColor(241, 245, 249);
+  doc.roundedRect(10 + boxWidth + 4, currentY, boxWidth, boxHeight, 1.5, 1.5, 'FD');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7);
+  doc.setTextColor(5, 150, 105);
+  doc.text('LOCAIS ÚNICOS FISCALIZADOS', 13 + boxWidth + 4, currentY + 4.5);
+  doc.setFontSize(13);
+  doc.setTextColor(15, 23, 42);
+  doc.text(metrics.totalUniqueLocations.toLocaleString('pt-BR'), 13 + boxWidth + 4, currentY + 10.5);
+  doc.setFontSize(6.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(71, 85, 105);
+  doc.text(`Operação: ${metrics.uniqueLocationsOperacao} | Impl.: ${metrics.uniqueLocationsImplantacao} | Reloc.: ${metrics.uniqueLocationsRelocacao}`, 13 + boxWidth + 4, currentY + 14.5);
+
+  // Box 3: Equipamentos
+  doc.setDrawColor(226, 232, 240);
+  doc.setFillColor(241, 245, 249);
+  doc.roundedRect(10 + (boxWidth * 2) + 8, currentY, boxWidth, boxHeight, 1.5, 1.5, 'FD');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7);
+  doc.setTextColor(100, 116, 139);
+  doc.text('TOTAL DE EQUIPAMENTOS', 13 + (boxWidth * 2) + 8, currentY + 4.5);
+  doc.setFontSize(13);
+  doc.setTextColor(15, 23, 42);
+  doc.text(metrics.totalEquipments.toLocaleString('pt-BR'), 13 + (boxWidth * 2) + 8, currentY + 10.5);
+  doc.setFontSize(6.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(71, 85, 105);
+  doc.text(`Operação: ${metrics.equipmentsOperacao} | Impl.: ${metrics.equipmentsImplantacao} | Reloc.: ${metrics.equipmentsRelocacao}`, 13 + (boxWidth * 2) + 8, currentY + 14.5);
+
+  currentY += boxHeight + 5;
+
+  const sectionHeader = (title: string, yPos: number) => {
+    doc.setFillColor(241, 245, 249);
+    doc.rect(10, yPos, pageWidth - 20, 6, 'F');
+    doc.setTextColor(15, 23, 42);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text(title.toUpperCase(), 12, yPos + 4.2);
+    return yPos + 7.5;
+  };
+
+  // Captura e Inserção dos Gráficos Exatamente como Exibidos no Portal
+  const charts = await captureIndicatorsCharts();
+
+  // 1. Gráficos de Contrato (3 cards lado a lado)
+  const hasContratoCharts = !!(charts.cardContratoFaixas || charts.cardContratoEquip || charts.cardContratoLocais);
+  if (hasContratoCharts) {
+    currentY = sectionHeader('Gráficos Consolidados por Contrato (Faixas, Equipamentos e Locais)', currentY);
+    const cardWidth = 60; // 60mm cada card
+    const cardHeight = 45; // 45mm de altura
+    const gap = 5; // 5mm entre cards
+
+    if (charts.cardContratoFaixas) {
+      doc.addImage(charts.cardContratoFaixas, 'JPEG', 10, currentY, cardWidth, cardHeight);
+    }
+    if (charts.cardContratoEquip) {
+      doc.addImage(charts.cardContratoEquip, 'JPEG', 10 + cardWidth + gap, currentY, cardWidth, cardHeight);
+    }
+    if (charts.cardContratoLocais) {
+      doc.addImage(charts.cardContratoLocais, 'JPEG', 10 + (cardWidth * 2) + (gap * 2), currentY, cardWidth, cardHeight);
+    }
+    currentY += cardHeight + 6;
+  }
+
+  // 2. Gráficos por Tipo de Equipamento (2 cards lado a lado)
+  const hasTipoCharts = !!(charts.cardTipoFaixas || charts.cardTipoLocais);
+  if (hasTipoCharts) {
+    if (currentY > pageHeight - 65) {
+      doc.addPage();
+      renderHeader('Fiscalização Eletrônica — Relatório Completo de Indicadores');
+      currentY = 32;
+    }
+
+    currentY = sectionHeader('Gráficos por Tipo de Equipamento (Faixas e Locais Fiscalizados)', currentY);
+    const cardWidth = 92.5; // 92.5mm cada card
+    const cardHeight = 46; // 46mm de altura
+    const gap = 5;
+
+    if (charts.cardTipoFaixas) {
+      doc.addImage(charts.cardTipoFaixas, 'JPEG', 10, currentY, cardWidth, cardHeight);
+    }
+    if (charts.cardTipoLocais) {
+      doc.addImage(charts.cardTipoLocais, 'JPEG', 10 + cardWidth + gap, currentY, cardWidth, cardHeight);
+    }
+    currentY += cardHeight + 6;
+  }
+
+  // Se o espaço restante for insuficiente para a Tabela 1, avança para nova página
+  if (currentY > pageHeight - 55) {
+    doc.addPage();
+    renderHeader('Fiscalização Eletrônica — Relatório Completo de Indicadores');
+    currentY = 32;
+  }
+
+  // 2. Tabela 1: Resumo por Contrato
+  currentY = sectionHeader('1. Resumo por Contrato', currentY);
+
+  const totalContratoEquip = contratoSummary.reduce((acc, c) => acc + c.count, 0);
+  const totalContratoFaixas = contratoSummary.reduce((acc, c) => acc + c.faixas, 0);
+  const totalContratoLocais = contratoSummary.reduce((acc, c) => acc + c.addresses, 0);
+
+  const contratoBody = contratoSummary.map((c) => [
+    c.label,
+    c.count.toLocaleString('pt-BR'),
+    `${c.pctEquip.toFixed(1)}%`,
+    c.faixas.toLocaleString('pt-BR'),
+    `${c.pctFaixas.toFixed(1)}%`,
+    c.addresses.toLocaleString('pt-BR'),
+  ]);
+
+  contratoBody.push([
+    'TOTAL GERAL',
+    totalContratoEquip.toLocaleString('pt-BR'),
+    '100.0%',
+    totalContratoFaixas.toLocaleString('pt-BR'),
+    '100.0%',
+    totalContratoLocais.toLocaleString('pt-BR'),
+  ]);
+
+  autoTable(doc, {
+    startY: currentY,
+    margin: { left: 10, right: 10, top: 30, bottom: 18 },
+    head: [['Contrato', 'Equipamentos', '% Equip.', 'Faixas', '% Faixas', 'Locais']],
+    body: contratoBody,
+    theme: 'grid',
+    headStyles: {
+      fillColor: [30, 41, 59],
+      textColor: 255,
+      fontSize: 7.5,
+      fontStyle: 'bold',
+      halign: 'center',
+      cellPadding: 1.8,
+    },
+    bodyStyles: {
+      fontSize: 7,
+      textColor: 51,
+      cellPadding: 1.5,
+      halign: 'center',
+    },
+    columnStyles: {
+      0: { halign: 'left', fontStyle: 'bold' },
+      3: { textColor: [37, 99, 235], fontStyle: 'bold' },
+    },
+    didParseCell: (hookData) => {
+      if (hookData.section === 'body' && hookData.row.index === contratoBody.length - 1) {
+        hookData.cell.styles.fontStyle = 'bold';
+        hookData.cell.styles.fillColor = [241, 245, 249];
+        hookData.cell.styles.textColor = [15, 23, 42];
+      }
+    },
+  });
+
+  currentY = (doc as any).lastAutoTable.finalY + 6;
+
+  // 3. Tabela 2: Resumo por Tipo de Equipamento
+  if (currentY > pageHeight - 65) {
+    doc.addPage();
+    renderHeader('Fiscalização Eletrônica — Relatório Completo de Indicadores');
+    currentY = 32;
+  }
+
+  currentY = sectionHeader('2. Resumo por Tipo de Equipamento', currentY);
+
+  const totalTipoEquip = tipoSummary.reduce((acc, t) => acc + t.count, 0);
+  const totalTipoFaixas = tipoSummary.reduce((acc, t) => acc + t.faixas, 0);
+  const totalTipoLocais = tipoSummary.reduce((acc, t) => acc + t.addresses, 0);
+
+  const tipoBody = tipoSummary.map((t) => [
+    t.label,
+    t.count.toLocaleString('pt-BR'),
+    `${t.pctEquip.toFixed(1)}%`,
+    t.faixas.toLocaleString('pt-BR'),
+    `${t.pctFaixas.toFixed(1)}%`,
+    t.addresses.toLocaleString('pt-BR'),
+  ]);
+
+  tipoBody.push([
+    'TOTAL GERAL',
+    totalTipoEquip.toLocaleString('pt-BR'),
+    '100.0%',
+    totalTipoFaixas.toLocaleString('pt-BR'),
+    '100.0%',
+    totalTipoLocais.toLocaleString('pt-BR'),
+  ]);
+
+  autoTable(doc, {
+    startY: currentY,
+    margin: { left: 10, right: 10, top: 30, bottom: 18 },
+    head: [['Tipo de Equipamento', 'Equipamentos', '% Equip.', 'Faixas', '% Faixas', 'Locais']],
+    body: tipoBody,
+    theme: 'grid',
+    headStyles: {
+      fillColor: [30, 41, 59],
+      textColor: 255,
+      fontSize: 7.5,
+      fontStyle: 'bold',
+      halign: 'center',
+      cellPadding: 1.8,
+    },
+    bodyStyles: {
+      fontSize: 7,
+      textColor: 51,
+      cellPadding: 1.5,
+      halign: 'center',
+    },
+    columnStyles: {
+      0: { halign: 'left', fontStyle: 'bold' },
+      3: { textColor: [5, 150, 105], fontStyle: 'bold' },
+    },
+    didParseCell: (hookData) => {
+      if (hookData.section === 'body' && hookData.row.index === tipoBody.length - 1) {
+        hookData.cell.styles.fontStyle = 'bold';
+        hookData.cell.styles.fillColor = [241, 245, 249];
+        hookData.cell.styles.textColor = [15, 23, 42];
+      }
+    },
+  });
+
+  currentY = (doc as any).lastAutoTable.finalY + 6;
+
+  // 4. Tabela 3: Faixas Implantadas por Ano
+  if (currentY > pageHeight - 65) {
+    doc.addPage();
+    renderHeader('Fiscalização Eletrônica — Relatório Completo de Indicadores');
+    currentY = 32;
+  }
+
+  currentY = sectionHeader('3. Faixas Implantadas por Ano', currentY);
+
+  const totalAnoEquip = anoSummary.reduce((acc, a) => acc + a.count, 0);
+  const totalAnoFaixas = anoSummary.reduce((acc, a) => acc + a.faixas, 0);
+
+  const anoBody = anoSummary.map((a) => {
+    const pct = totalAnoFaixas > 0 ? (a.faixas / totalAnoFaixas) * 100 : 0;
+    return [
+      a.ano,
+      a.count.toLocaleString('pt-BR'),
+      a.faixas.toLocaleString('pt-BR'),
+      `${pct.toFixed(1)}%`,
+    ];
+  });
+
+  anoBody.push([
+    'TOTAL GERAL',
+    totalAnoEquip.toLocaleString('pt-BR'),
+    totalAnoFaixas.toLocaleString('pt-BR'),
+    '100.0%',
+  ]);
+
+  autoTable(doc, {
+    startY: currentY,
+    margin: { left: 10, right: 10, top: 30, bottom: 18 },
+    head: [['Ano', 'Equipamentos', 'Faixas', '% Faixas']],
+    body: anoBody,
+    theme: 'grid',
+    headStyles: {
+      fillColor: [30, 41, 59],
+      textColor: 255,
+      fontSize: 7.5,
+      fontStyle: 'bold',
+      halign: 'center',
+      cellPadding: 1.8,
+    },
+    bodyStyles: {
+      fontSize: 7,
+      textColor: 51,
+      cellPadding: 1.5,
+      halign: 'center',
+    },
+    columnStyles: {
+      0: { fontStyle: 'bold' },
+      2: { textColor: [124, 58, 237], fontStyle: 'bold' },
+    },
+    didParseCell: (hookData) => {
+      if (hookData.section === 'body' && hookData.row.index === anoBody.length - 1) {
+        hookData.cell.styles.fontStyle = 'bold';
+        hookData.cell.styles.fillColor = [241, 245, 249];
+        hookData.cell.styles.textColor = [15, 23, 42];
+      }
+    },
+  });
+
+  currentY = (doc as any).lastAutoTable.finalY + 6;
+
+  // 5. Tabela 4: Faixas Implantadas por Mês (Todos os Meses)
+  if (currentY > pageHeight - 65) {
+    doc.addPage();
+    renderHeader('Fiscalização Eletrônica — Relatório Completo de Indicadores');
+    currentY = 32;
+  }
+
+  currentY = sectionHeader('4. Faixas Implantadas por Mês (Histórico Completo)', currentY);
+
+  const totalMesEquip = mesSummary.reduce((acc, m) => acc + m.count, 0);
+  const totalMesFaixas = mesSummary.reduce((acc, m) => acc + m.faixas, 0);
+
+  const mesBody = mesSummary.map((m) => {
+    const pct = totalMesFaixas > 0 ? (m.faixas / totalMesFaixas) * 100 : 0;
+    return [
+      m.mes,
+      m.count.toLocaleString('pt-BR'),
+      m.faixas.toLocaleString('pt-BR'),
+      `${pct.toFixed(1)}%`,
+    ];
+  });
+
+  mesBody.push([
+    'TOTAL GERAL',
+    totalMesEquip.toLocaleString('pt-BR'),
+    totalMesFaixas.toLocaleString('pt-BR'),
+    '100.0%',
+  ]);
+
+  autoTable(doc, {
+    startY: currentY,
+    margin: { left: 10, right: 10, top: 30, bottom: 18 },
+    head: [['Mês/Ano', 'Equipamentos', 'Faixas', '% Faixas']],
+    body: mesBody,
+    theme: 'grid',
+    headStyles: {
+      fillColor: [30, 41, 59],
+      textColor: 255,
+      fontSize: 7.5,
+      fontStyle: 'bold',
+      halign: 'center',
+      cellPadding: 1.8,
+    },
+    bodyStyles: {
+      fontSize: 7,
+      textColor: 51,
+      cellPadding: 1.3,
+      halign: 'center',
+    },
+    columnStyles: {
+      0: { fontStyle: 'bold' },
+      2: { textColor: [79, 70, 229], fontStyle: 'bold' },
+    },
+    didParseCell: (hookData) => {
+      if (hookData.section === 'body' && hookData.row.index === mesBody.length - 1) {
+        hookData.cell.styles.fontStyle = 'bold';
+        hookData.cell.styles.fillColor = [241, 245, 249];
+        hookData.cell.styles.textColor = [15, 23, 42];
+      }
+    },
+  });
+
+  currentY = (doc as any).lastAutoTable.finalY + 6;
+
+  // 6. Tabela 5: Ranking TOP Corredores
+  if (currentY > pageHeight - 65) {
+    doc.addPage();
+    renderHeader('Fiscalização Eletrônica — Relatório Completo de Indicadores');
+    currentY = 32;
+  }
+
+  currentY = sectionHeader('5. Ranking de Corredores (Top 20)', currentY);
+
+  const corredorBody = corredorSummary.map((c, idx) => [
+    String(idx + 1),
+    c.name,
+    c.count.toLocaleString('pt-BR'),
+    c.faixas.toLocaleString('pt-BR'),
+    c.tiposFormatted || '-',
+  ]);
+
+  autoTable(doc, {
+    startY: currentY,
+    margin: { left: 10, right: 10, top: 30, bottom: 18 },
+    head: [['Pos.', 'Corredor', 'Equipamentos', 'Faixas', 'Tipos Presentes']],
+    body: corredorBody,
+    theme: 'grid',
+    headStyles: {
+      fillColor: [30, 41, 59],
+      textColor: 255,
+      fontSize: 7.5,
+      fontStyle: 'bold',
+      halign: 'center',
+      cellPadding: 1.8,
+    },
+    bodyStyles: {
+      fontSize: 7,
+      textColor: 51,
+      cellPadding: 1.5,
+    },
+    columnStyles: {
+      0: { halign: 'center', fontStyle: 'bold', cellWidth: 12 },
+      1: { halign: 'left', fontStyle: 'bold' },
+      2: { halign: 'center', cellWidth: 24 },
+      3: { halign: 'center', textColor: [217, 119, 6], fontStyle: 'bold', cellWidth: 20 },
+      4: { halign: 'left' },
+    },
+  });
+
+  currentY = (doc as any).lastAutoTable.finalY + 6;
+
+  // 7. Tabela 6: Relação Sintética de Equipamentos do Filtro Ativo
+  if (currentY > pageHeight - 65) {
+    doc.addPage();
+    renderHeader('Fiscalização Eletrônica — Relatório Completo de Indicadores');
+    currentY = 32;
+  }
+
+  currentY = sectionHeader('6. Lista Detalhada dos Equipamentos do Filtro Ativo', currentY);
+
+  const equipBody = records.map((r) => [
+    r.CÓDIGO?.trim() || '-',
+    r.CONTRATO?.trim() || '-',
+    r.TIPO?.trim() || '-',
+    r.FAIXAS ? String(r.FAIXAS) : '-',
+    r.Situação?.trim() || '-',
+    r['ENDEREÇO COMPLETO']?.trim() || '-',
+    r.BAIRRO?.trim() || '-',
+    r['Data início operação']?.trim() || '-',
+    r.CONDIÇÃO?.trim() || '-',
+  ]);
+
+  autoTable(doc, {
+    startY: currentY,
+    margin: { left: 10, right: 10, top: 30, bottom: 18 },
+    head: [['Código', 'Contrato', 'Tipo', 'Faixas', 'Situação', 'Endereço Completo', 'Bairro', 'Início Op.', 'Condição']],
+    body: equipBody,
+    theme: 'striped',
+    headStyles: {
+      fillColor: [30, 41, 59],
+      textColor: 255,
+      fontSize: 7,
+      fontStyle: 'bold',
+      halign: 'center',
+      cellPadding: 1.5,
+    },
+    bodyStyles: {
+      fontSize: 6.5,
+      textColor: 51,
+      cellPadding: 1.2,
+    },
+    alternateRowStyles: {
+      fillColor: [248, 250, 252],
+    },
+    columnStyles: {
+      0: { halign: 'center', fontStyle: 'bold', cellWidth: 16 },
+      1: { halign: 'center', cellWidth: 16 },
+      2: { halign: 'left', cellWidth: 18 },
+      3: { halign: 'center', fontStyle: 'bold', textColor: [37, 99, 235], cellWidth: 12 },
+      4: { halign: 'left', cellWidth: 18 },
+      5: { halign: 'left' }, // Endereço takes remaining width with auto-wrap
+      6: { halign: 'center', cellWidth: 20 },
+      7: { halign: 'center', cellWidth: 17 },
+      8: { halign: 'center', cellWidth: 15 },
+    },
+  });
+
+  // Apply Headers and Footers to all pages dynamically
+  const totalPages = (doc.internal as any).getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    // If not page 1, ensure the top header banner and logo are present
+    if (i > 1) {
+      renderHeader('Fiscalização Eletrônica — Relatório Completo de Indicadores');
+    }
+    addCustomFooter(doc, pageWidth, pageHeight, `Página ${i} de ${totalPages}`);
+  }
+
+  doc.save(`GEAPI-Relatorio-Indicadores-Completo-${new Date().toISOString().slice(0, 10)}.pdf`);
+}
+

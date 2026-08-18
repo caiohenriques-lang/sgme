@@ -1,8 +1,8 @@
 import React from 'react';
 import { ActiveTab } from '../types';
-import { Map, BarChart3, Table, RefreshCw, Clock, FileSpreadsheet, Printer } from 'lucide-react';
+import { Map, BarChart3, Table, RefreshCw, Clock, Printer } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
-import { SpeedLimit50Icon } from './SpeedLimit50Icon';
+import { SpeedRadarIcon } from './SpeedRadarIcon';
 
 interface HeaderProps {
   activeTab: ActiveTab;
@@ -44,8 +44,8 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Titles & Branding */}
           <div className="flex items-start gap-3 order-last md:order-first">
-            <div className="p-1 rounded-xl shrink-0 mt-0.5">
-              <SpeedLimit50Icon className="w-8 h-8" />
+            <div className="p-0.5 rounded-xl shrink-0 mt-0.5">
+              <SpeedRadarIcon className="w-8 h-8 sm:w-9 sm:h-9" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
@@ -124,17 +124,6 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
             </button>
 
-            <button
-              onClick={() => setActiveTab('resumo')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all duration-150 cursor-pointer ${
-                activeTab === 'resumo'
-                  ? 'bg-blue-600 border-blue-600 text-white font-bold shadow-sm ring-2 ring-blue-500/30'
-                  : 'bg-white/80 border-slate-200/80 text-slate-700 font-semibold hover:bg-blue-50/90 hover:border-blue-300 hover:text-blue-900 shadow-2xs'
-              }`}
-            >
-              <FileSpreadsheet className={`w-4 h-4 ${activeTab === 'resumo' ? 'text-white' : 'text-blue-600'}`} />
-              <span>Resumo</span>
-            </button>
             <button
               onClick={() => setActiveTab('relatorios')}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all duration-150 cursor-pointer ${

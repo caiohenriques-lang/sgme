@@ -2,8 +2,8 @@ import React from 'react';
 import { EquipmentRecord } from '../types';
 import { ALL_SHEET_HEADERS } from '../services/dataService';
 import { exportSingleRecordPDF } from '../utils/pdfExport';
-import { X, FileDown, MapPin, Building, Calendar, Layers, Tag } from 'lucide-react';
-import { SpeedLimit50Icon } from './SpeedLimit50Icon';
+import { X, FileDown, MapPin, Building, Calendar, Layers, Tag, ExternalLink } from 'lucide-react';
+import { SpeedRadarIcon } from './SpeedRadarIcon';
 
 interface EquipmentDetailModalProps {
   record: EquipmentRecord | null;
@@ -27,16 +27,14 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
         'CONTRATADA',
         'CÓDIGO',
         'Nº DE SÉRIE',
-        'COD LOG',
       ],
     },
     {
       title: 'Localização & Georreferenciamento',
       icon: MapPin,
       fields: [
-        'ENDEREÇO COMPLETO',
+        'COD LOG',
         'ENDEREÇOS DOS EQUIPAMENTOS',
-        'CORREDOR',
         'SENTIDO',
         'BAIRRO',
         'REGIONAL',
@@ -54,11 +52,11 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
         'CONDIÇÃO',
         'DIF Pareado',
         'OS',
-        'ANO',
+        'REG. OBJ',
       ],
     },
     {
-      title: 'Aferição & Datas Importantes',
+      title: 'Datas Importantes',
       icon: Calendar,
       fields: [
         'Data início operação',
@@ -77,8 +75,8 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
         {/* Modal Header */}
         <div className="bg-slate-900 text-white p-5 flex items-center justify-between border-b border-slate-800 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-1 shrink-0">
-              <SpeedLimit50Icon className="w-7 h-7" />
+            <div className="p-0.5 shrink-0">
+              <SpeedRadarIcon className="w-7 h-7" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -125,6 +123,16 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
           {/* Grouped Fields - Only non-empty fields rendered */}
           {(() => {
             const getFieldValue = (header: string) => {
+              if (header === 'REG. OBJ' || header === 'Registro do Objeto') {
+                const reg =
+                  record['REG. OBJ'] ||
+                  record.rawFields?.['REG. OBJ'] ||
+                  record.rawFields?.['REG. OBJ.'] ||
+                  (record as any)['REG. OBJ.'] ||
+                  (record as any)['REG. OBJ'] ||
+                  '';
+                return String(reg).trim();
+              }
               const raw = record.rawFields ? record.rawFields[header] : undefined;
               const direct = (record as any)[header];
               let val = raw !== undefined && raw !== null ? String(raw).trim() : (direct !== undefined && direct !== null ? String(direct).trim() : '');
@@ -137,6 +145,9 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
             const renderedSections = sections.map((sec, idx) => {
               const Icon = sec.icon;
               const validFields = sec.fields.filter((header) => {
+                if (header === 'REG. OBJ' && (record.TIPO || '').toUpperCase().trim() === 'CEV') {
+                  return false;
+                }
                 const val = getFieldValue(header);
                 return val !== '' && val !== '-';
               });
@@ -154,14 +165,44 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
                     {validFields.map((header) => {
                       const value = getFieldValue(header);
 
+                      let labelText = header.toUpperCase();
+                      if (header === 'COD LOG') labelText = 'CÓDIGO DO LOGRADOURO';
+                      else if (header === 'ENDEREÇOS DOS EQUIPAMENTOS') labelText = 'ENDEREÇO';
+                      else if (header === 'COORD_LAT_LONG') labelText = 'COORDENADAS GEOGRÁFICAS';
+                      else if (header === 'Situação') labelText = 'SITUAÇÃO';
+                      else if (header === 'Velocidade Fiscalizada') labelText = 'VELOCIDADE FISCALIZADA';
+                      else if (header === 'DIF Pareado') labelText = 'DIF PAREADO';
+                      else if (header === 'REG. OBJ') labelText = 'REGISTRO DE OBJETO';
+                      else if (header === 'Data início operação') labelText = 'DATA DE INÍCIO DE OPERAÇÃO';
+                      else if (header === 'Data de aceite') labelText = 'DATA DE ACEITE';
+                      else if (header === 'Data da Aferição') labelText = 'DATA DA AFERIÇÃO';
+                      else if (header === 'Data de Vencimento da Aferição') labelText = 'DATA DE VENCIMENTO DA AFERIÇÃO';
+                      else if (header === 'Observações') labelText = 'OBSERVAÇÕES';
+
+                      const isRegObj = header === 'REG. OBJ' || header === 'Registro do Objeto' || labelText === 'REGISTRO DE OBJETO';
+                      const inmetroUrl = isRegObj && value ? `https://registro.inmetro.gov.br/consulta/detalhe.aspx?pag=1&NumeroRegistro=${encodeURIComponent(value.trim())}` : null;
+
                       return (
                         <div key={header} className="grid grid-cols-1 sm:grid-cols-3 px-4 py-2.5 hover:bg-slate-50/80 transition-colors">
                           <span className="font-semibold text-slate-600 text-xs flex items-center gap-1">
                             <Tag className="w-3 h-3 text-slate-400 shrink-0" />
-                            {header === 'Data início operação' ? 'Data de Início de Operação' : header === 'Data de aceite' ? 'Data de Aceite' : header}
+                            {labelText}
                           </span>
-                          <span className="sm:col-span-2 text-slate-900 font-normal break-words">
-                            {value}
+                          <span className="sm:col-span-2 text-slate-900 font-normal break-words flex items-center gap-2">
+                            {inmetroUrl ? (
+                              <a
+                                href={inmetroUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 font-medium text-blue-600 hover:text-blue-800 hover:underline bg-blue-50/80 hover:bg-blue-100/80 px-2.5 py-0.5 rounded-md border border-blue-200/80 transition-colors shadow-2xs"
+                                title={`Consultar registro ${value} no portal do Inmetro`}
+                              >
+                                <span>{value}</span>
+                                <ExternalLink className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                              </a>
+                            ) : (
+                              value
+                            )}
                           </span>
                         </div>
                       );

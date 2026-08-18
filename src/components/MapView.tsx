@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { EquipmentRecord } from '../types';
-import { MapPin } from 'lucide-react';
 
 interface MapViewProps {
   records: EquipmentRecord[];
@@ -93,13 +92,21 @@ export const getTypeColor = (tipo: string): string => {
   return '#475569'; // Slate
 };
 
+export const isValidCoordNumber = (n: any): n is number => {
+  return typeof n === 'number' && !isNaN(n) && isFinite(n);
+};
+
+export const isValidLatLng = (lat?: any, lng?: any): lat is number => {
+  return isValidCoordNumber(lat) && isValidCoordNumber(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180 && (lat !== 0 || lng !== 0);
+};
+
 export const MapView: React.FC<MapViewProps> = ({ records, onSelectRecord }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
 
   // Filter records that actually have valid coordinates
-  const validRecords = records.filter((r) => r.hasValidCoord && r.lat !== undefined && r.lng !== undefined);
+  const validRecords = records.filter((r) => r.hasValidCoord && isValidLatLng(r.lat, r.lng));
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -138,7 +145,10 @@ export const MapView: React.FC<MapViewProps> = ({ records, onSelectRecord }) => 
     const bounds = L.latLngBounds([]);
 
     validRecords.forEach((record) => {
-      if (record.lat === undefined || record.lng === undefined) return;
+      if (!isValidLatLng(record.lat, record.lng)) return;
+
+      const lat = record.lat!;
+      const lng = record.lng!;
 
       const color = getTypeColor(record.TIPO);
       const rawTipo = (record.TIPO || '').trim();
@@ -174,7 +184,7 @@ export const MapView: React.FC<MapViewProps> = ({ records, onSelectRecord }) => 
         popupAnchor: [0, -11],
       });
 
-      const marker = L.marker([record.lat, record.lng], { icon: customIcon });
+      const marker = L.marker([lat, lng], { icon: customIcon });
 
       // Popup Content
       const popupDiv = document.createElement('div');
@@ -225,10 +235,10 @@ export const MapView: React.FC<MapViewProps> = ({ records, onSelectRecord }) => 
       });
 
       markersLayer.addLayer(marker);
-      bounds.extend([record.lat, record.lng]);
+      bounds.extend([lat, lng]);
     });
 
-    if (validRecords.length > 0) {
+    if (validRecords.length > 0 && bounds.isValid()) {
       map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
     }
   }, [validRecords, onSelectRecord]);
@@ -238,22 +248,6 @@ export const MapView: React.FC<MapViewProps> = ({ records, onSelectRecord }) => 
       
       {/* Map Element */}
       <div ref={mapContainerRef} className="w-full h-full z-0" />
-
-      {/* Map Top Floating Bar - Coordinates Stats */}
-      <div className="absolute top-3 left-3 z-10 bg-slate-900/90 backdrop-blur-md text-white px-3.5 py-2 rounded-xl shadow-lg border border-slate-700/80 text-xs flex items-center gap-3">
-        <div className="flex items-center gap-1.5 font-medium">
-          <MapPin className="w-4 h-4 text-emerald-400" />
-          <span>Equipamentos no Mapa: <strong className="text-emerald-400">{validRecords.length}</strong></span>
-        </div>
-        <div className="h-3 w-px bg-slate-700" />
-        <div className="text-slate-400 text-[11px]">
-          {records.length - validRecords.length > 0 ? (
-            <span>Sem coordenadas: <strong className="text-amber-400">{records.length - validRecords.length}</strong></span>
-          ) : (
-            <span>100% no mapa</span>
-          )}
-        </div>
-      </div>
 
     </div>
   );

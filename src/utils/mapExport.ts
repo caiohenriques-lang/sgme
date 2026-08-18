@@ -72,6 +72,14 @@ export const getTypeColor = (tipo: string): string => {
   return '#64748b'; // default slate
 };
 
+export const isValidCoordNumber = (n: any): n is number => {
+  return typeof n === 'number' && !isNaN(n) && isFinite(n);
+};
+
+export const isValidLatLng = (lat?: any, lng?: any): lat is number => {
+  return isValidCoordNumber(lat) && isValidCoordNumber(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180 && (lat !== 0 || lng !== 0);
+};
+
 export async function captureMap(records: any[]): Promise<string | null> {
   const mapDiv = document.createElement('div');
   mapDiv.style.width = '1920px';
@@ -98,7 +106,7 @@ export async function captureMap(records: any[]): Promise<string | null> {
   let hasValid = false;
 
   records.forEach(r => {
-    if (r.hasValidCoord && r.lat && r.lng) {
+    if (r.hasValidCoord && isValidLatLng(r.lat, r.lng)) {
       hasValid = true;
       bounds.extend([r.lat, r.lng]);
       
@@ -135,7 +143,7 @@ export async function captureMap(records: any[]): Promise<string | null> {
     }
   });
 
-  if (!hasValid) {
+  if (!hasValid || !bounds.isValid()) {
     document.body.removeChild(mapDiv);
     return null;
   }

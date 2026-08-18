@@ -63,7 +63,7 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-md overflow-hidden pb-4">
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-md overflow-hidden pb-4 w-full max-w-full">
       
       {/* Table Header Bar */}
       <div className="bg-slate-900 text-white p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -115,101 +115,101 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
       </div>
 
       {/* Main Data Table */}
-      <div className="overflow-x-auto min-h-[400px]">
-        <table className="w-full text-xs text-left">
-          <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200">
+      <div className="w-full overflow-hidden min-h-[400px]">
+        <table className="w-full table-fixed text-[11px] sm:text-xs text-left">
+          <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200 text-[10px] sm:text-[11px]">
             <tr>
               <th
                 onClick={() => handleSort('CONTRATO')}
-                className="py-3 px-3 cursor-pointer hover:bg-slate-200 transition-colors whitespace-nowrap text-center"
+                className="w-[7%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
               >
-                <div className="flex items-center justify-center gap-1">
+                <div className="flex items-center justify-center gap-0.5">
                   <span>Contrato</span>
-                  <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                 </div>
               </th>
               <th
                 onClick={() => handleSort('CÓDIGO')}
-                className="py-3 px-3 cursor-pointer hover:bg-slate-200 transition-colors whitespace-nowrap text-center"
+                className="w-[7%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
               >
-                <div className="flex items-center justify-center gap-1">
+                <div className="flex items-center justify-center gap-0.5">
                   <span>Código</span>
-                  <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                 </div>
               </th>
               <th
                 onClick={() => handleSort('TIPO')}
-                className="py-3 px-3 cursor-pointer hover:bg-slate-200 transition-colors whitespace-nowrap"
+                className="w-[8%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-left"
               >
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-0.5">
                   <span>Tipo</span>
-                  <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                 </div>
               </th>
               <th
                 onClick={() => handleSort('FAIXAS')}
-                className="py-3 px-3 cursor-pointer hover:bg-slate-200 transition-colors whitespace-nowrap text-center"
+                className="w-[5%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
               >
-                <div className="flex items-center justify-center gap-1">
+                <div className="flex items-center justify-center gap-0.5">
                   <span>Faixas</span>
-                  <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                 </div>
               </th>
               <th
                 onClick={() => handleSort('Situação')}
-                className="py-3 px-3 cursor-pointer hover:bg-slate-200 transition-colors whitespace-nowrap"
+                className="w-[9%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-left"
               >
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-0.5">
                   <span>Situação</span>
-                  <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                 </div>
               </th>
               <th
                 onClick={() => handleSort('ENDEREÇO COMPLETO')}
-                className="py-3 px-3 min-w-[200px] cursor-pointer hover:bg-slate-200 transition-colors"
+                className="w-[28%] py-2.5 px-1.5 cursor-pointer hover:bg-slate-200 transition-colors text-left"
               >
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-0.5">
                   <span>Endereço Completo</span>
-                  <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                 </div>
               </th>
               <th
                 onClick={() => handleSort('BAIRRO')}
-                className="py-3 px-3 cursor-pointer hover:bg-slate-200 transition-colors whitespace-nowrap text-center"
+                className="w-[11%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
               >
-                <div className="flex items-center justify-center gap-1">
+                <div className="flex items-center justify-center gap-0.5">
                   <span>Bairro</span>
-                  <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                 </div>
               </th>
               <th
                 onClick={() => handleSort('Data início operação')}
-                className="py-3 px-3 cursor-pointer hover:bg-slate-200 transition-colors whitespace-nowrap text-center"
+                className="w-[8%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center leading-tight"
               >
-                <div className="flex items-center justify-center gap-1">
-                  <span>Data de Início de Operação</span>
-                  <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                <div className="flex items-center justify-center gap-0.5">
+                  <span>Início Op.</span>
+                  <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                 </div>
               </th>
               <th
                 onClick={() => handleSort('Data de aceite')}
-                className="py-3 px-3 cursor-pointer hover:bg-slate-200 transition-colors whitespace-nowrap text-center"
+                className="w-[8%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center leading-tight"
               >
-                <div className="flex items-center justify-center gap-1">
-                  <span>Data de Aceite</span>
-                  <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                <div className="flex items-center justify-center gap-0.5">
+                  <span>Aceite</span>
+                  <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                 </div>
               </th>
               <th
                 onClick={() => handleSort('CONDIÇÃO')}
-                className="py-3 px-3 cursor-pointer hover:bg-slate-200 transition-colors whitespace-nowrap text-center"
+                className="w-[6%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
               >
-                <div className="flex items-center justify-center gap-1">
+                <div className="flex items-center justify-center gap-0.5">
                   <span>Condição</span>
-                  <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                 </div>
               </th>
-              <th className="py-3 px-3 text-center whitespace-nowrap">Ações</th>
+              <th className="w-[5%] py-2.5 px-1 text-center">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-slate-800">
@@ -226,23 +226,23 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
                   className="hover:bg-blue-50/50 transition-colors cursor-pointer group"
                   onClick={() => onSelectRecord(r)}
                 >
-                  <td className="py-2.5 px-3 font-medium text-slate-700 whitespace-nowrap text-center">
+                  <td className="py-2 px-1 font-medium text-slate-700 text-center truncate">
                     {r.CONTRATO || '-'}
                   </td>
-                  <td className="py-2.5 px-3 font-bold text-slate-900 group-hover:text-blue-700 whitespace-nowrap text-center">
+                  <td className="py-2 px-1 font-bold text-slate-900 group-hover:text-blue-700 text-center truncate">
                     {r.CÓDIGO || '-'}
                   </td>
-                  <td className="py-2.5 px-3 whitespace-nowrap">
-                    <span className="inline-block bg-slate-100 text-slate-800 font-semibold px-2 py-0.5 rounded text-[11px] border border-slate-200">
+                  <td className="py-2 px-1 truncate">
+                    <span className="inline-block bg-slate-100 text-slate-800 font-semibold px-1.5 py-0.5 rounded text-[10px] border border-slate-200 truncate max-w-full">
                       {r.TIPO || '-'}
                     </span>
                   </td>
-                  <td className="py-2.5 px-3 text-center font-bold text-blue-700 whitespace-nowrap">
+                  <td className="py-2 px-1 text-center font-bold text-blue-700">
                     {r.FAIXAS}
                   </td>
-                  <td className="py-2.5 px-3 text-[11px] whitespace-nowrap">
+                  <td className="py-2 px-1 text-[10px] truncate">
                     <span
-                      className={`inline-block px-2 py-0.5 rounded-full font-medium ${
+                      className={`inline-block px-1.5 py-0.5 rounded-full font-medium truncate max-w-full ${
                         r.Situação?.includes('Em operação')
                           ? 'bg-emerald-100 text-emerald-800'
                           : r.Situação?.includes('Desligado')
@@ -253,32 +253,36 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
                       {r.Situação?.replace('\n', ' ') || '-'}
                     </span>
                   </td>
-                  <td className="py-2.5 px-3 font-normal text-slate-800 min-w-[200px] break-words whitespace-normal">
+                  <td className="py-2 px-1.5 font-normal text-slate-800 break-words whitespace-normal leading-snug">
                     {r['ENDEREÇO COMPLETO'] || '-'}
                   </td>
-                  <td className="py-2.5 px-3 text-slate-600 whitespace-nowrap text-center">{r.BAIRRO || '-'}</td>
-                  <td className="py-2.5 px-3 text-slate-600 whitespace-nowrap text-center">
+                  <td className="py-2 px-1 text-slate-600 text-center break-words whitespace-normal leading-snug">
+                    {r.BAIRRO || '-'}
+                  </td>
+                  <td className="py-2 px-1 text-slate-600 text-center truncate">
                     {r['Data início operação'] || '-'}
                   </td>
-                  <td className="py-2.5 px-3 text-slate-600 whitespace-nowrap text-center">
+                  <td className="py-2 px-1 text-slate-600 text-center truncate">
                     {r['Data de aceite'] || '-'}
                   </td>
-                  <td className="py-2.5 px-3 text-slate-600 whitespace-nowrap text-center">{r.CONDIÇÃO || '-'}</td>
-                  <td className="py-2.5 px-3 text-center whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center justify-center gap-1">
+                  <td className="py-2 px-1 text-slate-600 text-center truncate">
+                    {r.CONDIÇÃO || '-'}
+                  </td>
+                  <td className="py-2 px-1 text-center" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center justify-center gap-0.5">
                       <button
                         onClick={() => onSelectRecord(r)}
-                        className="p-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg transition-colors"
-                        title="Ver Ficha Completa (26 campos)"
+                        className="p-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded transition-colors"
+                        title="Ver Ficha Completa"
                       >
-                        <Eye className="w-3.5 h-3.5" />
+                        <Eye className="w-3 h-3" />
                       </button>
                       <button
                         onClick={() => exportSingleRecordPDF(r)}
-                        className="p-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg transition-colors"
+                        className="p-1 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded transition-colors"
                         title="Exportar PDF deste registro"
                       >
-                        <FileDown className="w-3.5 h-3.5" />
+                        <FileDown className="w-3 h-3" />
                       </button>
                     </div>
                   </td>

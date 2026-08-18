@@ -30,8 +30,78 @@ export const ALL_SHEET_HEADERS = [
   'DIF Pareado',
   'Observações',
   'COORD_LAT_LONG',
-  'Código Sem Faixa (kopp)'
+  'Código Sem Faixa (kopp)',
+  'REG. OBJ'
 ];
+
+export function parseCoordinates(coordStr?: string): { lat?: number; lng?: number; hasValidCoord: boolean } {
+  if (!coordStr || typeof coordStr !== 'string') {
+    return { lat: undefined, lng: undefined, hasValidCoord: false };
+  }
+
+  const clean = coordStr.trim().replace(/[()[\]{}]/g, '');
+  if (!clean) {
+    return { lat: undefined, lng: undefined, hasValidCoord: false };
+  }
+
+  let pLat: number | undefined;
+  let pLng: number | undefined;
+
+  // Split por ';' ou vírgula única
+  const commaCount = (clean.match(/,/g) || []).length;
+  if (clean.includes(';')) {
+    const parts = clean.split(';').map((p) => p.trim());
+    if (parts.length === 2) {
+      const parsed0 = parseFloat(parts[0].replace(',', '.'));
+      const parsed1 = parseFloat(parts[1].replace(',', '.'));
+      if (!isNaN(parsed0) && !isNaN(parsed1)) {
+        pLat = parsed0;
+        pLng = parsed1;
+      }
+    }
+  } else if (commaCount === 1) {
+    const parts = clean.split(',').map((p) => p.trim());
+    if (parts.length === 2) {
+      const parsed0 = parseFloat(parts[0].trim());
+      const parsed1 = parseFloat(parts[1].trim());
+      if (!isNaN(parsed0) && !isNaN(parsed1)) {
+        pLat = parsed0;
+        pLng = parsed1;
+      }
+    }
+  }
+
+  // Se não foi identificado pelo split, usa regex para extrair os 2 valores decimais
+  if (pLat === undefined || pLng === undefined) {
+    const matches = clean.match(/-?\d+(?:[.,]\d+)?/g);
+    if (matches && matches.length >= 2) {
+      const latVal = parseFloat(matches[0].replace(',', '.'));
+      const lngVal = parseFloat(matches[1].replace(',', '.'));
+      if (!isNaN(latVal) && !isNaN(lngVal)) {
+        pLat = latVal;
+        pLng = lngVal;
+      }
+    }
+  }
+
+  if (
+    pLat !== undefined &&
+    pLng !== undefined &&
+    typeof pLat === 'number' &&
+    typeof pLng === 'number' &&
+    !isNaN(pLat) &&
+    !isNaN(pLng) &&
+    isFinite(pLat) &&
+    isFinite(pLng) &&
+    Math.abs(pLat) <= 90 &&
+    Math.abs(pLng) <= 180 &&
+    (pLat !== 0 || pLng !== 0)
+  ) {
+    return { lat: pLat, lng: pLng, hasValidCoord: true };
+  }
+
+  return { lat: undefined, lng: undefined, hasValidCoord: false };
+}
 
 export async function fetchEquipmentData(): Promise<{
   records: EquipmentRecord[];
@@ -61,7 +131,7 @@ export async function fetchEquipmentData(): Promise<{
 
   if (!csvText) {
     // Attempt to load from localStorage cache if fetch failed
-    const cachedData = localStorage.getItem('geapi_equipment_data_cache');
+    const cachedData = localStorage.getItem('geapi_equipment_data_cache_v2') || localStorage.getItem('geapi_equipment_data_cache');
     if (cachedData) {
       try {
         const parsed = JSON.parse(cachedData);
@@ -86,37 +156,35 @@ export async function fetchEquipmentData(): Promise<{
         const records: EquipmentRecord[] = (results.data as Record<string, string>[]).map(
           (row, index) => {
             const coordStr = (row['COORD_LAT_LONG'] || '').trim();
-            let lat: number | undefined;
-            let lng: number | undefined;
-            let hasValidCoord = false;
-
-            if (coordStr) {
-              const parts = coordStr.split(',');
-              if (parts.length === 2) {
-                const pLat = parseFloat(parts[0].trim());
-                const pLng = parseFloat(parts[1].trim());
-                if (!isNaN(pLat) && !isNaN(pLng) && Math.abs(pLat) <= 90 && Math.abs(pLng) <= 180) {
-                  lat = pLat;
-                  lng = pLng;
-                  hasValidCoord = true;
-                }
-              }
-            }
+            const { lat, lng, hasValidCoord } = parseCoordinates(coordStr);
 
             const faixasRaw = row['FAIXAS'] || '0';
             const faixas = parseInt(faixasRaw, 10) || 0;
 
+            const regObjVal = (
+              row['REG. OBJ.'] ||
+              row['REG. OBJ'] ||
+              row['REG.OBJ'] ||
+              row['REG OBJ'] ||
+              row['REG_OBJ'] ||
+              row['Registro do Objeto'] ||
+              ''
+            ).trim();
+
             const rawFields: Record<string, string> = {};
             ALL_SHEET_HEADERS.forEach((header) => {
-              let csvColName = header;
+              let val = '';
               if (header === 'Data início operação') {
-                csvColName = row['Data de Início  da Operação'] !== undefined ? 'Data de Início  da Operação' : 
-                             (row['Data de Início da Operação'] !== undefined ? 'Data de Início da Operação' : 'Data início operação');
+                val = row['Data de Início  da Operação'] ?? row['Data de Início da Operação'] ?? row['Data início operação'] ?? '';
               } else if (header === 'Data de aceite') {
-                csvColName = row['Data de Aceite'] !== undefined ? 'Data de Aceite' : 'Data de aceite';
+                val = row['Data de Aceite'] ?? row['Data de aceite'] ?? '';
+              } else if (header === 'REG. OBJ' || header === 'Registro do Objeto') {
+                val = regObjVal;
+              } else {
+                val = row[header] !== undefined ? String(row[header]) : '';
               }
 
-              let val = row[csvColName] !== undefined ? String(row[csvColName]).trim() : '';
+              val = String(val).trim();
               if (val.toUpperCase().includes('#VALUE')) {
                 val = 'Em implantação';
               }
@@ -156,6 +224,7 @@ export async function fetchEquipmentData(): Promise<{
               Observações: (row['Observações'] || '').trim(),
               COORD_LAT_LONG: coordStr,
               'Código Sem Faixa (kopp)': (row['Código Sem Faixa (kopp)'] || '').trim(),
+              'REG. OBJ': regObjVal,
               
               lat,
               lng,
@@ -169,7 +238,7 @@ export async function fetchEquipmentData(): Promise<{
         // Cache successful records in localStorage
         try {
           localStorage.setItem(
-            'geapi_equipment_data_cache',
+            'geapi_equipment_data_cache_v2',
             JSON.stringify({ records, lastUpdated: new Date().toISOString() })
           );
         } catch (e) {

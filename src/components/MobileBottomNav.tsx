@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActiveTab } from '../types';
-import { Map, BarChart3, Table, FileSpreadsheet, Printer } from 'lucide-react';
+import { Map, BarChart3, Table, Printer } from 'lucide-react';
 
 interface MobileBottomNavProps {
   activeTab: ActiveTab;
@@ -81,18 +81,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         <span className="text-[11px] mt-1 tracking-tight">Lista</span>
       </button>
 
-      {/* Tab 4: Resumo */}
-      <button
-        onClick={() => setActiveTab('resumo')}
-        className={`flex-1 flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition-all duration-150 min-h-[48px] cursor-pointer ${
-          activeTab === 'resumo'
-            ? 'text-blue-700 font-bold bg-blue-100/90 border border-blue-300/80 shadow-2xs'
-            : 'text-slate-600 font-medium hover:text-blue-700 hover:bg-slate-100/80'
-        }`}
-      >
-        <FileSpreadsheet className={`w-5 h-5 ${activeTab === 'resumo' ? 'text-blue-700' : 'text-blue-600'}`} />
-        <span className="text-[11px] mt-1 tracking-tight">Resumo</span>
-      </button>
+      {/* Tab 4: Relatórios */}
       <button
         onClick={() => setActiveTab('relatorios')}
         className={`flex-1 flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition-all duration-150 min-h-[48px] cursor-pointer ${

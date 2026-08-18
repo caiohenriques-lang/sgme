@@ -7,7 +7,6 @@ import { MapView } from './components/MapView';
 import { IndicatorsView } from './components/IndicatorsView';
 import { TableView } from './components/TableView';
 import { EquipmentDetailModal } from './components/EquipmentDetailModal';
-import { SummaryView } from './components/SummaryView';
 import { ReportView } from './components/ReportView';
 import { FooterLegend } from './components/FooterLegend';
 import { MobileBottomNav } from './components/MobileBottomNav';
@@ -348,98 +347,6 @@ export default function App() {
     return records.filter((r) => recordMatchesFilters(r, filters));
   }, [records, filters]);
 
-  // Filtered records for RESUMO tab (defaulting to contracts 2740/24, 2741/24, 2742/24 via PRESET_NOVOS)
-  const resumoFilteredRecords = useMemo(() => {
-    const novosContratos = ['2740/24', '2741/24', '2742/24'];
-    const antigosContratos = ['2586/20', '2585/20', '2587/20'];
-
-    return records.filter((r) => {
-      // 0. Contrato (Default: PRESET_NOVOS = 2740/24, 2741/24, 2742/24)
-      if (filters.contrato === 'PRESET_NOVOS') {
-        if (!novosContratos.some((c) => r.CONTRATO?.includes(c))) {
-          return false;
-        }
-      } else if (filters.contrato === 'PRESET_ANTIGOS') {
-        if (!antigosContratos.some((c) => r.CONTRATO?.includes(c))) {
-          return false;
-        }
-      } else if (filters.contrato !== 'ALL') {
-        if (r.CONTRATO !== filters.contrato) {
-          return false;
-        }
-      }
-
-      // 1. Regional
-      if (filters.regional !== 'ALL' && r.REGIONAL?.trim() !== filters.regional) {
-        return false;
-      }
-
-      // 2. Bairro
-      if (filters.bairro !== 'ALL' && r.BAIRRO?.trim() !== filters.bairro) {
-        return false;
-      }
-
-      // 3. Situação
-      if (filters.situacao !== 'ALL' && r.Situação !== filters.situacao) {
-        return false;
-      }
-
-      // 4. Condição
-      if (filters.condicao !== 'ALL' && r.CONDIÇÃO !== filters.condicao) {
-        return false;
-      }
-
-      // 5. OS Number Dropdown
-      if (filters.os && filters.os !== 'ALL' && r.OS?.trim() !== filters.os) {
-        return false;
-      }
-
-      // 6. Data Início Operação Range
-      if (filters.dataInicioStart || filters.dataInicioEnd) {
-        const itemDate = parseBRDate(r['Data início operação']);
-        if (!itemDate) return false;
-
-        if (filters.dataInicioStart) {
-          const startDate = parseBRDate(filters.dataInicioStart);
-          if (startDate && itemDate < startDate) return false;
-        }
-        if (filters.dataInicioEnd) {
-          const endDate = parseBRDate(filters.dataInicioEnd);
-          if (endDate && itemDate > endDate) return false;
-        }
-      }
-
-      // 7. Data de Aceite Range
-      if (filters.dataAceiteStart || filters.dataAceiteEnd) {
-        const itemDate = parseBRDate(r['Data de aceite']);
-        if (!itemDate) return false;
-
-        if (filters.dataAceiteStart) {
-          const startDate = parseBRDate(filters.dataAceiteStart);
-          if (startDate && itemDate < startDate) return false;
-        }
-        if (filters.dataAceiteEnd) {
-          const endDate = parseBRDate(filters.dataAceiteEnd);
-          if (endDate && itemDate > endDate) return false;
-        }
-      }
-
-      return true;
-    });
-  }, [
-    records,
-    filters.contrato,
-    filters.regional,
-    filters.bairro,
-    filters.situacao,
-    filters.condicao,
-    filters.os,
-    filters.dataInicioStart,
-    filters.dataInicioEnd,
-    filters.dataAceiteStart,
-    filters.dataAceiteEnd,
-  ]);
-
   // Count items with coordinates in total dataset
   const coordCount = useMemo(() => {
     return records.filter((r) => r.hasValidCoord).length;
@@ -487,7 +394,7 @@ export default function App() {
           availableCondicoes={availableCondicoes}
           availableOS={availableOS}
           availableCodigos={availableCodigos}
-          totalFiltered={activeTab === 'resumo' ? resumoFilteredRecords.length : filteredRecords.length}
+          totalFiltered={filteredRecords.length}
           totalRecords={records.length}
           onReset={handleResetFilters}
           onClearAll={handleClearAllFilters}
@@ -495,7 +402,7 @@ export default function App() {
       )}
 
       {/* Main Container Content */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-20 md:pb-8">
+      <main className="flex-1 min-w-0 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-20 md:pb-8">
         
         {loading && records.length === 0 ? (
           <div className="bg-white rounded-2xl border border-slate-200 p-16 text-center space-y-4 my-8 shadow-xs">
@@ -549,15 +456,8 @@ export default function App() {
                 onSelectRecord={(rec) => setSelectedRecord(rec)}
               />
             )}
-
-            {/* Tab 4: Summary View */}
-            {activeTab === 'resumo' && (
-              <SummaryView
-                records={resumoFilteredRecords}
-              />
-            )}
             
-            {/* Tab 5: Relatorios */}
+            {/* Tab 4: Relatorios */}
             {activeTab === 'relatorios' && (
               <ReportView records={records} />
             )}

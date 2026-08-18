@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Lock, KeyRound, Eye, EyeOff, ShieldAlert, ArrowRight, AlertCircle, Building2 } from 'lucide-react';
-import { SpeedLimit50Icon } from './SpeedLimit50Icon';
+import { SpeedRadarIcon } from './SpeedRadarIcon';
 
 interface LockScreenProps {
   onUnlock: () => void;
@@ -54,7 +54,7 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlock }) => {
 
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-950/80 border border-blue-800/60 text-blue-400 text-[11px] font-bold tracking-wider uppercase mb-2">
-              <SpeedLimit50Icon className="w-4 h-4" />
+              <SpeedRadarIcon className="w-4 h-4" />
               <span>Acesso Restrito · GEAPI</span>
             </div>
             
