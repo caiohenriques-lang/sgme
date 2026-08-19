@@ -677,7 +677,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             {/* Data De Início de Operação */}
             <div>
               <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1">
-                <Calendar className="w-3 h-3 text-slate-400" /> DATA DE INÍCIO DE OPERAÇÃO
+                <Calendar className="w-3 h-3 text-slate-400" /> INÍCIO DE OPERAÇÃO
               </label>
               <div className="grid grid-cols-2 gap-1">
                 <input
@@ -700,7 +700,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             {/* Data de Aceite */}
             <div>
               <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1">
-                <Calendar className="w-3 h-3 text-slate-400" /> DATA DE ACEITE
+                <Calendar className="w-3 h-3 text-slate-400" /> ACEITE
               </label>
               <div className="grid grid-cols-2 gap-1">
                 <input

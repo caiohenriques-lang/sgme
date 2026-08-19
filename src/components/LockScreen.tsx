@@ -64,7 +64,7 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlock }) => {
             <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto leading-relaxed">
               Prefeitura Municipal de Belo Horizonte
               <br />
-              <span className="text-slate-500">Gerência de Apoio Técnico e Operação (GEAPI)</span>
+              <span className="text-slate-400 font-medium">GERÊNCIA DE ANÁLISE E PROCESSAMENTO DE INFRAÇÕES (GEAPI)</span>
             </p>
           </div>
         </div>

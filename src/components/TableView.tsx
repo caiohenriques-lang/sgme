@@ -7,9 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Eye,
-  ArrowUpDown,
-  Search,
-  MapPin
+  ArrowUpDown
 } from 'lucide-react';
 
 interface TableViewProps {
@@ -80,7 +78,7 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
         <div className="flex items-center gap-3">
           <button
             onClick={handleExportAllPDF}
-            className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors shadow-sm"
+            className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors shadow-sm cursor-pointer"
           >
             <FileDown className="w-4 h-4" />
             <span>Exportar Lista em PDF</span>
@@ -114,10 +112,10 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
         </div>
       </div>
 
-      {/* Main Data Table */}
-      <div className="w-full overflow-hidden min-h-[400px]">
-        <table className="w-full table-fixed text-[11px] sm:text-xs text-left">
-          <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200 text-[10px] sm:text-[11px]">
+      {/* Main Data Table - Fitted to screen without horizontal scrolling */}
+      <div className="w-full overflow-x-auto lg:overflow-x-hidden min-h-[400px]">
+        <table className="w-full table-fixed text-[11px] text-left">
+          <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200 text-[10px]">
             <tr>
               <th
                 onClick={() => handleSort('CONTRATO')}
@@ -138,35 +136,8 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
                 </div>
               </th>
               <th
-                onClick={() => handleSort('TIPO')}
-                className="w-[8%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-left"
-              >
-                <div className="flex items-center gap-0.5">
-                  <span>Tipo</span>
-                  <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                </div>
-              </th>
-              <th
-                onClick={() => handleSort('FAIXAS')}
-                className="w-[5%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
-              >
-                <div className="flex items-center justify-center gap-0.5">
-                  <span>Faixas</span>
-                  <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                </div>
-              </th>
-              <th
-                onClick={() => handleSort('Situação')}
-                className="w-[9%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-left"
-              >
-                <div className="flex items-center gap-0.5">
-                  <span>Situação</span>
-                  <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                </div>
-              </th>
-              <th
                 onClick={() => handleSort('ENDEREÇO COMPLETO')}
-                className="w-[28%] py-2.5 px-1.5 cursor-pointer hover:bg-slate-200 transition-colors text-left"
+                className="w-[26%] py-2.5 px-1.5 cursor-pointer hover:bg-slate-200 transition-colors text-left"
               >
                 <div className="flex items-center gap-0.5">
                   <span>Endereço Completo</span>
@@ -175,10 +146,37 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
               </th>
               <th
                 onClick={() => handleSort('BAIRRO')}
-                className="w-[11%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
+                className="w-[9%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
               >
                 <div className="flex items-center justify-center gap-0.5">
                   <span>Bairro</span>
+                  <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                </div>
+              </th>
+              <th
+                onClick={() => handleSort('REGIONAL')}
+                className="w-[7%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
+              >
+                <div className="flex items-center justify-center gap-0.5">
+                  <span>Regional</span>
+                  <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                </div>
+              </th>
+              <th
+                onClick={() => handleSort('TIPO')}
+                className="w-[6%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
+              >
+                <div className="flex items-center justify-center gap-0.5">
+                  <span>Tipo</span>
+                  <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                </div>
+              </th>
+              <th
+                onClick={() => handleSort('FAIXAS')}
+                className="w-[4%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
+              >
+                <div className="flex items-center justify-center gap-0.5">
+                  <span>Faixas</span>
                   <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                 </div>
               </th>
@@ -192,11 +190,11 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
                 </div>
               </th>
               <th
-                onClick={() => handleSort('Data de aceite')}
-                className="w-[8%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center leading-tight"
+                onClick={() => handleSort('OS')}
+                className="w-[6%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
               >
                 <div className="flex items-center justify-center gap-0.5">
-                  <span>Aceite</span>
+                  <span>OS</span>
                   <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                 </div>
               </th>
@@ -209,13 +207,22 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
                   <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                 </div>
               </th>
+              <th
+                onClick={() => handleSort('Situação')}
+                className="w-[9%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
+              >
+                <div className="flex items-center justify-center gap-0.5">
+                  <span>Situação</span>
+                  <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                </div>
+              </th>
               <th className="w-[5%] py-2.5 px-1 text-center">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-slate-800">
             {paginatedRecords.length === 0 ? (
               <tr>
-                <td colSpan={11} className="py-12 text-center text-slate-400">
+                <td colSpan={12} className="py-12 text-center text-slate-400">
                   Nenhum equipamento encontrado com os filtros selecionados.
                 </td>
               </tr>
@@ -226,23 +233,62 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
                   className="hover:bg-blue-50/50 transition-colors cursor-pointer group"
                   onClick={() => onSelectRecord(r)}
                 >
-                  <td className="py-2 px-1 font-medium text-slate-700 text-center truncate">
+                  {/* CONTRATO */}
+                  <td className="py-1.5 px-1 font-medium text-slate-700 text-center truncate">
                     {r.CONTRATO || '-'}
                   </td>
-                  <td className="py-2 px-1 font-bold text-slate-900 group-hover:text-blue-700 text-center truncate">
+
+                  {/* CÓDIGO */}
+                  <td className="py-1.5 px-1 font-bold text-slate-900 group-hover:text-blue-700 text-center truncate">
                     {r.CÓDIGO || '-'}
                   </td>
-                  <td className="py-2 px-1 truncate">
-                    <span className="inline-block bg-slate-100 text-slate-800 font-semibold px-1.5 py-0.5 rounded text-[10px] border border-slate-200 truncate max-w-full">
+
+                  {/* ENDEREÇO COMPLETO */}
+                  <td className="py-1.5 px-1.5 font-normal text-slate-800 break-words whitespace-normal leading-tight text-[10.5px]">
+                    {r['ENDEREÇO COMPLETO'] || '-'}
+                  </td>
+
+                  {/* BAIRRO */}
+                  <td className="py-1.5 px-1 text-slate-600 text-center break-words whitespace-normal leading-tight text-[10px]">
+                    {r.BAIRRO || '-'}
+                  </td>
+
+                  {/* REGIONAL */}
+                  <td className="py-1.5 px-1 text-slate-600 text-center truncate text-[10px]">
+                    {r.REGIONAL || '-'}
+                  </td>
+
+                  {/* TIPO */}
+                  <td className="py-1.5 px-1 text-center truncate">
+                    <span className="inline-block bg-slate-100 text-slate-800 font-semibold px-1 py-0.5 rounded text-[9.5px] border border-slate-200 truncate max-w-full">
                       {r.TIPO || '-'}
                     </span>
                   </td>
-                  <td className="py-2 px-1 text-center font-bold text-blue-700">
-                    {r.FAIXAS}
+
+                  {/* FAIXAS */}
+                  <td className="py-1.5 px-1 text-center font-bold text-blue-700">
+                    {r.FAIXAS ?? '-'}
                   </td>
-                  <td className="py-2 px-1 text-[10px] truncate">
+
+                  {/* INÍCIO DA OPERAÇÃO */}
+                  <td className="py-1.5 px-1 text-slate-600 text-center text-[10px] break-words whitespace-normal leading-tight">
+                    {r['Data início operação'] || '-'}
+                  </td>
+
+                  {/* OS */}
+                  <td className="py-1.5 px-1 text-slate-600 text-center truncate text-[10px]">
+                    {r.OS || '-'}
+                  </td>
+
+                  {/* CONDIÇÃO */}
+                  <td className="py-1.5 px-1 text-slate-600 text-center truncate text-[10px]">
+                    {r.CONDIÇÃO || '-'}
+                  </td>
+
+                  {/* SITUAÇÃO */}
+                  <td className="py-1.5 px-1 text-center text-[9.5px]">
                     <span
-                      className={`inline-block px-1.5 py-0.5 rounded-full font-medium truncate max-w-full ${
+                      className={`inline-block px-1 py-0.5 rounded-full font-medium truncate max-w-full ${
                         r.Situação?.includes('Em operação')
                           ? 'bg-emerald-100 text-emerald-800'
                           : r.Situação?.includes('Desligado')
@@ -253,33 +299,20 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
                       {r.Situação?.replace('\n', ' ') || '-'}
                     </span>
                   </td>
-                  <td className="py-2 px-1.5 font-normal text-slate-800 break-words whitespace-normal leading-snug">
-                    {r['ENDEREÇO COMPLETO'] || '-'}
-                  </td>
-                  <td className="py-2 px-1 text-slate-600 text-center break-words whitespace-normal leading-snug">
-                    {r.BAIRRO || '-'}
-                  </td>
-                  <td className="py-2 px-1 text-slate-600 text-center truncate">
-                    {r['Data início operação'] || '-'}
-                  </td>
-                  <td className="py-2 px-1 text-slate-600 text-center truncate">
-                    {r['Data de aceite'] || '-'}
-                  </td>
-                  <td className="py-2 px-1 text-slate-600 text-center truncate">
-                    {r.CONDIÇÃO || '-'}
-                  </td>
-                  <td className="py-2 px-1 text-center" onClick={(e) => e.stopPropagation()}>
+
+                  {/* AÇÕES */}
+                  <td className="py-1.5 px-1 text-center" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center justify-center gap-0.5">
                       <button
                         onClick={() => onSelectRecord(r)}
-                        className="p-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded transition-colors"
+                        className="p-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded transition-colors cursor-pointer"
                         title="Ver Ficha Completa"
                       >
                         <Eye className="w-3 h-3" />
                       </button>
                       <button
                         onClick={() => exportSingleRecordPDF(r)}
-                        className="p-1 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded transition-colors"
+                        className="p-1 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded transition-colors cursor-pointer"
                         title="Exportar PDF deste registro"
                       >
                         <FileDown className="w-3 h-3" />
@@ -303,7 +336,7 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
           <button
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="p-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white text-slate-700 font-medium"
+            className="p-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white text-slate-700 font-medium cursor-pointer"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -315,7 +348,7 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
           <button
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
-            className="p-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white text-slate-700 font-medium"
+            className="p-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white text-slate-700 font-medium cursor-pointer"
           >
             <ChevronRight className="w-4 h-4" />
           </button>

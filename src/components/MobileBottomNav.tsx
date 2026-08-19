@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActiveTab } from '../types';
-import { Map, BarChart3, Table, Printer } from 'lucide-react';
+import { Map, BarChart3, Table, Printer, FileSignature } from 'lucide-react';
 
 interface MobileBottomNavProps {
   activeTab: ActiveTab;
@@ -23,7 +23,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       {/* Tab 1: Monitoramento Espacial (Mapa) */}
       <button
         onClick={() => setActiveTab('mapa')}
-        className={`flex-1 flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition-all duration-150 min-h-[48px] cursor-pointer ${
+        className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all duration-150 min-h-[48px] cursor-pointer ${
           activeTab === 'mapa'
             ? 'text-blue-700 font-bold bg-blue-100/90 border border-blue-300/80 shadow-2xs'
             : 'text-slate-600 font-medium hover:text-blue-700 hover:bg-slate-100/80'
@@ -41,26 +41,26 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
             {coordRecords}
           </span>
         </div>
-        <span className="text-[11px] mt-1 tracking-tight">Mapa</span>
+        <span className="text-[10px] mt-1 tracking-tight">Mapa</span>
       </button>
 
       {/* Tab 2: Indicadores */}
       <button
         onClick={() => setActiveTab('indicadores')}
-        className={`flex-1 flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition-all duration-150 min-h-[48px] cursor-pointer ${
+        className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all duration-150 min-h-[48px] cursor-pointer ${
           activeTab === 'indicadores'
             ? 'text-blue-700 font-bold bg-blue-100/90 border border-blue-300/80 shadow-2xs'
             : 'text-slate-600 font-medium hover:text-blue-700 hover:bg-slate-100/80'
         }`}
       >
         <BarChart3 className={`w-5 h-5 ${activeTab === 'indicadores' ? 'text-blue-700' : 'text-blue-600'}`} />
-        <span className="text-[11px] mt-1 tracking-tight">Indicadores</span>
+        <span className="text-[10px] mt-1 tracking-tight">Indicadores</span>
       </button>
 
       {/* Tab 3: Lista de Equipamentos */}
       <button
         onClick={() => setActiveTab('tabela')}
-        className={`flex-1 flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition-all duration-150 min-h-[48px] cursor-pointer ${
+        className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all duration-150 min-h-[48px] cursor-pointer ${
           activeTab === 'tabela'
             ? 'text-blue-700 font-bold bg-blue-100/90 border border-blue-300/80 shadow-2xs'
             : 'text-slate-600 font-medium hover:text-blue-700 hover:bg-slate-100/80'
@@ -78,20 +78,33 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
             {totalRecords}
           </span>
         </div>
-        <span className="text-[11px] mt-1 tracking-tight">Lista</span>
+        <span className="text-[10px] mt-1 tracking-tight">Lista</span>
       </button>
 
-      {/* Tab 4: Relatórios */}
+      {/* Tab 4: Gestão Contratual */}
+      <button
+        onClick={() => setActiveTab('gestao_contratual')}
+        className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all duration-150 min-h-[48px] cursor-pointer ${
+          activeTab === 'gestao_contratual'
+            ? 'text-blue-700 font-bold bg-blue-100/90 border border-blue-300/80 shadow-2xs'
+            : 'text-slate-600 font-medium hover:text-blue-700 hover:bg-slate-100/80'
+        }`}
+      >
+        <FileSignature className={`w-5 h-5 ${activeTab === 'gestao_contratual' ? 'text-blue-700' : 'text-blue-600'}`} />
+        <span className="text-[10px] mt-1 tracking-tight">Contratos</span>
+      </button>
+
+      {/* Tab 5: Relatórios */}
       <button
         onClick={() => setActiveTab('relatorios')}
-        className={`flex-1 flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition-all duration-150 min-h-[48px] cursor-pointer ${
+        className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all duration-150 min-h-[48px] cursor-pointer ${
           activeTab === 'relatorios'
             ? 'text-blue-700 font-bold bg-blue-100/90 border border-blue-300/80 shadow-2xs'
             : 'text-slate-600 font-medium hover:text-blue-700 hover:bg-slate-100/80'
         }`}
       >
         <Printer className={`w-5 h-5 ${activeTab === 'relatorios' ? 'text-blue-700' : 'text-blue-600'}`} />
-        <span className="text-[11px] mt-1 tracking-tight">Relatórios</span>
+        <span className="text-[10px] mt-1 tracking-tight">Relatórios</span>
       </button>
     </nav>
   );

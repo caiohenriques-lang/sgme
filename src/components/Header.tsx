@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActiveTab } from '../types';
-import { Map, BarChart3, Table, RefreshCw, Clock, Printer } from 'lucide-react';
+import { Map, BarChart3, Table, Printer, FileSignature } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
 import { SpeedRadarIcon } from './SpeedRadarIcon';
 
@@ -9,9 +9,9 @@ interface HeaderProps {
   setActiveTab: (tab: ActiveTab) => void;
   totalRecords: number;
   coordRecords: number;
-  loading: boolean;
-  onRefresh: () => void;
-  onOpenVercelGuide: () => void;
+  loading?: boolean;
+  onRefresh?: () => void;
+  onOpenVercelGuide?: () => void;
   lastUpdated?: Date;
 }
 
@@ -20,10 +20,6 @@ export const Header: React.FC<HeaderProps> = ({
   setActiveTab,
   totalRecords,
   coordRecords,
-  loading,
-  onRefresh,
-  onOpenVercelGuide,
-  lastUpdated,
 }) => {
   return (
     <header className="bg-white text-slate-900 shadow-xs border-b border-slate-200 relative md:sticky md:top-0 z-30">
@@ -73,22 +69,22 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Navigation Tabs & Status Bar */}
-        <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between gap-3">
+        {/* Navigation Tabs Bar - Desktop Only */}
+        <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-start overflow-x-auto no-scrollbar">
           
-          {/* Segmented Tab Bar Container - Desktop Only (hidden md:flex) */}
-          <nav className="hidden md:flex flex-wrap items-center gap-1.5 p-1.5 rounded-2xl bg-slate-100/90 border border-slate-200/90 text-xs sm:text-sm font-medium shadow-2xs">
+          {/* Segmented Tab Bar Container - Fixed single line, no line breaks */}
+          <nav className="hidden md:inline-flex flex-nowrap items-center gap-1.5 p-1.5 rounded-2xl bg-slate-100/90 border border-slate-200/90 text-xs sm:text-sm font-medium shadow-2xs whitespace-nowrap">
             <button
               onClick={() => setActiveTab('mapa')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all duration-150 cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all duration-150 cursor-pointer whitespace-nowrap shrink-0 ${
                 activeTab === 'mapa'
                   ? 'bg-blue-600 border-blue-600 text-white font-bold shadow-sm ring-2 ring-blue-500/30'
                   : 'bg-white/80 border-slate-200/80 text-slate-700 font-semibold hover:bg-blue-50/90 hover:border-blue-300 hover:text-blue-900 shadow-2xs'
               }`}
             >
-              <Map className={`w-4 h-4 ${activeTab === 'mapa' ? 'text-white' : 'text-blue-600'}`} />
-              <span>Monitoramento Espacial</span>
-              <span className={`text-[10px] px-2 py-0.5 rounded-md font-mono font-bold ${
+              <Map className={`w-4 h-4 shrink-0 ${activeTab === 'mapa' ? 'text-white' : 'text-blue-600'}`} />
+              <span className="whitespace-nowrap">Monitoramento Espacial</span>
+              <span className={`text-[10px] px-2 py-0.5 rounded-md font-mono font-bold shrink-0 ${
                 activeTab === 'mapa' ? 'bg-blue-800 text-white' : 'bg-slate-200/80 text-slate-700 border border-slate-300/60'
               }`}>
                 {coordRecords}
@@ -97,27 +93,27 @@ export const Header: React.FC<HeaderProps> = ({
 
             <button
               onClick={() => setActiveTab('indicadores')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all duration-150 cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all duration-150 cursor-pointer whitespace-nowrap shrink-0 ${
                 activeTab === 'indicadores'
                   ? 'bg-blue-600 border-blue-600 text-white font-bold shadow-sm ring-2 ring-blue-500/30'
                   : 'bg-white/80 border-slate-200/80 text-slate-700 font-semibold hover:bg-blue-50/90 hover:border-blue-300 hover:text-blue-900 shadow-2xs'
               }`}
             >
-              <BarChart3 className={`w-4 h-4 ${activeTab === 'indicadores' ? 'text-white' : 'text-blue-600'}`} />
-              <span>Indicadores</span>
+              <BarChart3 className={`w-4 h-4 shrink-0 ${activeTab === 'indicadores' ? 'text-white' : 'text-blue-600'}`} />
+              <span className="whitespace-nowrap">Indicadores</span>
             </button>
 
             <button
               onClick={() => setActiveTab('tabela')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all duration-150 cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all duration-150 cursor-pointer whitespace-nowrap shrink-0 ${
                 activeTab === 'tabela'
                   ? 'bg-blue-600 border-blue-600 text-white font-bold shadow-sm ring-2 ring-blue-500/30'
                   : 'bg-white/80 border-slate-200/80 text-slate-700 font-semibold hover:bg-blue-50/90 hover:border-blue-300 hover:text-blue-900 shadow-2xs'
               }`}
             >
-              <Table className={`w-4 h-4 ${activeTab === 'tabela' ? 'text-white' : 'text-blue-600'}`} />
-              <span>Lista de Equipamentos</span>
-              <span className={`text-[10px] px-2 py-0.5 rounded-md font-mono font-bold ${
+              <Table className={`w-4 h-4 shrink-0 ${activeTab === 'tabela' ? 'text-white' : 'text-blue-600'}`} />
+              <span className="whitespace-nowrap">Lista de Equipamentos</span>
+              <span className={`text-[10px] px-2 py-0.5 rounded-md font-mono font-bold shrink-0 ${
                 activeTab === 'tabela' ? 'bg-blue-800 text-white' : 'bg-slate-200/80 text-slate-700 border border-slate-300/60'
               }`}>
                 {totalRecords}
@@ -125,38 +121,29 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
             <button
+              onClick={() => setActiveTab('gestao_contratual')}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all duration-150 cursor-pointer whitespace-nowrap shrink-0 ${
+                activeTab === 'gestao_contratual'
+                  ? 'bg-blue-600 border-blue-600 text-white font-bold shadow-sm ring-2 ring-blue-500/30'
+                  : 'bg-white/80 border-slate-200/80 text-slate-700 font-semibold hover:bg-blue-50/90 hover:border-blue-300 hover:text-blue-900 shadow-2xs'
+              }`}
+            >
+              <FileSignature className={`w-4 h-4 shrink-0 ${activeTab === 'gestao_contratual' ? 'text-white' : 'text-blue-600'}`} />
+              <span className="whitespace-nowrap">Gestão Contratual</span>
+            </button>
+
+            <button
               onClick={() => setActiveTab('relatorios')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all duration-150 cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all duration-150 cursor-pointer whitespace-nowrap shrink-0 ${
                 activeTab === 'relatorios'
                   ? 'bg-blue-600 border-blue-600 text-white font-bold shadow-sm ring-2 ring-blue-500/30'
                   : 'bg-white/80 border-slate-200/80 text-slate-700 font-semibold hover:bg-blue-50/90 hover:border-blue-300 hover:text-blue-900 shadow-2xs'
               }`}
             >
-              <Printer className={`w-4 h-4 ${activeTab === 'relatorios' ? 'text-white' : 'text-blue-600'}`} />
-              <span>Relatórios</span>
+              <Printer className={`w-4 h-4 shrink-0 ${activeTab === 'relatorios' ? 'text-white' : 'text-blue-600'}`} />
+              <span className="whitespace-nowrap">Relatórios</span>
             </button>
           </nav>
-
-          {/* Sync status & Refresh Button side-by-side */}
-          <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-3 text-xs text-slate-500 flex-wrap">
-            {lastUpdated && (
-              <div className="flex items-center gap-1.5 text-slate-500 font-medium">
-                <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span>Última sincronização: {lastUpdated.toLocaleTimeString('pt-BR')}</span>
-              </div>
-            )}
-
-            {/* Refresh Button - Moved to the right of sync info, smaller & neutral tone */}
-            <button
-              onClick={onRefresh}
-              disabled={loading}
-              className="inline-flex items-center gap-1 text-[11px] bg-slate-100 hover:bg-slate-200 disabled:opacity-50 text-slate-600 hover:text-slate-800 font-medium px-2.5 py-1 rounded-lg border border-slate-200/80 transition-colors cursor-pointer shadow-2xs ml-auto md:ml-0"
-              title="Atualizar dados da planilha do Google"
-            >
-              <RefreshCw className={`w-3 h-3 text-slate-500 ${loading ? 'animate-spin' : ''}`} />
-              <span>{loading ? 'Carregando...' : 'Atualizar Dados'}</span>
-            </button>
-          </div>
         </div>
 
       </div>

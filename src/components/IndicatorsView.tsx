@@ -53,10 +53,10 @@ interface IndicatorsViewProps {
   onClearAllFilters?: () => void;
 }
 
-type SummarySortField = 'label' | 'count' | 'faixas' | 'addresses' | 'pctEquip' | 'pctFaixas';
+type SummarySortField = 'label' | 'count' | 'faixas' | 'addresses' | 'pctEquip' | 'pctFaixas' | 'pctLocais';
 type CorredorSortField = 'name' | 'count' | 'faixas' | 'tiposFormatted';
-type AnoSortField = 'ano' | 'count' | 'faixas' | 'pctFaixas';
-type MesSortField = 'mes' | 'count' | 'faixas' | 'pctFaixas';
+type AnoSortField = 'ano' | 'count' | 'faixas' | 'addresses' | 'pctFaixas' | 'pctEquip' | 'pctLocais';
+type MesSortField = 'mes' | 'count' | 'faixas' | 'addresses' | 'pctFaixas' | 'pctEquip' | 'pctLocais';
 
 const COLORS = [
   '#2563eb', // blue-600
@@ -106,6 +106,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
   const [mesSortOrder, setMesSortOrder] = useState<'asc' | 'desc'>('asc');
 
   const [isExportingPDF, setIsExportingPDF] = useState(false);
+  const [includeEquipmentListInPDF, setIncludeEquipmentListInPDF] = useState(false);
 
   // Reset chart filters when global reset signal changes
   useEffect(() => {
@@ -410,6 +411,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
           valB = b.faixas;
           break;
         case 'addresses':
+        case 'pctLocais':
           valA = a.addresses.size;
           valB = b.addresses.size;
           break;
@@ -465,6 +467,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
           valB = b.faixas;
           break;
         case 'addresses':
+        case 'pctLocais':
           valA = a.addresses.size;
           valB = b.addresses.size;
           break;
@@ -482,22 +485,29 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
   const anoTotals = useMemo(() => {
     const totalEquip = filteredByChartRecords.length;
     const totalFaixas = filteredByChartRecords.reduce((acc, r) => acc + (r.FAIXAS || 0), 0);
-    return { totalEquip, totalFaixas };
+    const uniqueAddressSet = new Set<string>();
+    filteredByChartRecords.forEach((r) => {
+      const addr = (r['ENDEREÇO COMPLETO'] || '').trim().toLowerCase();
+      if (addr) uniqueAddressSet.add(addr);
+    });
+    return { totalEquip, totalFaixas, totalAddresses: uniqueAddressSet.size };
   }, [filteredByChartRecords]);
 
-  // 3. Group by ANO (Faixas Implantadas por Ano - Todos os Equipamentos do Filtro Ativo)
+  // 3. Group by ANO (Implantações por Ano - Todos os Equipamentos do Filtro Ativo)
   const anoSummary = useMemo(() => {
-    const map = new Map<string, { ano: string; faixas: number; count: number }>();
+    const map = new Map<string, { ano: string; faixas: number; count: number; addresses: Set<string> }>();
 
     filteredByChartRecords.forEach((r) => {
       const rawAno = (r.ANO || '').toString().trim();
       const key = rawAno || 'Não Informado';
       if (!map.has(key)) {
-        map.set(key, { ano: key, faixas: 0, count: 0 });
+        map.set(key, { ano: key, faixas: 0, count: 0, addresses: new Set() });
       }
       const item = map.get(key)!;
       item.faixas += r.FAIXAS || 0;
       item.count += 1;
+      const addr = (r['ENDEREÇO COMPLETO'] || '').trim().toLowerCase();
+      if (addr) item.addresses.add(addr);
     });
 
     const list = Array.from(map.values());
@@ -512,6 +522,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
           valB = b.ano;
           break;
         case 'count':
+        case 'pctEquip':
           valA = a.count;
           valB = b.count;
           break;
@@ -519,6 +530,11 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
         case 'pctFaixas':
           valA = a.faixas;
           valB = b.faixas;
+          break;
+        case 'addresses':
+        case 'pctLocais':
+          valA = a.addresses.size;
+          valB = b.addresses.size;
           break;
       }
 
@@ -532,11 +548,11 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
     });
   }, [filteredByChartRecords, anoSortField, anoSortOrder]);
 
-  // Group by MÊS/ANO (Faixas Implantadas por Mês - Todos os Equipamentos do Filtro Ativo)
+  // Group by MÊS/ANO (Implantações por Mês - Todos os Equipamentos do Filtro Ativo)
   const mesSummary = useMemo(() => {
     const map = new Map<
       string,
-      { mes: string; sortKey: number; faixas: number; count: number }
+      { mes: string; sortKey: number; faixas: number; count: number; addresses: Set<string> }
     >();
 
     filteredByChartRecords.forEach((r) => {
@@ -576,11 +592,13 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
       }
 
       if (!map.has(key)) {
-        map.set(key, { mes: key, sortKey, faixas: 0, count: 0 });
+        map.set(key, { mes: key, sortKey, faixas: 0, count: 0, addresses: new Set() });
       }
       const item = map.get(key)!;
       item.faixas += r.FAIXAS || 0;
       item.count += 1;
+      const addr = (r['ENDEREÇO COMPLETO'] || '').trim().toLowerCase();
+      if (addr) item.addresses.add(addr);
     });
 
     const list = Array.from(map.values());
@@ -595,6 +613,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
           valB = b.sortKey;
           break;
         case 'count':
+        case 'pctEquip':
           valA = a.count;
           valB = b.count;
           break;
@@ -602,6 +621,11 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
         case 'pctFaixas':
           valA = a.faixas;
           valB = b.faixas;
+          break;
+        case 'addresses':
+        case 'pctLocais':
+          valA = a.addresses.size;
+          valB = b.addresses.size;
           break;
       }
 
@@ -740,6 +764,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
         addresses: c.addresses.size,
         pctEquip: tableTotals.equipments > 0 ? (c.count / tableTotals.equipments) * 100 : 0,
         pctFaixas: tableTotals.faixas > 0 ? (c.faixas / tableTotals.faixas) * 100 : 0,
+        pctLocais: tableTotals.addresses > 0 ? (c.addresses.size / tableTotals.addresses) * 100 : 0,
       }));
 
       const tipoSummaryData = tipoTableSummary.map((t) => ({
@@ -749,6 +774,27 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
         addresses: t.addresses.size,
         pctEquip: tableTotals.equipments > 0 ? (t.count / tableTotals.equipments) * 100 : 0,
         pctFaixas: tableTotals.faixas > 0 ? (t.faixas / tableTotals.faixas) * 100 : 0,
+        pctLocais: tableTotals.addresses > 0 ? (t.addresses.size / tableTotals.addresses) * 100 : 0,
+      }));
+
+      const anoSummaryData = anoSummary.map((a) => ({
+        ano: a.ano,
+        count: a.count,
+        faixas: a.faixas,
+        addresses: a.addresses.size,
+        pctFaixas: anoTotals.totalFaixas > 0 ? (a.faixas / anoTotals.totalFaixas) * 100 : 0,
+        pctEquip: anoTotals.totalEquip > 0 ? (a.count / anoTotals.totalEquip) * 100 : 0,
+        pctLocais: anoTotals.totalAddresses > 0 ? (a.addresses.size / anoTotals.totalAddresses) * 100 : 0,
+      }));
+
+      const mesSummaryData = mesSummary.map((m) => ({
+        mes: m.mes,
+        count: m.count,
+        faixas: m.faixas,
+        addresses: m.addresses.size,
+        pctFaixas: anoTotals.totalFaixas > 0 ? (m.faixas / anoTotals.totalFaixas) * 100 : 0,
+        pctEquip: anoTotals.totalEquip > 0 ? (m.count / anoTotals.totalEquip) * 100 : 0,
+        pctLocais: anoTotals.totalAddresses > 0 ? (m.addresses.size / anoTotals.totalAddresses) * 100 : 0,
       }));
 
       await exportCompleteIndicatorsPDF({
@@ -756,8 +802,8 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
         metrics,
         contratoSummary: contratoSummaryData,
         tipoSummary: tipoSummaryData,
-        anoSummary,
-        mesSummary,
+        anoSummary: anoSummaryData,
+        mesSummary: mesSummaryData,
         corredorSummary,
         filterDescription: hasActiveChartFilter
           ? [
@@ -766,6 +812,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
               selectedChartCorredor ? `Corredor ${selectedChartCorredor}` : '',
             ].filter(Boolean).join(' | ')
           : undefined,
+        includeEquipmentList: includeEquipmentListInPDF,
       });
     } catch (err) {
       console.error('Erro ao exportar relatório completo de indicadores:', err);
@@ -804,8 +851,9 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-col items-start sm:items-end gap-1.5 shrink-0">
           <button
+            id="btn-export-indicators-pdf"
             onClick={handleExportIndicatorsPDF}
             disabled={isExportingPDF}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 disabled:opacity-75 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
@@ -823,6 +871,20 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
               </>
             )}
           </button>
+
+          <label
+            id="label-include-equipment-list-pdf"
+            className="flex items-center gap-1.5 text-[11px] text-slate-300 hover:text-white cursor-pointer select-none transition-colors"
+          >
+            <input
+              id="checkbox-include-equipment-list-pdf"
+              type="checkbox"
+              checked={includeEquipmentListInPDF}
+              onChange={(e) => setIncludeEquipmentListInPDF(e.target.checked)}
+              className="w-3.5 h-3.5 rounded text-blue-600 bg-slate-800 border-slate-700 focus:ring-blue-500 focus:ring-offset-slate-900 cursor-pointer"
+            />
+            <span>Incluir Lista de Equipamentos na exportação PDF (o arquivo poderá ficar com muitas páginas)</span>
+          </label>
         </div>
       </div>
       
@@ -1292,12 +1354,22 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                     <ArrowUpDown className="w-3 h-3 text-slate-400" />
                   </div>
                 </th>
+                <th
+                  scope="col"
+                  onClick={() => handleContratoTableSort('pctLocais')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>% Locais</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200/70 text-slate-800">
               {contratoTableSummary.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-slate-400 italic">
+                  <td colSpan={7} className="px-4 py-8 text-center text-slate-400 italic">
                     Nenhum registro encontrado para os filtros selecionados.
                   </td>
                 </tr>
@@ -1305,6 +1377,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                 contratoTableSummary.map((item, idx) => {
                   const pctEquip = tableTotals.equipments > 0 ? (item.count / tableTotals.equipments) * 100 : 0;
                   const pctFaixas = tableTotals.faixas > 0 ? (item.faixas / tableTotals.faixas) * 100 : 0;
+                  const pctLocais = tableTotals.addresses > 0 ? (item.addresses.size / tableTotals.addresses) * 100 : 0;
 
                   return (
                     <tr key={item.contrato} className={idx % 2 === 0 ? 'bg-white hover:bg-slate-50/80' : 'bg-slate-50/40 hover:bg-slate-50/90'}>
@@ -1326,6 +1399,9 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                       <td className="px-4 py-3 text-center font-mono text-slate-600">
                         {pctFaixas.toFixed(1)}%
                       </td>
+                      <td className="px-4 py-3 text-center font-mono text-slate-600">
+                        {pctLocais.toFixed(1)}%
+                      </td>
                     </tr>
                   );
                 })
@@ -1338,6 +1414,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                   <td className="px-4 py-3 text-center font-mono">{tableTotals.equipments.toLocaleString('pt-BR')}</td>
                   <td className="px-4 py-3 text-center font-mono text-blue-800">{tableTotals.faixas.toLocaleString('pt-BR')}</td>
                   <td className="px-4 py-3 text-center font-mono">{tableTotals.addresses.toLocaleString('pt-BR')}</td>
+                  <td className="px-4 py-3 text-center font-mono">100.0%</td>
                   <td className="px-4 py-3 text-center font-mono">100.0%</td>
                   <td className="px-4 py-3 text-center font-mono">100.0%</td>
                 </tr>
@@ -1429,12 +1506,22 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                     <ArrowUpDown className="w-3 h-3 text-slate-400" />
                   </div>
                 </th>
+                <th
+                  scope="col"
+                  onClick={() => handleTipoTableSort('pctLocais')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>% Locais</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200/70 text-slate-800">
               {tipoTableSummary.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-slate-400 italic">
+                  <td colSpan={7} className="px-4 py-8 text-center text-slate-400 italic">
                     Nenhum registro encontrado para os filtros selecionados.
                   </td>
                 </tr>
@@ -1442,6 +1529,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                 tipoTableSummary.map((item, idx) => {
                   const pctEquip = tableTotals.equipments > 0 ? (item.count / tableTotals.equipments) * 100 : 0;
                   const pctFaixas = tableTotals.faixas > 0 ? (item.faixas / tableTotals.faixas) * 100 : 0;
+                  const pctLocais = tableTotals.addresses > 0 ? (item.addresses.size / tableTotals.addresses) * 100 : 0;
 
                   return (
                     <tr key={item.tipo} className={idx % 2 === 0 ? 'bg-white hover:bg-slate-50/80' : 'bg-slate-50/40 hover:bg-slate-50/90'}>
@@ -1463,6 +1551,9 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                       <td className="px-4 py-3 text-center font-mono text-slate-600">
                         {pctFaixas.toFixed(1)}%
                       </td>
+                      <td className="px-4 py-3 text-center font-mono text-slate-600">
+                        {pctLocais.toFixed(1)}%
+                      </td>
                     </tr>
                   );
                 })
@@ -1477,6 +1568,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                   <td className="px-4 py-3 text-center font-mono">{tableTotals.addresses.toLocaleString('pt-BR')}</td>
                   <td className="px-4 py-3 text-center font-mono">100.0%</td>
                   <td className="px-4 py-3 text-center font-mono">100.0%</td>
+                  <td className="px-4 py-3 text-center font-mono">100.0%</td>
                 </tr>
               </tfoot>
             )}
@@ -1484,7 +1576,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
         </div>
       </div>
 
-      {/* Table 3: Faixas Implantadas por Ano */}
+      {/* Table 3: Implantações por Ano */}
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
         <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -1492,7 +1584,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
               <Calendar className="w-5 h-5" />
             </span>
             <h3 className="text-sm sm:text-base font-bold text-slate-900">
-              Faixas Implantadas por Ano
+              Implantações por Ano
             </h3>
           </div>
           <span className="text-xs text-slate-500 font-medium bg-white px-2.5 py-1 rounded-lg border border-slate-200">
@@ -1536,6 +1628,16 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                 </th>
                 <th
                   scope="col"
+                  onClick={() => handleAnoTableSort('addresses')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>Locais</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
                   onClick={() => handleAnoTableSort('pctFaixas')}
                   className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
                 >
@@ -1544,18 +1646,40 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                     <ArrowUpDown className="w-3 h-3 text-slate-400" />
                   </div>
                 </th>
+                <th
+                  scope="col"
+                  onClick={() => handleAnoTableSort('pctEquip')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>% Equipamentos</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  onClick={() => handleAnoTableSort('pctLocais')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>% Locais</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200/70 text-slate-800">
               {anoSummary.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-slate-400 italic">
+                  <td colSpan={7} className="px-4 py-8 text-center text-slate-400 italic">
                     Nenhum registro encontrado para os filtros selecionados.
                   </td>
                 </tr>
               ) : (
                 anoSummary.map((item, idx) => {
                   const pctFaixas = anoTotals.totalFaixas > 0 ? (item.faixas / anoTotals.totalFaixas) * 100 : 0;
+                  const pctEquip = anoTotals.totalEquip > 0 ? (item.count / anoTotals.totalEquip) * 100 : 0;
+                  const pctLocais = anoTotals.totalAddresses > 0 ? (item.addresses.size / anoTotals.totalAddresses) * 100 : 0;
 
                   return (
                     <tr key={item.ano} className={idx % 2 === 0 ? 'bg-white hover:bg-slate-50/80' : 'bg-slate-50/40 hover:bg-slate-50/90'}>
@@ -1568,8 +1692,17 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                       <td className="px-4 py-3 text-center font-mono font-bold text-purple-700">
                         {item.faixas.toLocaleString('pt-BR')}
                       </td>
+                      <td className="px-4 py-3 text-center font-mono text-slate-700">
+                        {item.addresses.size.toLocaleString('pt-BR')}
+                      </td>
                       <td className="px-4 py-3 text-center font-mono text-slate-600">
                         {pctFaixas.toFixed(1)}%
+                      </td>
+                      <td className="px-4 py-3 text-center font-mono text-slate-600">
+                        {pctEquip.toFixed(1)}%
+                      </td>
+                      <td className="px-4 py-3 text-center font-mono text-slate-600">
+                        {pctLocais.toFixed(1)}%
                       </td>
                     </tr>
                   );
@@ -1582,6 +1715,9 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                   <td className="px-4 py-3 uppercase text-center">Total Geral</td>
                   <td className="px-4 py-3 text-center font-mono">{anoTotals.totalEquip.toLocaleString('pt-BR')}</td>
                   <td className="px-4 py-3 text-center font-mono text-purple-800">{anoTotals.totalFaixas.toLocaleString('pt-BR')}</td>
+                  <td className="px-4 py-3 text-center font-mono">{anoTotals.totalAddresses.toLocaleString('pt-BR')}</td>
+                  <td className="px-4 py-3 text-center font-mono">100.0%</td>
+                  <td className="px-4 py-3 text-center font-mono">100.0%</td>
                   <td className="px-4 py-3 text-center font-mono">100.0%</td>
                 </tr>
               </tfoot>
@@ -1590,7 +1726,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
         </div>
       </div>
 
-      {/* Table: Faixas Implantadas por Mês */}
+      {/* Table 4: Implantações por Mês */}
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
         <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -1598,7 +1734,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
               <CalendarDays className="w-5 h-5" />
             </span>
             <h3 className="text-sm sm:text-base font-bold text-slate-900">
-              Faixas Implantadas por Mês
+              Implantações por Mês
             </h3>
           </div>
           <span className="text-xs text-slate-500 font-medium bg-white px-2.5 py-1 rounded-lg border border-slate-200">
@@ -1642,6 +1778,16 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                 </th>
                 <th
                   scope="col"
+                  onClick={() => handleMesTableSort('addresses')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>Locais</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
                   onClick={() => handleMesTableSort('pctFaixas')}
                   className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
                 >
@@ -1650,18 +1796,40 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                     <ArrowUpDown className="w-3 h-3 text-slate-400" />
                   </div>
                 </th>
+                <th
+                  scope="col"
+                  onClick={() => handleMesTableSort('pctEquip')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>% Equipamentos</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  onClick={() => handleMesTableSort('pctLocais')}
+                  className="px-4 py-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>% Locais</span>
+                    <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200/70 text-slate-800">
               {mesSummary.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-slate-400 italic">
+                  <td colSpan={7} className="px-4 py-8 text-center text-slate-400 italic">
                     Nenhum registro encontrado para os filtros selecionados.
                   </td>
                 </tr>
               ) : (
                 mesSummary.map((item, idx) => {
                   const pctFaixas = anoTotals.totalFaixas > 0 ? (item.faixas / anoTotals.totalFaixas) * 100 : 0;
+                  const pctEquip = anoTotals.totalEquip > 0 ? (item.count / anoTotals.totalEquip) * 100 : 0;
+                  const pctLocais = anoTotals.totalAddresses > 0 ? (item.addresses.size / anoTotals.totalAddresses) * 100 : 0;
 
                   return (
                     <tr key={item.mes} className={idx % 2 === 0 ? 'bg-white hover:bg-slate-50/80' : 'bg-slate-50/40 hover:bg-slate-50/90'}>
@@ -1674,8 +1842,17 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                       <td className="px-4 py-3 text-center font-mono font-bold text-indigo-700">
                         {item.faixas.toLocaleString('pt-BR')}
                       </td>
+                      <td className="px-4 py-3 text-center font-mono text-slate-700">
+                        {item.addresses.size.toLocaleString('pt-BR')}
+                      </td>
                       <td className="px-4 py-3 text-center font-mono text-slate-600">
                         {pctFaixas.toFixed(1)}%
+                      </td>
+                      <td className="px-4 py-3 text-center font-mono text-slate-600">
+                        {pctEquip.toFixed(1)}%
+                      </td>
+                      <td className="px-4 py-3 text-center font-mono text-slate-600">
+                        {pctLocais.toFixed(1)}%
                       </td>
                     </tr>
                   );
@@ -1688,6 +1865,9 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                   <td className="px-4 py-3 uppercase text-center">Total Geral</td>
                   <td className="px-4 py-3 text-center font-mono">{anoTotals.totalEquip.toLocaleString('pt-BR')}</td>
                   <td className="px-4 py-3 text-center font-mono text-indigo-800">{anoTotals.totalFaixas.toLocaleString('pt-BR')}</td>
+                  <td className="px-4 py-3 text-center font-mono">{anoTotals.totalAddresses.toLocaleString('pt-BR')}</td>
+                  <td className="px-4 py-3 text-center font-mono">100.0%</td>
+                  <td className="px-4 py-3 text-center font-mono">100.0%</td>
                   <td className="px-4 py-3 text-center font-mono">100.0%</td>
                 </tr>
               </tfoot>

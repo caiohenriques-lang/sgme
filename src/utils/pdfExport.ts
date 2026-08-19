@@ -14,45 +14,114 @@ async function captureChartCard(elementId: string): Promise<string | null> {
   }
 
   try {
-    const rect = el.getBoundingClientRect();
-    const width = el.offsetWidth || rect.width || 400;
-    const height = el.offsetHeight || rect.height || 320;
+    const origSvg = el.querySelector('svg.recharts-surface') || el.querySelector('svg');
+    const titleEl = el.querySelector('h3');
+    const title = titleEl ? titleEl.textContent?.trim() || '' : '';
 
+    if (origSvg) {
+      const rect = origSvg.getBoundingClientRect();
+      const svgWidth = origSvg.clientWidth || rect.width || 360;
+      const svgHeight = origSvg.clientHeight || rect.height || 260;
+
+      const clonedSvg = origSvg.cloneNode(true) as SVGSVGElement;
+      clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      clonedSvg.setAttribute('width', String(svgWidth));
+      clonedSvg.setAttribute('height', String(svgHeight));
+
+      // Inject standard typography style for texts in standalone SVG
+      const styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+      styleEl.textContent = `
+        text {
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+        }
+      `;
+      clonedSvg.insertBefore(styleEl, clonedSvg.firstChild);
+
+      const svgXml = new XMLSerializer().serializeToString(clonedSvg);
+      const svgBlob = new Blob([svgXml], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+
+      return new Promise<string | null>((resolve) => {
+        const img = new Image();
+
+        img.onload = () => {
+          try {
+            const scale = 2;
+            const cardWidth = Math.max(svgWidth + 32, el.offsetWidth || 400);
+            const cardHeight = Math.max(svgHeight + 60, el.offsetHeight || 320);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = cardWidth * scale;
+            canvas.height = cardHeight * scale;
+
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              URL.revokeObjectURL(url);
+              resolve(null);
+              return;
+            }
+
+            // White Card Background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Card Border
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1 * scale;
+            ctx.strokeRect(0, 0, canvas.width, canvas.height);
+
+            // Header Title
+            if (title) {
+              ctx.fillStyle = '#0f172a';
+              ctx.font = `bold ${13 * scale}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`;
+              ctx.fillText(title, 16 * scale, 24 * scale);
+
+              // Title Divider Line
+              ctx.strokeStyle = '#f1f5f9';
+              ctx.lineWidth = 1 * scale;
+              ctx.beginPath();
+              ctx.moveTo(16 * scale, 34 * scale);
+              ctx.lineTo((cardWidth - 16) * scale, 34 * scale);
+              ctx.stroke();
+            }
+
+            // Draw SVG Chart Centered
+            const drawX = Math.max(8 * scale, ((cardWidth - svgWidth) / 2) * scale);
+            const drawY = title ? 40 * scale : 12 * scale;
+            ctx.drawImage(img, drawX, drawY, svgWidth * scale, svgHeight * scale);
+
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+            URL.revokeObjectURL(url);
+            resolve(dataUrl);
+          } catch (e) {
+            console.error(`Erro ao renderizar canvas para #${elementId}:`, e);
+            URL.revokeObjectURL(url);
+            resolve(null);
+          }
+        };
+
+        img.onerror = (e) => {
+          console.error(`Erro ao carregar imagem SVG para #${elementId}:`, e);
+          URL.revokeObjectURL(url);
+          resolve(null);
+        };
+
+        img.src = url;
+      });
+    }
+
+    // Fallback: sanitized html2canvas if no SVG exists
     const canvas = await html2canvas(el, {
       scale: 2,
       useCORS: true,
       allowTaint: false,
       backgroundColor: '#ffffff',
       logging: false,
-      width: width,
-      height: height,
-      onclone: (clonedDoc, clonedElement) => {
-        clonedElement.style.backgroundColor = '#ffffff';
-        clonedElement.style.width = `${width}px`;
-        clonedElement.style.height = `${height}px`;
-        clonedElement.style.overflow = 'visible';
-
-        const wrappers = clonedElement.querySelectorAll('.recharts-wrapper, .recharts-responsive-container');
-        wrappers.forEach((w) => {
-          const htmlW = w as HTMLElement;
-          htmlW.style.width = `${width - 40}px`;
-          htmlW.style.height = `${height - 70}px`;
-          htmlW.style.position = 'relative';
-        });
-
-        const origSvgs = el.querySelectorAll('svg');
-        const clonedSvgs = clonedElement.querySelectorAll('svg');
-        origSvgs.forEach((origSvg, i) => {
-          const clonedSvg = clonedSvgs[i];
-          if (clonedSvg) {
-            const svgRect = origSvg.getBoundingClientRect();
-            const w = origSvg.clientWidth || svgRect.width || width - 40;
-            const h = origSvg.clientHeight || svgRect.height || height - 70;
-            clonedSvg.setAttribute('width', String(w));
-            clonedSvg.setAttribute('height', String(h));
-            clonedSvg.style.width = `${w}px`;
-            clonedSvg.style.height = `${h}px`;
-            clonedSvg.style.overflow = 'visible';
+      onclone: (clonedDoc) => {
+        const styleTags = clonedDoc.querySelectorAll('style');
+        styleTags.forEach((style) => {
+          if (style.textContent && style.textContent.includes('oklch')) {
+            style.textContent = style.textContent.replace(/oklch\([^)]+\)/g, '#64748b');
           }
         });
       },
@@ -254,10 +323,10 @@ export async function exportSingleRecordPDF(record: EquipmentRecord) {
     {
       title: 'Datas Importantes',
       fields: [
-        ['DATA DE INÍCIO DE OPERAÇÃO', record['Data início operação']],
-        ['DATA DE ACEITE', record['Data de aceite']],
-        ['DATA DA AFERIÇÃO', record['Data da Aferição']],
-        ['DATA DE VENCIMENTO DA AFERIÇÃO', record['Data de Vencimento da Aferição']],
+        ['INÍCIO DE OPERAÇÃO', record['Data início operação']],
+        ['ACEITE', record['Data de aceite']],
+        ['AFERIÇÃO', record['Data da Aferição']],
+        ['VENCIMENTO DA AFERIÇÃO', record['Data de Vencimento da Aferição']],
         ['OBSERVAÇÕES', record.Observações],
       ]
     }
@@ -369,29 +438,31 @@ export async function exportFilteredRecordsPDF(records: EquipmentRecord[], filte
 
   // Table columns
   const tableHead = [
-    'CÓDIGO',
     'CONTRATO',
-    'TIPO',
-    'FAIXAS',
-    'SITUAÇÃO',
+    'CÓDIGO',
     'ENDEREÇO COMPLETO',
     'BAIRRO',
+    'REGIONAL',
+    'TIPO',
+    'FAIXAS',
     'INÍCIO DE OPERAÇÃO',
-    'DATA DE ACEITE',
-    'CONDIÇÃO'
+    'OS',
+    'CONDIÇÃO',
+    'SITUAÇÃO'
   ];
 
   const tableBody = records.map((r) => [
-    r.CÓDIGO?.trim() || '-',
     r.CONTRATO?.trim() || '-',
-    r.TIPO?.trim() || '-',
-    r.FAIXAS ? String(r.FAIXAS) : '-',
-    r.Situação?.trim() || '-',
+    r.CÓDIGO?.trim() || '-',
     r['ENDEREÇO COMPLETO']?.trim() || '-',
     r.BAIRRO?.trim() || '-',
+    r.REGIONAL?.trim() || '-',
+    r.TIPO?.trim() || '-',
+    r.FAIXAS ? String(r.FAIXAS) : '-',
     r['Data início operação']?.trim() || '-',
-    r['Data de aceite']?.trim() || '-',
-    r.CONDIÇÃO?.trim() || '-'
+    r.OS?.trim() || '-',
+    r.CONDIÇÃO?.trim() || '-',
+    r.Situação?.trim() || '-'
   ]);
 
   autoTable(doc, {
@@ -414,6 +485,19 @@ export async function exportFilteredRecordsPDF(records: EquipmentRecord[], filte
     },
     alternateRowStyles: {
       fillColor: [248, 250, 252]
+    },
+    columnStyles: {
+      0: { halign: 'center', cellWidth: 18 }, // Contrato
+      1: { halign: 'center', fontStyle: 'bold', cellWidth: 18 }, // Código
+      2: { halign: 'left' }, // Endereço Completo (auto wrap)
+      3: { halign: 'center', cellWidth: 26 }, // Bairro
+      4: { halign: 'center', cellWidth: 20 }, // Regional
+      5: { halign: 'center', cellWidth: 16 }, // Tipo
+      6: { halign: 'center', fontStyle: 'bold', textColor: [37, 99, 235], cellWidth: 14 }, // Faixas
+      7: { halign: 'center', cellWidth: 22 }, // Início de Operação
+      8: { halign: 'center', cellWidth: 16 }, // OS
+      9: { halign: 'center', cellWidth: 20 }, // Condição
+      10: { halign: 'center', cellWidth: 22 }, // Situação
     },
     didDrawPage: (data) => {
       // Draw top header banner & logo timbre on page 2 and beyond
@@ -527,10 +611,10 @@ export async function exportCustomReportPDF(records: EquipmentRecord[], filtersA
   if (filtersApplied.os && filtersApplied.os.length > 0) activeFilters.push({ label: 'Nº O.S.', value: filtersApplied.os.join(', ') });
   
   if (filtersApplied.inicioOp && (filtersApplied.inicioOp.de || filtersApplied.inicioOp.ate)) {
-    activeFilters.push({ label: 'Início de Oper.', value: `${filtersApplied.inicioOp.de || '---'} até ${filtersApplied.inicioOp.ate || '---'}` });
+    activeFilters.push({ label: 'Início de Operação', value: `${filtersApplied.inicioOp.de || '---'} até ${filtersApplied.inicioOp.ate || '---'}` });
   }
   if (filtersApplied.aceite && (filtersApplied.aceite.de || filtersApplied.aceite.ate)) {
-    activeFilters.push({ label: 'Data de Aceite', value: `${filtersApplied.aceite.de || '---'} até ${filtersApplied.aceite.ate || '---'}` });
+    activeFilters.push({ label: 'Aceite', value: `${filtersApplied.aceite.de || '---'} até ${filtersApplied.aceite.ate || '---'}` });
   }
 
   if (activeFilters.length === 0) {
@@ -837,11 +921,11 @@ export async function exportCustomReportPDF(records: EquipmentRecord[], filtersA
       {
         title: 'Datas Importantes',
         fields: [
-          ['DATA DE INÍCIO DE OPERAÇÃO', formatDate(record['Data início operação'] || record.rawFields['INÍCIO OPERAÇÃO'])],
-          ['DATA DE ACEITE', formatDate(record['Data de aceite'] || record.rawFields['DATA DO ACEITE'])],
-          ['DATA DA AFERIÇÃO', formatDate(record['Data da Aferição'] || record.rawFields['DATA DA AFERIÇÃO'])],
-          ['DATA DE VENCIMENTO DA AFERIÇÃO', formatDate(record['Data de Vencimento da Aferição'] || record.rawFields['DATA DO VENCIMENTO DA AFERIÇÃO'])],
-          ['OBSERVAÇÕES', record.Observações || record.rawFields['OBSERVAÇÃO']],
+          ['INÍCIO DE OPERAÇÃO', formatDate(record['Data início operação'] || record.rawFields?.['INÍCIO OPERAÇÃO'] || record.rawFields?.['Data início operação'])],
+          ['ACEITE', formatDate(record['Data de aceite'] || record.rawFields?.['DATA DO ACEITE'] || record.rawFields?.['Data de aceite'])],
+          ['AFERIÇÃO', formatDate(record['Data da Aferição'] || record.rawFields?.['DATA DA AFERIÇÃO'] || record.rawFields?.['Data da Aferição'])],
+          ['VENCIMENTO DA AFERIÇÃO', formatDate(record['Data de Vencimento da Aferição'] || record.rawFields?.['DATA DO VENCIMENTO DA AFERIÇÃO'] || record.rawFields?.['Data de Vencimento da Aferição'])],
+          ['OBSERVAÇÕES', record.Observações || record.rawFields?.['OBSERVAÇÃO'] || record.rawFields?.['Observações']],
         ]
       }
     ];
@@ -911,12 +995,13 @@ export interface IndicatorsReportData {
     uniqueLocationsImplantacao: number;
     uniqueLocationsRelocacao: number;
   };
-  contratoSummary: { label: string; count: number; faixas: number; addresses: number; pctEquip: number; pctFaixas: number }[];
-  tipoSummary: { label: string; count: number; faixas: number; addresses: number; pctEquip: number; pctFaixas: number }[];
-  anoSummary: { ano: string; count: number; faixas: number }[];
-  mesSummary: { mes: string; count: number; faixas: number }[];
+  contratoSummary: { label: string; count: number; faixas: number; addresses: number; pctEquip: number; pctFaixas: number; pctLocais?: number }[];
+  tipoSummary: { label: string; count: number; faixas: number; addresses: number; pctEquip: number; pctFaixas: number; pctLocais?: number }[];
+  anoSummary: { ano: string; count: number; faixas: number; addresses?: number; pctFaixas?: number; pctEquip?: number; pctLocais?: number }[];
+  mesSummary: { mes: string; count: number; faixas: number; addresses?: number; pctFaixas?: number; pctEquip?: number; pctLocais?: number }[];
   corredorSummary: { rank?: number; name: string; count: number; faixas: number; tiposFormatted?: string }[];
   filterDescription?: string;
+  includeEquipmentList?: boolean;
 }
 
 export async function exportCompleteIndicatorsPDF(data: IndicatorsReportData) {
@@ -928,7 +1013,8 @@ export async function exportCompleteIndicatorsPDF(data: IndicatorsReportData) {
     anoSummary,
     mesSummary,
     corredorSummary,
-    filterDescription
+    filterDescription,
+    includeEquipmentList = false,
   } = data;
 
   const doc = new jsPDF({
@@ -1110,28 +1196,33 @@ export async function exportCompleteIndicatorsPDF(data: IndicatorsReportData) {
   const totalContratoFaixas = contratoSummary.reduce((acc, c) => acc + c.faixas, 0);
   const totalContratoLocais = contratoSummary.reduce((acc, c) => acc + c.addresses, 0);
 
-  const contratoBody = contratoSummary.map((c) => [
-    c.label,
-    c.count.toLocaleString('pt-BR'),
-    `${c.pctEquip.toFixed(1)}%`,
-    c.faixas.toLocaleString('pt-BR'),
-    `${c.pctFaixas.toFixed(1)}%`,
-    c.addresses.toLocaleString('pt-BR'),
-  ]);
+  const contratoBody = contratoSummary.map((c) => {
+    const pctLoc = c.pctLocais !== undefined ? c.pctLocais : (totalContratoLocais > 0 ? (c.addresses / totalContratoLocais) * 100 : 0);
+    return [
+      c.label,
+      c.count.toLocaleString('pt-BR'),
+      c.faixas.toLocaleString('pt-BR'),
+      c.addresses.toLocaleString('pt-BR'),
+      `${c.pctEquip.toFixed(1)}%`,
+      `${c.pctFaixas.toFixed(1)}%`,
+      `${pctLoc.toFixed(1)}%`,
+    ];
+  });
 
   contratoBody.push([
     'TOTAL GERAL',
     totalContratoEquip.toLocaleString('pt-BR'),
-    '100.0%',
     totalContratoFaixas.toLocaleString('pt-BR'),
-    '100.0%',
     totalContratoLocais.toLocaleString('pt-BR'),
+    '100.0%',
+    '100.0%',
+    '100.0%',
   ]);
 
   autoTable(doc, {
     startY: currentY,
     margin: { left: 10, right: 10, top: 30, bottom: 18 },
-    head: [['Contrato', 'Equipamentos', '% Equip.', 'Faixas', '% Faixas', 'Locais']],
+    head: [['Contrato', 'Equipamentos', 'Faixas', 'Locais', '% Equip.', '% Faixas', '% Locais']],
     body: contratoBody,
     theme: 'grid',
     headStyles: {
@@ -1150,7 +1241,7 @@ export async function exportCompleteIndicatorsPDF(data: IndicatorsReportData) {
     },
     columnStyles: {
       0: { halign: 'left', fontStyle: 'bold' },
-      3: { textColor: [37, 99, 235], fontStyle: 'bold' },
+      2: { textColor: [37, 99, 235], fontStyle: 'bold' },
     },
     didParseCell: (hookData) => {
       if (hookData.section === 'body' && hookData.row.index === contratoBody.length - 1) {
@@ -1176,28 +1267,33 @@ export async function exportCompleteIndicatorsPDF(data: IndicatorsReportData) {
   const totalTipoFaixas = tipoSummary.reduce((acc, t) => acc + t.faixas, 0);
   const totalTipoLocais = tipoSummary.reduce((acc, t) => acc + t.addresses, 0);
 
-  const tipoBody = tipoSummary.map((t) => [
-    t.label,
-    t.count.toLocaleString('pt-BR'),
-    `${t.pctEquip.toFixed(1)}%`,
-    t.faixas.toLocaleString('pt-BR'),
-    `${t.pctFaixas.toFixed(1)}%`,
-    t.addresses.toLocaleString('pt-BR'),
-  ]);
+  const tipoBody = tipoSummary.map((t) => {
+    const pctLoc = t.pctLocais !== undefined ? t.pctLocais : (totalTipoLocais > 0 ? (t.addresses / totalTipoLocais) * 100 : 0);
+    return [
+      t.label,
+      t.count.toLocaleString('pt-BR'),
+      t.faixas.toLocaleString('pt-BR'),
+      t.addresses.toLocaleString('pt-BR'),
+      `${t.pctEquip.toFixed(1)}%`,
+      `${t.pctFaixas.toFixed(1)}%`,
+      `${pctLoc.toFixed(1)}%`,
+    ];
+  });
 
   tipoBody.push([
     'TOTAL GERAL',
     totalTipoEquip.toLocaleString('pt-BR'),
-    '100.0%',
     totalTipoFaixas.toLocaleString('pt-BR'),
-    '100.0%',
     totalTipoLocais.toLocaleString('pt-BR'),
+    '100.0%',
+    '100.0%',
+    '100.0%',
   ]);
 
   autoTable(doc, {
     startY: currentY,
     margin: { left: 10, right: 10, top: 30, bottom: 18 },
-    head: [['Tipo de Equipamento', 'Equipamentos', '% Equip.', 'Faixas', '% Faixas', 'Locais']],
+    head: [['Tipo de Equipamento', 'Equipamentos', 'Faixas', 'Locais', '% Equip.', '% Faixas', '% Locais']],
     body: tipoBody,
     theme: 'grid',
     headStyles: {
@@ -1216,7 +1312,7 @@ export async function exportCompleteIndicatorsPDF(data: IndicatorsReportData) {
     },
     columnStyles: {
       0: { halign: 'left', fontStyle: 'bold' },
-      3: { textColor: [5, 150, 105], fontStyle: 'bold' },
+      2: { textColor: [5, 150, 105], fontStyle: 'bold' },
     },
     didParseCell: (hookData) => {
       if (hookData.section === 'body' && hookData.row.index === tipoBody.length - 1) {
@@ -1229,25 +1325,31 @@ export async function exportCompleteIndicatorsPDF(data: IndicatorsReportData) {
 
   currentY = (doc as any).lastAutoTable.finalY + 6;
 
-  // 4. Tabela 3: Faixas Implantadas por Ano
+  // 4. Tabela 3: Implantações por Ano
   if (currentY > pageHeight - 65) {
     doc.addPage();
     renderHeader('Fiscalização Eletrônica — Relatório Completo de Indicadores');
     currentY = 32;
   }
 
-  currentY = sectionHeader('3. Faixas Implantadas por Ano', currentY);
+  currentY = sectionHeader('3. Implantações por Ano', currentY);
 
   const totalAnoEquip = anoSummary.reduce((acc, a) => acc + a.count, 0);
   const totalAnoFaixas = anoSummary.reduce((acc, a) => acc + a.faixas, 0);
+  const totalAnoLocais = anoSummary.reduce((acc, a) => acc + (a.addresses || 0), 0);
 
   const anoBody = anoSummary.map((a) => {
-    const pct = totalAnoFaixas > 0 ? (a.faixas / totalAnoFaixas) * 100 : 0;
+    const pctFaixas = a.pctFaixas !== undefined ? a.pctFaixas : (totalAnoFaixas > 0 ? (a.faixas / totalAnoFaixas) * 100 : 0);
+    const pctEquip = a.pctEquip !== undefined ? a.pctEquip : (totalAnoEquip > 0 ? (a.count / totalAnoEquip) * 100 : 0);
+    const pctLocais = a.pctLocais !== undefined ? a.pctLocais : (totalAnoLocais > 0 ? ((a.addresses || 0) / totalAnoLocais) * 100 : 0);
     return [
       a.ano,
       a.count.toLocaleString('pt-BR'),
       a.faixas.toLocaleString('pt-BR'),
-      `${pct.toFixed(1)}%`,
+      (a.addresses || 0).toLocaleString('pt-BR'),
+      `${pctFaixas.toFixed(1)}%`,
+      `${pctEquip.toFixed(1)}%`,
+      `${pctLocais.toFixed(1)}%`,
     ];
   });
 
@@ -1255,13 +1357,16 @@ export async function exportCompleteIndicatorsPDF(data: IndicatorsReportData) {
     'TOTAL GERAL',
     totalAnoEquip.toLocaleString('pt-BR'),
     totalAnoFaixas.toLocaleString('pt-BR'),
+    totalAnoLocais.toLocaleString('pt-BR'),
+    '100.0%',
+    '100.0%',
     '100.0%',
   ]);
 
   autoTable(doc, {
     startY: currentY,
     margin: { left: 10, right: 10, top: 30, bottom: 18 },
-    head: [['Ano', 'Equipamentos', 'Faixas', '% Faixas']],
+    head: [['Ano', 'Equipamentos', 'Faixas', 'Locais', '% Faixas', '% Equipamentos', '% Locais']],
     body: anoBody,
     theme: 'grid',
     headStyles: {
@@ -1293,25 +1398,31 @@ export async function exportCompleteIndicatorsPDF(data: IndicatorsReportData) {
 
   currentY = (doc as any).lastAutoTable.finalY + 6;
 
-  // 5. Tabela 4: Faixas Implantadas por Mês (Todos os Meses)
+  // 5. Tabela 4: Implantações por Mês (Histórico Completo)
   if (currentY > pageHeight - 65) {
     doc.addPage();
     renderHeader('Fiscalização Eletrônica — Relatório Completo de Indicadores');
     currentY = 32;
   }
 
-  currentY = sectionHeader('4. Faixas Implantadas por Mês (Histórico Completo)', currentY);
+  currentY = sectionHeader('4. Implantações por Mês (Histórico Completo)', currentY);
 
   const totalMesEquip = mesSummary.reduce((acc, m) => acc + m.count, 0);
   const totalMesFaixas = mesSummary.reduce((acc, m) => acc + m.faixas, 0);
+  const totalMesLocais = mesSummary.reduce((acc, m) => acc + (m.addresses || 0), 0);
 
   const mesBody = mesSummary.map((m) => {
-    const pct = totalMesFaixas > 0 ? (m.faixas / totalMesFaixas) * 100 : 0;
+    const pctFaixas = m.pctFaixas !== undefined ? m.pctFaixas : (totalMesFaixas > 0 ? (m.faixas / totalMesFaixas) * 100 : 0);
+    const pctEquip = m.pctEquip !== undefined ? m.pctEquip : (totalMesEquip > 0 ? (m.count / totalMesEquip) * 100 : 0);
+    const pctLocais = m.pctLocais !== undefined ? m.pctLocais : (totalMesLocais > 0 ? ((m.addresses || 0) / totalMesLocais) * 100 : 0);
     return [
       m.mes,
       m.count.toLocaleString('pt-BR'),
       m.faixas.toLocaleString('pt-BR'),
-      `${pct.toFixed(1)}%`,
+      (m.addresses || 0).toLocaleString('pt-BR'),
+      `${pctFaixas.toFixed(1)}%`,
+      `${pctEquip.toFixed(1)}%`,
+      `${pctLocais.toFixed(1)}%`,
     ];
   });
 
@@ -1319,13 +1430,16 @@ export async function exportCompleteIndicatorsPDF(data: IndicatorsReportData) {
     'TOTAL GERAL',
     totalMesEquip.toLocaleString('pt-BR'),
     totalMesFaixas.toLocaleString('pt-BR'),
+    totalMesLocais.toLocaleString('pt-BR'),
+    '100.0%',
+    '100.0%',
     '100.0%',
   ]);
 
   autoTable(doc, {
     startY: currentY,
     margin: { left: 10, right: 10, top: 30, bottom: 18 },
-    head: [['Mês/Ano', 'Equipamentos', 'Faixas', '% Faixas']],
+    head: [['Mês/Ano', 'Equipamentos', 'Faixas', 'Locais', '% Faixas', '% Equipamentos', '% Locais']],
     body: mesBody,
     theme: 'grid',
     headStyles: {
@@ -1404,61 +1518,67 @@ export async function exportCompleteIndicatorsPDF(data: IndicatorsReportData) {
 
   currentY = (doc as any).lastAutoTable.finalY + 6;
 
-  // 7. Tabela 6: Relação Sintética de Equipamentos do Filtro Ativo
-  if (currentY > pageHeight - 65) {
-    doc.addPage();
-    renderHeader('Fiscalização Eletrônica — Relatório Completo de Indicadores');
-    currentY = 32;
+  // 7. Tabela 6: Relação Sintética de Equipamentos do Filtro Ativo (Opcional)
+  if (includeEquipmentList) {
+    if (currentY > pageHeight - 65) {
+      doc.addPage();
+      renderHeader('Fiscalização Eletrônica — Relatório Completo de Indicadores');
+      currentY = 32;
+    }
+
+    currentY = sectionHeader('6. Lista Detalhada dos Equipamentos do Filtro Ativo', currentY);
+
+    const equipBody = records.map((r) => [
+      r.CONTRATO?.trim() || '-',
+      r.CÓDIGO?.trim() || '-',
+      r['ENDEREÇO COMPLETO']?.trim() || '-',
+      r.BAIRRO?.trim() || '-',
+      r.REGIONAL?.trim() || '-',
+      r.TIPO?.trim() || '-',
+      r.FAIXAS ? String(r.FAIXAS) : '-',
+      r['Data início operação']?.trim() || '-',
+      r.OS?.trim() || '-',
+      r.CONDIÇÃO?.trim() || '-',
+      r.Situação?.trim() || '-',
+    ]);
+
+    autoTable(doc, {
+      startY: currentY,
+      margin: { left: 10, right: 10, top: 30, bottom: 18 },
+      head: [['Contrato', 'Código', 'Endereço Completo', 'Bairro', 'Regional', 'Tipo', 'Faixas', 'Início Op.', 'OS', 'Condição', 'Situação']],
+      body: equipBody,
+      theme: 'striped',
+      headStyles: {
+        fillColor: [30, 41, 59],
+        textColor: 255,
+        fontSize: 6.5,
+        fontStyle: 'bold',
+        halign: 'center',
+        cellPadding: 1.5,
+      },
+      bodyStyles: {
+        fontSize: 6,
+        textColor: 51,
+        cellPadding: 1.2,
+      },
+      alternateRowStyles: {
+        fillColor: [248, 250, 252],
+      },
+      columnStyles: {
+        0: { halign: 'center', cellWidth: 14 },
+        1: { halign: 'center', fontStyle: 'bold', cellWidth: 14 },
+        2: { halign: 'left' }, // Endereço takes remaining width with auto-wrap
+        3: { halign: 'center', cellWidth: 18 },
+        4: { halign: 'center', cellWidth: 15 },
+        5: { halign: 'center', cellWidth: 14 },
+        6: { halign: 'center', fontStyle: 'bold', textColor: [37, 99, 235], cellWidth: 11 },
+        7: { halign: 'center', cellWidth: 16 },
+        8: { halign: 'center', cellWidth: 12 },
+        9: { halign: 'center', cellWidth: 15 },
+        10: { halign: 'center', cellWidth: 16 },
+      },
+    });
   }
-
-  currentY = sectionHeader('6. Lista Detalhada dos Equipamentos do Filtro Ativo', currentY);
-
-  const equipBody = records.map((r) => [
-    r.CÓDIGO?.trim() || '-',
-    r.CONTRATO?.trim() || '-',
-    r.TIPO?.trim() || '-',
-    r.FAIXAS ? String(r.FAIXAS) : '-',
-    r.Situação?.trim() || '-',
-    r['ENDEREÇO COMPLETO']?.trim() || '-',
-    r.BAIRRO?.trim() || '-',
-    r['Data início operação']?.trim() || '-',
-    r.CONDIÇÃO?.trim() || '-',
-  ]);
-
-  autoTable(doc, {
-    startY: currentY,
-    margin: { left: 10, right: 10, top: 30, bottom: 18 },
-    head: [['Código', 'Contrato', 'Tipo', 'Faixas', 'Situação', 'Endereço Completo', 'Bairro', 'Início Op.', 'Condição']],
-    body: equipBody,
-    theme: 'striped',
-    headStyles: {
-      fillColor: [30, 41, 59],
-      textColor: 255,
-      fontSize: 7,
-      fontStyle: 'bold',
-      halign: 'center',
-      cellPadding: 1.5,
-    },
-    bodyStyles: {
-      fontSize: 6.5,
-      textColor: 51,
-      cellPadding: 1.2,
-    },
-    alternateRowStyles: {
-      fillColor: [248, 250, 252],
-    },
-    columnStyles: {
-      0: { halign: 'center', fontStyle: 'bold', cellWidth: 16 },
-      1: { halign: 'center', cellWidth: 16 },
-      2: { halign: 'left', cellWidth: 18 },
-      3: { halign: 'center', fontStyle: 'bold', textColor: [37, 99, 235], cellWidth: 12 },
-      4: { halign: 'left', cellWidth: 18 },
-      5: { halign: 'left' }, // Endereço takes remaining width with auto-wrap
-      6: { halign: 'center', cellWidth: 20 },
-      7: { halign: 'center', cellWidth: 17 },
-      8: { halign: 'center', cellWidth: 15 },
-    },
-  });
 
   // Apply Headers and Footers to all pages dynamically
   const totalPages = (doc.internal as any).getNumberOfPages();

@@ -173,14 +173,18 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
                       else if (header === 'Velocidade Fiscalizada') labelText = 'VELOCIDADE FISCALIZADA';
                       else if (header === 'DIF Pareado') labelText = 'DIF PAREADO';
                       else if (header === 'REG. OBJ') labelText = 'REGISTRO DE OBJETO';
-                      else if (header === 'Data início operação') labelText = 'DATA DE INÍCIO DE OPERAÇÃO';
-                      else if (header === 'Data de aceite') labelText = 'DATA DE ACEITE';
-                      else if (header === 'Data da Aferição') labelText = 'DATA DA AFERIÇÃO';
-                      else if (header === 'Data de Vencimento da Aferição') labelText = 'DATA DE VENCIMENTO DA AFERIÇÃO';
+                      else if (header === 'Data início operação') labelText = 'INÍCIO DE OPERAÇÃO';
+                      else if (header === 'Data de aceite') labelText = 'ACEITE';
+                      else if (header === 'Data da Aferição') labelText = 'AFERIÇÃO';
+                      else if (header === 'Data de Vencimento da Aferição') labelText = 'VENCIMENTO DA AFERIÇÃO';
                       else if (header === 'Observações') labelText = 'OBSERVAÇÕES';
 
                       const isRegObj = header === 'REG. OBJ' || header === 'Registro do Objeto' || labelText === 'REGISTRO DE OBJETO';
                       const inmetroUrl = isRegObj && value ? `https://registro.inmetro.gov.br/consulta/detalhe.aspx?pag=1&NumeroRegistro=${encodeURIComponent(value.trim())}` : null;
+
+                      const isCEV = (record.TIPO || '').toUpperCase().trim() === 'CEV';
+                      const isNumSerie = header === 'Nº DE SÉRIE' || header === 'Nº de Série' || labelText === 'Nº DE SÉRIE';
+                      const rbmlqUrl = isCEV && isNumSerie && value && value !== '-' ? 'https://servicos.rbmlq.gov.br/Instrumento' : null;
 
                       return (
                         <div key={header} className="grid grid-cols-1 sm:grid-cols-3 px-4 py-2.5 hover:bg-slate-50/80 transition-colors">
@@ -196,6 +200,17 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-1.5 font-medium text-blue-600 hover:text-blue-800 hover:underline bg-blue-50/80 hover:bg-blue-100/80 px-2.5 py-0.5 rounded-md border border-blue-200/80 transition-colors shadow-2xs"
                                 title={`Consultar registro ${value} no portal do Inmetro`}
+                              >
+                                <span>{value}</span>
+                                <ExternalLink className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                              </a>
+                            ) : rbmlqUrl ? (
+                              <a
+                                href={rbmlqUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 font-medium text-blue-600 hover:text-blue-800 hover:underline bg-blue-50/80 hover:bg-blue-100/80 px-2.5 py-0.5 rounded-md border border-blue-200/80 transition-colors shadow-2xs"
+                                title={`Consultar instrumento nº ${value} no portal de serviços RBMLQ`}
                               >
                                 <span>{value}</span>
                                 <ExternalLink className="w-3.5 h-3.5 text-blue-500 shrink-0" />

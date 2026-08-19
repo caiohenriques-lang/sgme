@@ -6,6 +6,7 @@ import { FilterBar } from './components/FilterBar';
 import { MapView } from './components/MapView';
 import { IndicatorsView } from './components/IndicatorsView';
 import { TableView } from './components/TableView';
+import { GestaoContratualView } from './components/GestaoContratualView';
 import { EquipmentDetailModal } from './components/EquipmentDetailModal';
 import { ReportView } from './components/ReportView';
 import { FooterLegend } from './components/FooterLegend';
@@ -374,14 +375,10 @@ export default function App() {
         setActiveTab={setActiveTab}
         totalRecords={records.length}
         coordRecords={coordCount}
-        loading={loading}
-        onRefresh={loadData}
-        onOpenVercelGuide={() => setIsVercelGuideOpen(true)}
-        lastUpdated={lastUpdated}
       />
 
-      {/* Filter Bar */}
-      {activeTab !== 'relatorios' && (
+      {/* Filter Bar - Hidden in Gestão Contratual and Relatórios */}
+      {activeTab !== 'relatorios' && activeTab !== 'gestao_contratual' && (
         <FilterBar
           activeTab={activeTab}
           filters={filters}
@@ -456,8 +453,13 @@ export default function App() {
                 onSelectRecord={(rec) => setSelectedRecord(rec)}
               />
             )}
+
+            {/* Tab 4: Gestao Contratual (Replica Oficial da aba CONTROLE GERAL CTs) */}
+            {activeTab === 'gestao_contratual' && (
+              <GestaoContratualView />
+            )}
             
-            {/* Tab 4: Relatorios */}
+            {/* Tab 5: Relatorios */}
             {activeTab === 'relatorios' && (
               <ReportView records={records} />
             )}

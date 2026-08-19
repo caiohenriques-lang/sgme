@@ -162,7 +162,15 @@ export async function captureMap(records: any[]): Promise<string | null> {
       scale: 2,
       // Fix for leaflet + html2canvas offset issues
       windowWidth: 1920,
-      windowHeight: 1440
+      windowHeight: 1440,
+      onclone: (clonedDoc) => {
+        const styleTags = clonedDoc.querySelectorAll('style');
+        styleTags.forEach((style) => {
+          if (style.textContent && style.textContent.includes('oklch')) {
+            style.textContent = style.textContent.replace(/oklch\([^)]+\)/g, '#64748b');
+          }
+        });
+      },
     });
     const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
     document.body.removeChild(mapDiv);

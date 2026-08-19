@@ -484,7 +484,7 @@ export const ReportView: React.FC<ReportViewProps> = ({ records }) => {
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-2">Data do Aceite</label>
+                <label className="block text-xs font-bold text-slate-700 mb-2">Aceite</label>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="block text-[10px] text-slate-500 mb-1">De</label>
