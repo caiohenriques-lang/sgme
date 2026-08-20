@@ -1,77 +1,22 @@
 import React, { useState } from 'react';
-import { Info, GitBranch, Sparkles, X, CheckCircle2, Clock } from 'lucide-react';
+import { Info, GitBranch, Sparkles, X, CheckCircle2, Clock, RefreshCw } from 'lucide-react';
 import { SpeedLimit50Icon } from './SpeedLimit50Icon';
+import { getCurrentVersion, getAllVersions } from '../utils/versionControl';
 
-interface VersionRelease {
-  version: string;
-  date: string;
-  tag: string;
-  isLatest?: boolean;
-  changes: string[];
+interface FooterLegendProps {
+  loading?: boolean;
+  onRefresh?: () => void;
+  lastUpdated?: Date;
 }
 
-const VERSION_HISTORY: VersionRelease[] = [
-  {
-    version: 'v2.5.0',
-    date: '12/08/2026',
-    tag: 'Ajustes de Tabelas, Legenda, Ficha e Google Analytics',
-    isLatest: true,
-    changes: [
-      'Centralização de colunas específicas nas tabelas das abas Indicadores, Lista de Equipamentos e Resumo.',
-      'Autoajuste com quebra de linha na coluna Endereço Completo para perfeita adaptação na tela.',
-      'Renomeação de colunas do Ranking TOP 20 Corredores para "Qtd. de Equipamentos" e "Qtd. de Faixas".',
-      'Atualização visual da legenda do rodapé com contratos em negrito e melhor espaçamento.',
-      'Ocultação de campos sem preenchimento na ficha de detalhes do equipamento.',
-      'Integração da tag oficial do Google Analytics (gtag.js) para monitoramento de acessos.'
-    ]
-  },
-  {
-    version: 'v2.4.0',
-    date: '11/08/2026',
-    tag: 'Atualização de Interface e Relatórios',
-    changes: [
-      'Renomeação do filtro de múltipla seleção para "Seleção de Equipamentos".',
-      'Refatoração do botão "Limpar Filtros" mantendo a seleção padrão de contratos 2740/24, 2741/24 e 2742/24.',
-      'Otimização do posicionamento e estilo do botão "Atualizar Dados".',
-      'Aprimoramento dos relatórios em PDF com ocultação automática de campos e seções sem dados.',
-      'Ajustes finos de layout, acessibilidade e responsividade em todas as abas.'
-    ]
-  },
-  {
-    version: 'v2.3.0',
-    date: '28/07/2026',
-    tag: 'Dashboard de Indicadores & Exportação PDF',
-    changes: [
-      'Implementação do gerador de relatórios executivos em PDF com formatação GEAPI.',
-      'Módulos de gráficos de pizza, barras e linha temporal com métricas agregadas.',
-      'Inclusão da visão em tabela detalhada com ordenação e busca avançada.'
-    ]
-  },
-  {
-    version: 'v2.1.0',
-    date: '15/06/2026',
-    tag: 'Mapeamento Geográfico & Filtros Dinâmicos',
-    changes: [
-      'Integração com Leaflet para exibição interativa no mapa de Belo Horizonte.',
-      'Filtros por Regional, Bairro, Situação, Condição Operacional e Intervalo de Datas.',
-      'Identificação visual por cores de acordo com a Situação do Equipamento.'
-    ]
-  },
-  {
-    version: 'v2.0.0',
-    date: '02/05/2026',
-    tag: 'Lançamento Inicial da Plataforma',
-    changes: [
-      'Conexão contínua em tempo real com a planilha do Google Sheets.',
-      'Módulo de autenticação e proteção por palavra de acesso.',
-      'Filtros especiais por contrato e legenda normativa GEAPI.'
-    ]
-  }
-];
-
-export const FooterLegend: React.FC = () => {
+export const FooterLegend: React.FC<FooterLegendProps> = ({
+  loading = false,
+  onRefresh,
+  lastUpdated,
+}) => {
   const [isChangelogOpen, setIsChangelogOpen] = useState(false);
-  const currentVersion = VERSION_HISTORY[0];
+  const currentVersion = getCurrentVersion();
+  const versionHistory = getAllVersions();
 
   return (
     <footer className="bg-slate-900 text-slate-300 border-t border-slate-800 py-6 mt-12 text-xs">
@@ -107,7 +52,25 @@ export const FooterLegend: React.FC = () => {
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap justify-center sm:justify-end">
+            {/* Global Refresh Button Styled for Footer */}
+            {onRefresh && (
+              <button
+                onClick={onRefresh}
+                disabled={loading}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/90 hover:bg-slate-800 border border-slate-700/80 hover:border-slate-600 rounded-lg transition-colors cursor-pointer active:scale-95 disabled:opacity-60 shadow-2xs group"
+                title="Atualizar dados de todas as planilhas e abas"
+              >
+                <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin text-blue-400' : 'text-slate-400 group-hover:text-blue-400 transition-colors'}`} />
+                <span>Atualizar Dados</span>
+                {lastUpdated && (
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    ({lastUpdated.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })})
+                  </span>
+                )}
+              </button>
+            )}
+
             <span>Atualização contínua via Google Sheets</span>
             <span className="text-slate-700">•</span>
             {/* Discrete Version Tag */}
@@ -175,7 +138,7 @@ export const FooterLegend: React.FC = () => {
 
             {/* Modal Body - Scrollable Timeline */}
             <div className="p-5 overflow-y-auto space-y-6 text-xs text-slate-300">
-              {VERSION_HISTORY.map((rel) => (
+              {versionHistory.map((rel) => (
                 <div key={rel.version} className="relative pl-5 border-l-2 border-slate-800 space-y-2">
                   <div className={`absolute -left-[7px] top-0 w-3 h-3 rounded-full border-2 ${
                     rel.isLatest

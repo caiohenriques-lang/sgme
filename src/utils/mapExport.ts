@@ -1,5 +1,6 @@
 import L from 'leaflet';
 import html2canvas from 'html2canvas';
+import { parseCoordinates } from '../services/dataService';
 
 export interface TipoColorInfo {
   type: string;
@@ -80,6 +81,30 @@ export const isValidLatLng = (lat?: any, lng?: any): lat is number => {
   return isValidCoordNumber(lat) && isValidCoordNumber(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180 && (lat !== 0 || lng !== 0);
 };
 
+export const extractRecordCoordinates = (r: any): { lat: number; lng: number } | null => {
+  if (!r) return null;
+  let lat = r.lat;
+  let lng = r.lng;
+
+  if (typeof lat === 'string') lat = parseFloat(lat.replace(',', '.'));
+  if (typeof lng === 'string') lng = parseFloat(lng.replace(',', '.'));
+
+  if (isValidCoordNumber(lat) && isValidCoordNumber(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180 && (lat !== 0 || lng !== 0)) {
+    return { lat, lng };
+  }
+
+  // Fallback to COORD_LAT_LONG or raw fields
+  const coordStr = r['COORD_LAT_LONG'] || r['COORDENADAS'] || r['COORD'] || (r.rawFields && r.rawFields['COORD_LAT_LONG']);
+  if (coordStr) {
+    const parsed = parseCoordinates(coordStr);
+    if (parsed.hasValidCoord && parsed.lat !== undefined && parsed.lng !== undefined) {
+      return { lat: parsed.lat, lng: parsed.lng };
+    }
+  }
+
+  return null;
+};
+
 export async function captureMap(records: any[]): Promise<string | null> {
   const mapDiv = document.createElement('div');
   mapDiv.style.width = '1920px';
@@ -98,17 +123,18 @@ export async function captureMap(records: any[]): Promise<string | null> {
     markerZoomAnimation: false
   });
 
-  L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+  const tileLayer = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
     crossOrigin: true
   }).addTo(map);
 
   const bounds = L.latLngBounds([]);
-  let hasValid = false;
+  let pointsCount = 0;
 
   records.forEach(r => {
-    if (r.hasValidCoord && isValidLatLng(r.lat, r.lng)) {
-      hasValid = true;
-      bounds.extend([r.lat, r.lng]);
+    const coords = extractRecordCoordinates(r);
+    if (coords) {
+      pointsCount += 1;
+      bounds.extend([coords.lat, coords.lng]);
       
       const color = getTypeColor(r.TIPO);
       const displayTipo = (r.TIPO || '').trim() || 'EQUIP';
@@ -117,42 +143,71 @@ export async function captureMap(records: any[]): Promise<string | null> {
         className: 'custom-leaflet-marker-pdf',
         html: `
           <div style="
+            position: absolute;
+            transform: translate(-50%, -50%);
             background-color: ${color};
             color: #ffffff;
-            padding: 8px 16px;
-            border-radius: 20px;
-            border: 4px solid #ffffff;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
-            display: inline-flex;
+            height: 36px;
+            padding: 0 14px;
+            border-radius: 18px;
+            border: 3px solid #ffffff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.45);
+            display: flex;
             align-items: center;
             justify-content: center;
-            font-family: system-ui, sans-serif;
-            font-size: 18px;
+            text-align: center;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 15px;
             font-weight: 800;
             line-height: 1;
+            letter-spacing: 0.4px;
             white-space: nowrap;
+            box-sizing: border-box;
           ">
-            ${displayTipo}
+            <span style="display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1; margin: auto;">
+              ${displayTipo}
+            </span>
           </div>
         `,
-        iconSize: [undefined, 40] as any,
-        iconAnchor: [40, 20],
+        iconSize: [0, 0] as any,
+        iconAnchor: [0, 0],
       });
 
-      L.marker([r.lat, r.lng], { icon: customIcon }).addTo(map);
+      L.marker([coords.lat, coords.lng], { icon: customIcon }).addTo(map);
     }
   });
 
-  if (!hasValid || !bounds.isValid()) {
+  if (pointsCount === 0 || !bounds.isValid()) {
     document.body.removeChild(mapDiv);
     return null;
   }
 
   map.invalidateSize();
-  map.fitBounds(bounds, { padding: [150, 150], maxZoom: 16 });
+  if (bounds.getNorthEast().equals(bounds.getSouthWest())) {
+    map.setView(bounds.getCenter(), 15);
+  } else {
+    // Generous padding to prevent labels from touching edges and appropriate maxZoom
+    map.fitBounds(bounds, { padding: [120, 120], maxZoom: 15 });
+  }
 
-  // wait for tiles to load and animations to finish
-  await new Promise(resolve => setTimeout(resolve, 2000));
+  // Wait for tiles to finish loading
+  await new Promise<void>((resolve) => {
+    let done = false;
+    const timer = setTimeout(() => {
+      if (!done) {
+        done = true;
+        resolve();
+      }
+    }, 2200);
+
+    tileLayer.once('load', () => {
+      if (!done) {
+        done = true;
+        clearTimeout(timer);
+        setTimeout(resolve, 300);
+      }
+    });
+  });
 
   try {
     const canvas = await html2canvas(mapDiv, {

@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
-.custom-leaflet-marker-clean {
+.custom-leaflet-marker-clean,
+.custom-leaflet-marker-pdf {
   background: transparent !important;
   border: none !important;
 }

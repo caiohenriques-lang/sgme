@@ -7,6 +7,8 @@ import { MapView } from './components/MapView';
 import { IndicatorsView } from './components/IndicatorsView';
 import { TableView } from './components/TableView';
 import { GestaoContratualView } from './components/GestaoContratualView';
+import { InterrupcoesView } from './components/InterrupcoesView';
+import { BHDigitalView } from './components/BHDigitalView';
 import { EquipmentDetailModal } from './components/EquipmentDetailModal';
 import { ReportView } from './components/ReportView';
 import { FooterLegend } from './components/FooterLegend';
@@ -88,6 +90,11 @@ export default function App() {
 
   useEffect(() => {
     loadData();
+    // Atualização automática em segundo plano a cada 3 minutos
+    const interval = setInterval(() => {
+      loadData();
+    }, 3 * 60 * 1000);
+    return () => clearInterval(interval);
   }, [loadData]);
 
   // Helper function for crossed filters
@@ -375,10 +382,13 @@ export default function App() {
         setActiveTab={setActiveTab}
         totalRecords={records.length}
         coordRecords={coordCount}
+        loading={loading}
+        onRefresh={loadData}
+        lastUpdated={lastUpdated}
       />
 
-      {/* Filter Bar - Hidden in Gestão Contratual and Relatórios */}
-      {activeTab !== 'relatorios' && activeTab !== 'gestao_contratual' && (
+      {/* Filter Bar - Hidden in Gestão Contratual, Interrupções, BHDIGITAL and Relatórios */}
+      {activeTab !== 'relatorios' && activeTab !== 'gestao_contratual' && activeTab !== 'interrupcoes' && activeTab !== 'bhdigital' && (
         <FilterBar
           activeTab={activeTab}
           filters={filters}
@@ -432,6 +442,7 @@ export default function App() {
             {activeTab === 'mapa' && (
               <MapView
                 records={filteredRecords}
+                filters={filters}
                 onSelectRecord={(rec) => setSelectedRecord(rec)}
               />
             )}
@@ -456,10 +467,20 @@ export default function App() {
 
             {/* Tab 4: Gestao Contratual (Replica Oficial da aba CONTROLE GERAL CTs) */}
             {activeTab === 'gestao_contratual' && (
-              <GestaoContratualView />
+              <GestaoContratualView records={records} lastUpdated={lastUpdated} />
+            )}
+
+            {/* Tab 5: Interrupções de Equipamentos (EQUIPAMENTOS OFF) */}
+            {activeTab === 'interrupcoes' && (
+              <InterrupcoesView />
+            )}
+
+            {/* Tab 6: BHDIGITAL */}
+            {activeTab === 'bhdigital' && (
+              <BHDigitalView />
             )}
             
-            {/* Tab 5: Relatorios */}
+            {/* Tab 7: Relatorios */}
             {activeTab === 'relatorios' && (
               <ReportView records={records} />
             )}
@@ -469,7 +490,11 @@ export default function App() {
       </main>
 
       {/* Footer Legend */}
-      <FooterLegend />
+      <FooterLegend
+        loading={loading}
+        onRefresh={loadData}
+        lastUpdated={lastUpdated}
+      />
 
       {/* Fixed Mobile Bottom Navigation Bar */}
       <MobileBottomNav

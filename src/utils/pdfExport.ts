@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import html2canvas from 'html2canvas';
-import { EquipmentRecord } from '../types';
+import { EquipmentRecord, FilterState } from '../types';
 import { captureMap } from './mapExport';
 
 let cachedLogoDataUrl: string | null = null;
@@ -691,54 +691,58 @@ export async function exportCustomReportPDF(records: EquipmentRecord[], filtersA
   const boxWidth = 43;
   
   // 1. Total Equipamentos
+  const cX1 = 12 + (boxWidth / 2);
   doc.setDrawColor(191, 219, 254);
   doc.setFillColor(239, 246, 255);
   doc.roundedRect(12, cursorY, boxWidth, 16, 2, 2, 'FD');
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
   doc.setTextColor(37, 99, 235);
-  doc.text(String(records.length), 16, cursorY + 8);
+  doc.text(String(records.length), cX1, cursorY + 7.5, { align: 'center' });
   doc.setFontSize(7.5);
   doc.setTextColor(100, 116, 139);
-  doc.text('Total Equipamentos', 16, cursorY + 13);
+  doc.text('Total Equipamentos', cX1, cursorY + 12.5, { align: 'center' });
 
   // 2. Total Faixas
+  const cX2 = 12 + boxWidth + 4 + (boxWidth / 2);
   doc.setDrawColor(167, 243, 208);
   doc.setFillColor(236, 253, 245);
   doc.roundedRect(12 + boxWidth + 4, cursorY, boxWidth, 16, 2, 2, 'FD');
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
   doc.setTextColor(5, 150, 105);
-  doc.text(String(totalFaixas), 16 + boxWidth + 4, cursorY + 8);
+  doc.text(String(totalFaixas), cX2, cursorY + 7.5, { align: 'center' });
   doc.setFontSize(7.5);
   doc.setTextColor(100, 116, 139);
-  doc.text('Faixas Fiscalizadas', 16 + boxWidth + 4, cursorY + 13);
+  doc.text('Faixas Fiscalizadas', cX2, cursorY + 12.5, { align: 'center' });
 
   // 3. Locais Unicos
+  const cX3 = 12 + (boxWidth * 2) + 8 + (boxWidth / 2);
   doc.setDrawColor(253, 230, 138);
   doc.setFillColor(255, 251, 235);
   doc.roundedRect(12 + (boxWidth * 2) + 8, cursorY, boxWidth, 16, 2, 2, 'FD');
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
   doc.setTextColor(217, 119, 6);
-  doc.text(String(locaisUnicos.size), 16 + (boxWidth * 2) + 8, cursorY + 8);
+  doc.text(String(locaisUnicos.size), cX3, cursorY + 7.5, { align: 'center' });
   doc.setFontSize(7.5);
   doc.setTextColor(100, 116, 139);
-  doc.text('Locais Únicos', 16 + (boxWidth * 2) + 8, cursorY + 13);
+  doc.text('Locais Únicos', cX3, cursorY + 12.5, { align: 'center' });
 
   // 4. Indicadores Situacao
+  const cX4 = 12 + (boxWidth * 3) + 12 + (boxWidth / 2);
   doc.setDrawColor(233, 213, 255);
   doc.setFillColor(250, 245, 255);
   doc.roundedRect(12 + (boxWidth * 3) + 12, cursorY, boxWidth, 16, 2, 2, 'FD');
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
+  doc.setFontSize(7.5);
   doc.setTextColor(15, 23, 42);
-  doc.text('Indicadores', 16 + (boxWidth * 3) + 12, cursorY + 6);
+  doc.text('Status Operacional', cX4, cursorY + 5.2, { align: 'center' });
   doc.setFontSize(6.5);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(71, 85, 105);
-  doc.text(`Operação: ${equipmentsOperacao}`, 16 + (boxWidth * 3) + 12, cursorY + 10);
-  doc.text(`Reloc.: ${equipmentsRelocacao} | Impl.: ${equipmentsImplantacao}`, 16 + (boxWidth * 3) + 12, cursorY + 14);
+  doc.text(`Operação: ${equipmentsOperacao}`, cX4, cursorY + 9.5, { align: 'center' });
+  doc.text(`Reloc.: ${equipmentsRelocacao} | Impl.: ${equipmentsImplantacao}`, cX4, cursorY + 13.5, { align: 'center' });
 
   cursorY += 24;
 
@@ -802,49 +806,7 @@ export async function exportCustomReportPDF(records: EquipmentRecord[], filtersA
   // Footer for Page 1
   addCustomFooter(doc, pageWidth, doc.internal.pageSize.getHeight(), 'Página 1');
 
-  // ----------- PAGE 2: MAPA -----------
-  try {
-    const mapDataUrl = await captureMap(records);
-    if (mapDataUrl) {
-      doc.addPage();
-      
-      // Bottom border line for header
-      doc.setDrawColor(226, 232, 240); // slate-200
-      doc.setLineWidth(0.5);
-      doc.line(10, 29, pageWidth - 10, 29);
-
-      if (logoDataUrl) {
-        try {
-          const logoWidth = 48;
-          const logoHeight = 12;
-          const logoX = pageWidth - 12 - logoWidth;
-          doc.addImage(logoDataUrl, 'PNG', logoX, 8, logoWidth, logoHeight);
-        } catch (e) {}
-      }
-
-      doc.setTextColor(15, 23, 42); // slate-900
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(11);
-      doc.text('GERÊNCIA DE ANÁLISE E PROCESSAMENTO DE INFRAÇÕES - GEAPI', 12, 10, { maxWidth: maxTextWidth });
-      
-      doc.setFontSize(9.5);
-      doc.text('MAPA DE LOCALIZAÇÃO DOS EQUIPAMENTOS', 12, 17, { maxWidth: maxTextWidth });
-
-      // Draw the map image
-      doc.addImage(mapDataUrl, 'JPEG', 12, 35, 186, 139.5);
-      
-      // Draw a black border around the map
-      doc.setDrawColor(15, 23, 42); // Very dark slate (near black)
-      doc.setLineWidth(0.5);
-      doc.rect(12, 35, 186, 139.5);
-
-      const currentPageNum = (doc.internal as any).getNumberOfPages ? (doc.internal as any).getNumberOfPages() : 2;
-      addCustomFooter(doc, pageWidth, doc.internal.pageSize.getHeight(), `Página ${currentPageNum}`);
-    }
-  } catch (e) {
-    console.error('Erro ao gerar mapa pro PDF', e);
-  }
-  // ----------- PAGE 3+... DADOS DOS EQUIPAMENTOS -----------
+  // ----------- DADOS DOS EQUIPAMENTOS -----------
   
   // We'll iterate through the records and print the fichas
   records.forEach((record, idx) => {
@@ -1077,52 +1039,55 @@ export async function exportCompleteIndicatorsPDF(data: IndicatorsReportData) {
   const boxHeight = 17;
 
   // Box 1: Faixas
+  const indC1 = 10 + (boxWidth / 2);
   doc.setDrawColor(191, 219, 254);
   doc.setFillColor(241, 245, 249);
   doc.roundedRect(10, currentY, boxWidth, boxHeight, 1.5, 1.5, 'FD');
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7);
   doc.setTextColor(37, 99, 235);
-  doc.text('TOTAL DE FAIXAS FISCALIZADAS', 13, currentY + 4.5);
+  doc.text('TOTAL DE FAIXAS FISCALIZADAS', indC1, currentY + 4.5, { align: 'center' });
   doc.setFontSize(13);
   doc.setTextColor(15, 23, 42);
-  doc.text(metrics.totalFaixas.toLocaleString('pt-BR'), 13, currentY + 10.5);
+  doc.text(metrics.totalFaixas.toLocaleString('pt-BR'), indC1, currentY + 10.2, { align: 'center' });
   doc.setFontSize(6.5);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(71, 85, 105);
-  doc.text(`Operação: ${metrics.faixasOperacao} | Impl.: ${metrics.faixasImplantacao} | Reloc.: ${metrics.faixasRelocacao}`, 13, currentY + 14.5);
+  doc.text(`Operação: ${metrics.faixasOperacao} | Impl.: ${metrics.faixasImplantacao} | Reloc.: ${metrics.faixasRelocacao}`, indC1, currentY + 14.5, { align: 'center' });
 
   // Box 2: Locais Únicos
+  const indC2 = 10 + boxWidth + 4 + (boxWidth / 2);
   doc.setDrawColor(167, 243, 208);
   doc.setFillColor(241, 245, 249);
   doc.roundedRect(10 + boxWidth + 4, currentY, boxWidth, boxHeight, 1.5, 1.5, 'FD');
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7);
   doc.setTextColor(5, 150, 105);
-  doc.text('LOCAIS ÚNICOS FISCALIZADOS', 13 + boxWidth + 4, currentY + 4.5);
+  doc.text('LOCAIS ÚNICOS FISCALIZADOS', indC2, currentY + 4.5, { align: 'center' });
   doc.setFontSize(13);
   doc.setTextColor(15, 23, 42);
-  doc.text(metrics.totalUniqueLocations.toLocaleString('pt-BR'), 13 + boxWidth + 4, currentY + 10.5);
+  doc.text(metrics.totalUniqueLocations.toLocaleString('pt-BR'), indC2, currentY + 10.2, { align: 'center' });
   doc.setFontSize(6.5);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(71, 85, 105);
-  doc.text(`Operação: ${metrics.uniqueLocationsOperacao} | Impl.: ${metrics.uniqueLocationsImplantacao} | Reloc.: ${metrics.uniqueLocationsRelocacao}`, 13 + boxWidth + 4, currentY + 14.5);
+  doc.text(`Operação: ${metrics.uniqueLocationsOperacao} | Impl.: ${metrics.uniqueLocationsImplantacao} | Reloc.: ${metrics.uniqueLocationsRelocacao}`, indC2, currentY + 14.5, { align: 'center' });
 
   // Box 3: Equipamentos
+  const indC3 = 10 + (boxWidth * 2) + 8 + (boxWidth / 2);
   doc.setDrawColor(226, 232, 240);
   doc.setFillColor(241, 245, 249);
   doc.roundedRect(10 + (boxWidth * 2) + 8, currentY, boxWidth, boxHeight, 1.5, 1.5, 'FD');
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7);
   doc.setTextColor(100, 116, 139);
-  doc.text('TOTAL DE EQUIPAMENTOS', 13 + (boxWidth * 2) + 8, currentY + 4.5);
+  doc.text('TOTAL DE EQUIPAMENTOS', indC3, currentY + 4.5, { align: 'center' });
   doc.setFontSize(13);
   doc.setTextColor(15, 23, 42);
-  doc.text(metrics.totalEquipments.toLocaleString('pt-BR'), 13 + (boxWidth * 2) + 8, currentY + 10.5);
+  doc.text(metrics.totalEquipments.toLocaleString('pt-BR'), indC3, currentY + 10.2, { align: 'center' });
   doc.setFontSize(6.5);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(71, 85, 105);
-  doc.text(`Operação: ${metrics.equipmentsOperacao} | Impl.: ${metrics.equipmentsImplantacao} | Reloc.: ${metrics.equipmentsRelocacao}`, 13 + (boxWidth * 2) + 8, currentY + 14.5);
+  doc.text(`Operação: ${metrics.equipmentsOperacao} | Impl.: ${metrics.equipmentsImplantacao} | Reloc.: ${metrics.equipmentsRelocacao}`, indC3, currentY + 14.5, { align: 'center' });
 
   currentY += boxHeight + 5;
 
@@ -1593,4 +1558,353 @@ export async function exportCompleteIndicatorsPDF(data: IndicatorsReportData) {
 
   doc.save(`GEAPI-Relatorio-Indicadores-Completo-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
+
+export async function exportMapWithFiltersPdf(
+  records: EquipmentRecord[],
+  filters: FilterState
+): Promise<void> {
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4',
+  });
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const logoDataUrl = await getLogoDataUrl();
+
+  const renderHeader = (subtitle: string) => {
+    doc.setDrawColor(226, 232, 240); // slate-200
+    doc.setLineWidth(0.5);
+    doc.line(10, 26, pageWidth - 10, 26);
+
+    if (logoDataUrl) {
+      try {
+        const logoWidth = 46;
+        const logoHeight = 11.5;
+        const logoX = pageWidth - 12 - logoWidth;
+        doc.addImage(logoDataUrl, 'PNG', logoX, 7, logoWidth, logoHeight);
+      } catch (e) {}
+    }
+
+    const maxTextWidth = logoDataUrl ? pageWidth - 12 - 46 - 14 : pageWidth - 24;
+
+    doc.setTextColor(15, 23, 42); // slate-900
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10.5);
+    doc.text('GERÊNCIA DE ANÁLISE E PROCESSAMENTO DE INFRAÇÕES - GEAPI', 12, 10, { maxWidth: maxTextWidth });
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(37, 99, 235); // blue-600
+    doc.text(subtitle, 12, 16, { maxWidth: maxTextWidth });
+
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 116, 139); // slate-500
+    doc.text(`Emissão: ${new Date().toLocaleString('pt-BR')} | Total Exibido no Mapa: ${records.length} equipamentos`, 12, 22, { maxWidth: maxTextWidth });
+  };
+
+  // Render Page 1 Header
+  renderHeader('MONITORAMENTO ESPACIAL — MAPA GEORREFERENCIADO & FILTROS');
+
+  let currentY = 29;
+
+  // 1. CAPTURE MAP
+  try {
+    const mapDataUrl = await captureMap(records);
+    if (mapDataUrl) {
+      const mapWidth = 186;
+      const mapHeight = 98;
+      doc.addImage(mapDataUrl, 'JPEG', 12, currentY, mapWidth, mapHeight);
+
+      // Border around map
+      doc.setDrawColor(30, 41, 59); // slate-800
+      doc.setLineWidth(0.4);
+      doc.rect(12, currentY, mapWidth, mapHeight);
+
+      currentY += mapHeight + 4;
+    }
+  } catch (err) {
+    console.error('Erro ao capturar mapa para o PDF de monitoramento:', err);
+    doc.setDrawColor(203, 213, 225);
+    doc.setFillColor(248, 250, 252);
+    doc.rect(12, currentY, 186, 25, 'FD');
+    doc.setFontSize(8.5);
+    doc.setTextColor(100, 116, 139);
+    doc.text('Não foi possível gerar a captura visual do mapa.', 105, currentY + 13, { align: 'center' });
+    currentY += 30;
+  }
+
+  // 2. KPIS BAR (Total Equip, Total Faixas, Locais Únicos, Coordenadas)
+  const totalFaixas = records.reduce((acc, r) => acc + (Number(r.FAIXAS) || 0), 0);
+  const locaisUnicos = new Set(records.map(r => r['COD LOG'] || r['ENDEREÇO COMPLETO'] || r.CÓDIGO)).size;
+  const comCoords = records.filter(r => r.hasValidCoord).length;
+
+  const boxWidth = 44;
+  const boxHeight = 13.5;
+  const gap = 3.3;
+
+  // Box 1: Equipamentos
+  const kpiC1 = 12 + (boxWidth / 2);
+  doc.setDrawColor(191, 219, 254);
+  doc.setFillColor(241, 245, 249);
+  doc.roundedRect(12, currentY, boxWidth, boxHeight, 1.5, 1.5, 'FD');
+  doc.setFontSize(6.5);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(37, 99, 235);
+  doc.text('TOTAL EQUIPAMENTOS', kpiC1, currentY + 4, { align: 'center' });
+  doc.setFontSize(11);
+  doc.setTextColor(15, 23, 42);
+  doc.text(String(records.length), kpiC1, currentY + 9, { align: 'center' });
+  doc.setFontSize(5.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(100, 116, 139);
+  doc.text(`${comCoords} com coordenadas no mapa`, kpiC1, currentY + 12, { align: 'center' });
+
+  // Box 2: Faixas
+  const kpiC2 = 12 + boxWidth + gap + (boxWidth / 2);
+  doc.setDrawColor(167, 243, 208);
+  doc.setFillColor(241, 245, 249);
+  doc.roundedRect(12 + boxWidth + gap, currentY, boxWidth, boxHeight, 1.5, 1.5, 'FD');
+  doc.setFontSize(6.5);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(5, 150, 105);
+  doc.text('FAIXAS FISCALIZADAS', kpiC2, currentY + 4, { align: 'center' });
+  doc.setFontSize(11);
+  doc.setTextColor(15, 23, 42);
+  doc.text(String(totalFaixas), kpiC2, currentY + 9, { align: 'center' });
+  doc.setFontSize(5.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(100, 116, 139);
+  doc.text('Faixas ativas fiscalizadas', kpiC2, currentY + 12, { align: 'center' });
+
+  // Box 3: Locais Únicos
+  const kpiC3 = 12 + (boxWidth + gap) * 2 + (boxWidth / 2);
+  doc.setDrawColor(253, 230, 138);
+  doc.setFillColor(241, 245, 249);
+  doc.roundedRect(12 + (boxWidth + gap) * 2, currentY, boxWidth, boxHeight, 1.5, 1.5, 'FD');
+  doc.setFontSize(6.5);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(217, 119, 6);
+  doc.text('LOCAIS ÚNICOS', kpiC3, currentY + 4, { align: 'center' });
+  doc.setFontSize(11);
+  doc.setTextColor(15, 23, 42);
+  doc.text(String(locaisUnicos), kpiC3, currentY + 9, { align: 'center' });
+  doc.setFontSize(5.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(100, 116, 139);
+  doc.text('Pontos/endereços distintos', kpiC3, currentY + 12, { align: 'center' });
+
+  // Box 4: Tipos Ativos
+  const distinctTipos = Array.from(new Set(records.map(r => (r.TIPO || '').trim()).filter(Boolean)));
+  const kpiC4 = 12 + (boxWidth + gap) * 3 + (boxWidth / 2);
+  doc.setDrawColor(233, 213, 255);
+  doc.setFillColor(241, 245, 249);
+  doc.roundedRect(12 + (boxWidth + gap) * 3, currentY, boxWidth, boxHeight, 1.5, 1.5, 'FD');
+  doc.setFontSize(6.5);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(147, 51, 234);
+  doc.text('TIPOLOGIAS', kpiC4, currentY + 4, { align: 'center' });
+  doc.setFontSize(11);
+  doc.setTextColor(15, 23, 42);
+  doc.text(String(distinctTipos.length), kpiC4, currentY + 9, { align: 'center' });
+  doc.setFontSize(5.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(100, 116, 139);
+  doc.text(`${distinctTipos.slice(0, 3).join(', ')}${distinctTipos.length > 3 ? '...' : ''}`, kpiC4, currentY + 12, { align: 'center' });
+
+  currentY += boxHeight + 4.5;
+
+  // 3. PARÂMETROS E FILTROS APLICADOS
+  doc.setFillColor(30, 41, 59); // slate-800
+  doc.rect(12, currentY, 186, 5, 'F');
+  doc.setFontSize(7);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.text('PARÂMETROS E FILTROS APLICADOS NA CONSULTA', 15, currentY + 3.6);
+
+  currentY += 5.5;
+
+  // Build filter label texts
+  let contratoLabel = 'Todos os Contratos';
+  if (filters.contrato === 'PRESET_NOVOS') contratoLabel = 'Novos Contratos (2740/24, 2741/24, 2742/24)';
+  else if (filters.contrato === 'PRESET_ANTIGOS') contratoLabel = 'Antigos Contratos (2586/20, 2585/20, 2587/20)';
+  else if (filters.contrato && filters.contrato !== 'ALL') contratoLabel = filters.contrato;
+
+  const regionalLabel = filters.regional && filters.regional !== 'ALL' ? filters.regional : 'Todas as Regionais';
+  const bairroLabel = filters.bairro && filters.bairro !== 'ALL' ? filters.bairro : 'Todos os Bairros';
+  const tipoLabel = filters.tipo && filters.tipo !== 'ALL' ? filters.tipo : 'Todos os Tipos';
+  const situacaoLabel = filters.situacao && filters.situacao !== 'ALL' ? filters.situacao : 'Todas as Situações';
+  const condicaoLabel = filters.condicao && filters.condicao !== 'ALL' ? filters.condicao : 'Todas as Condições';
+  const osLabel = filters.os && filters.os !== 'ALL' ? filters.os : 'Todas as OS';
+
+  let codigosLabel = 'Todos do escopo';
+  if (filters.codigos && filters.codigos.length > 0) {
+    codigosLabel = `${filters.codigos.length} selecionado(s) (${filters.codigos.slice(0, 4).join(', ')}${filters.codigos.length > 4 ? '...' : ''})`;
+  }
+
+  let periodoLabel = 'Sem restrição de data';
+  if (filters.dataInicioStart || filters.dataInicioEnd) {
+    periodoLabel = `${formatDate(filters.dataInicioStart) || 'Início'} até ${formatDate(filters.dataInicioEnd) || 'Atual'}`;
+  }
+
+  const buscaLabel = filters.searchQuery ? `"${filters.searchQuery}"` : 'Nenhuma pesquisa digitada';
+
+  const filterRows = [
+    ['Contrato:', contratoLabel, 'Tipo:', tipoLabel],
+    ['Regional:', regionalLabel, 'Situação:', situacaoLabel],
+    ['Bairro:', bairroLabel, 'Condição:', condicaoLabel],
+    ['Ordem de Serviço (OS):', osLabel, 'Seleção de Códigos:', codigosLabel],
+    ['Período Início Op.:', periodoLabel, 'Pesquisa por Texto:', buscaLabel],
+  ];
+
+  autoTable(doc, {
+    startY: currentY,
+    body: filterRows,
+    theme: 'plain',
+    styles: {
+      fontSize: 6.8,
+      cellPadding: { top: 1, bottom: 1, left: 2, right: 2 },
+      font: 'helvetica',
+    },
+    columnStyles: {
+      0: { cellWidth: 32, fontStyle: 'bold', textColor: [71, 85, 105] },
+      1: { cellWidth: 61, textColor: [15, 23, 42], fontStyle: 'normal' },
+      2: { cellWidth: 32, fontStyle: 'bold', textColor: [71, 85, 105] },
+      3: { cellWidth: 61, textColor: [15, 23, 42], fontStyle: 'normal' },
+    },
+    margin: { left: 12, right: 12 },
+  });
+
+  currentY = (doc as any).lastAutoTable.finalY + 4;
+
+  // 4. SUMMARY BREAKDOWN BY TIPO TABLE
+  const tipoCounts: Record<string, { equip: number; faixas: number }> = {};
+  records.forEach(r => {
+    const t = (r.TIPO || 'NÃO DEFINIDO').trim();
+    if (!tipoCounts[t]) tipoCounts[t] = { equip: 0, faixas: 0 };
+    tipoCounts[t].equip += 1;
+    tipoCounts[t].faixas += (Number(r.FAIXAS) || 0);
+  });
+
+  const tipoTableBody = Object.entries(tipoCounts)
+    .sort((a, b) => b[1].equip - a[1].equip)
+    .map(([tipo, data]) => [
+      tipo,
+      String(data.equip),
+      String(data.faixas),
+      `${records.length > 0 ? ((data.equip / records.length) * 100).toFixed(1) : '0.0'}%`,
+      `${totalFaixas > 0 ? ((data.faixas / totalFaixas) * 100).toFixed(1) : '0.0'}%`
+    ]);
+
+  doc.setFillColor(241, 245, 249); // slate-100
+  doc.rect(12, currentY, 186, 4.5, 'F');
+  doc.setFontSize(6.8);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(30, 41, 59);
+  doc.text('DISTRIBUIÇÃO DOS EQUIPAMENTOS POR TIPOLOGIA NO RECORTE ATUAL', 14, currentY + 3.2);
+
+  currentY += 5;
+
+  autoTable(doc, {
+    startY: currentY,
+    head: [['Tipo de Equipamento', 'Qtd. Equipamentos', 'Qtd. Faixas', '% Equipamentos', '% Faixas']],
+    body: tipoTableBody,
+    theme: 'striped',
+    headStyles: {
+      fillColor: [51, 65, 85],
+      textColor: 255,
+      fontSize: 6.2,
+      fontStyle: 'bold',
+      halign: 'center',
+      cellPadding: 1,
+    },
+    bodyStyles: {
+      fontSize: 6.2,
+      textColor: 51,
+      cellPadding: 0.8,
+    },
+    alternateRowStyles: {
+      fillColor: [248, 250, 252],
+    },
+    columnStyles: {
+      0: { halign: 'left', fontStyle: 'bold' },
+      1: { halign: 'center', fontStyle: 'bold', textColor: [37, 99, 235] },
+      2: { halign: 'center', fontStyle: 'bold', textColor: [5, 150, 105] },
+      3: { halign: 'center' },
+      4: { halign: 'center' },
+    },
+    margin: { left: 12, right: 12 },
+  });
+
+  // Page 1 Footer
+  addCustomFooter(doc, pageWidth, pageHeight, 'Página 1');
+
+  // Page 2: Relação Nominal dos Equipamentos
+  if (records.length > 0) {
+    doc.addPage();
+    renderHeader('MONITORAMENTO ESPACIAL — RELAÇÃO NOMINAL DOS EQUIPAMENTOS');
+
+    const equipRows = records.map(r => [
+      r.CÓDIGO || '-',
+      r.CONTRATO || '-',
+      r['ENDEREÇO COMPLETO'] || r['ENDEREÇOS DOS EQUIPAMENTOS'] || '-',
+      r.BAIRRO || '-',
+      r.REGIONAL || '-',
+      r.TIPO || '-',
+      String(r.FAIXAS || '-'),
+      r.Situação || '-',
+      r.CONDIÇÃO || '-',
+    ]);
+
+    autoTable(doc, {
+      startY: 30,
+      head: [['Código', 'Contrato', 'Endereço Completo', 'Bairro', 'Regional', 'Tipo', 'Faixas', 'Situação', 'Condição']],
+      body: equipRows,
+      theme: 'striped',
+      headStyles: {
+        fillColor: [30, 41, 59],
+        textColor: 255,
+        fontSize: 6.5,
+        fontStyle: 'bold',
+        halign: 'center',
+        cellPadding: 1.5,
+      },
+      bodyStyles: {
+        fontSize: 6,
+        textColor: 51,
+        cellPadding: 1.2,
+      },
+      alternateRowStyles: {
+        fillColor: [248, 250, 252],
+      },
+      columnStyles: {
+        0: { halign: 'center', fontStyle: 'bold', cellWidth: 14 },
+        1: { halign: 'center', cellWidth: 16 },
+        2: { halign: 'left' },
+        3: { halign: 'center', cellWidth: 20 },
+        4: { halign: 'center', cellWidth: 18 },
+        5: { halign: 'center', cellWidth: 15 },
+        6: { halign: 'center', fontStyle: 'bold', textColor: [37, 99, 235], cellWidth: 12 },
+        7: { halign: 'center', cellWidth: 18 },
+        8: { halign: 'center', cellWidth: 16 },
+      },
+      margin: { left: 10, right: 10, top: 30, bottom: 18 },
+    });
+  }
+
+  // Update total page counts on all pages
+  const totalPages = (doc.internal as any).getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    if (i > 1) {
+      renderHeader('MONITORAMENTO ESPACIAL — RELAÇÃO NOMINAL DOS EQUIPAMENTOS');
+    }
+    addCustomFooter(doc, pageWidth, pageHeight, `Página ${i} de ${totalPages}`);
+  }
+
+  doc.save(`GEAPI-Monitoramento-Espacial-Mapa-${new Date().toISOString().slice(0, 10)}.pdf`);
+}
+
 
