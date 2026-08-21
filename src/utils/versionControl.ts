@@ -6,15 +6,28 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v2.6.0';
-export const BUILD_DATE = '20/08/2026';
+export const APP_VERSION = 'v2.7.0';
+export const BUILD_DATE = '21/08/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v2.7.0',
+    date: '21/08/2026',
+    tag: 'Exportação CSV, Ordenações Dinâmicas, Ajustes Visuais e Suporte PWA iOS',
+    isLatest: true,
+    changes: [
+      'Exportação em CSV nas tabelas "Equipamentos Inoperantes Temporariamente" e "Relatório Histórico de Parada e Retorno de Equipamentos" com suporte nativo a acentuação (BOM UTF-8).',
+      'Ordenação dinâmica por clique nos cabeçalhos de coluna de todas as tabelas da aba Interrupções de Equipamentos (Inoperantes, Matriz Mensal e Histórico Geral).',
+      'Centralização dos dados dos cards de métricas e renomeação do card para "Total de Interrupções" no cabeçalho de Interrupções.',
+      'Ajuste visual no card "Tempo médio de resposta" da aba BHDigital com fundo branco e contraste aprimorado.',
+      'Padronização do cabeçalho de KPIs nos relatórios em PDF do Monitoramento Espacial para "LOCAIS FISCALIZADOS".',
+      'Implementação do modal orientativo de instalação PWA para iOS (Safari) com ícone oficial padronizado ao favicon do portal.'
+    ]
+  },
   {
     version: 'v2.6.0',
     date: '20/08/2026',
     tag: 'Reorganização da Navegação & Controle de Versão Automatizado',
-    isLatest: true,
     changes: [
       'Reorganização da ordem oficial do menu: Monitoramento Espacial, Gestão Contratual, Indicadores, Lista de Equipamentos, Relatórios, Interrupções de Equipamentos e BHDigital.',
       'Implementação da rotina automatizada de controle de versão e rastreamento de lançamentos.',

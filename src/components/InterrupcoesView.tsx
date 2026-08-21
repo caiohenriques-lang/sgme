@@ -299,6 +299,51 @@ export const InterrupcoesView: React.FC = () => {
 
   const totalPagesHistorico = Math.ceil(sortedHistorico.length / rowsPerPageHistorico) || 1;
 
+  // Export CSV for Historico
+  const handleExportHistoricoCSV = () => {
+    if (sortedHistorico.length === 0) return;
+    const headers = [
+      'CONTRATO',
+      'CÓDIGO',
+      'TIPO',
+      'MOTIVO DA PARADA',
+      'DATA DA PARADA',
+      'DATA DE RETORNO',
+      'STATUS',
+      'ENDEREÇO COMPLETO',
+      'OFÍCIO INICIAL',
+      'INFORMADO INICIAL',
+      'OFÍCIO RETORNO',
+      'INFORMADO FINAL',
+      'HORÁRIO VANDALISMO',
+    ];
+    const rows = sortedHistorico.map((r) => [
+      `"${r.ct}"`,
+      `"${r.codigo}"`,
+      `"${r.tipo}"`,
+      `"${(r.motivo || '').replace(/"/g, '""')}"`,
+      `"${r.dataParada}"`,
+      `"${r.dataRetorno || ''}"`,
+      `"${r.dataRetorno ? 'RETORNADO' : 'INOPERANTE'}"`,
+      `"${(r.enderecoCompleto || '').replace(/"/g, '""')}"`,
+      `"${(r.oficioInicial || '').replace(/"/g, '""')}"`,
+      `"${(r.informadoInicial || '').replace(/"/g, '""')}"`,
+      `"${(r.oficioRetorno || '').replace(/"/g, '""')}"`,
+      `"${(r.informadoFinal || '').replace(/"/g, '""')}"`,
+      `"${(r.horarioVandalismo || '').replace(/"/g, '""')}"`,
+    ]);
+
+    const csvContent = [headers.join(';'), ...rows.map((e) => e.join(';'))].join('\n');
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `historico_paradas_retornos_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (loading && records.length === 0) {
     return (
       <div className="bg-white rounded-2xl border border-slate-200 p-16 text-center space-y-4 my-6 shadow-xs">
@@ -895,6 +940,18 @@ export const InterrupcoesView: React.FC = () => {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2.5">
+              {/* Botão Exportar CSV */}
+              <button
+                type="button"
+                onClick={handleExportHistoricoCSV}
+                disabled={sortedHistorico.length === 0}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-800 border border-emerald-300/80 rounded-lg text-xs font-semibold shadow-2xs transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Exportar histórico de paradas e retornos para CSV (compatível com Excel)"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
+                <span>Exportar CSV</span>
+              </button>
+
               {/* Filtro de Motivo */}
               <div className="relative">
                 <select
