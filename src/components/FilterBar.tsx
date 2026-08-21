@@ -494,7 +494,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
 
             {/* Dropdown Popover */}
             {isCodigoPopoverOpen && (
-              <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-300 rounded-xl shadow-xl z-50 p-2.5 w-72 sm:w-80 max-w-[90vw]">
+              <div className="absolute left-0 sm:right-auto top-full mt-1.5 bg-white border border-slate-300 rounded-xl shadow-xl z-50 p-2.5 w-72 sm:w-80 max-w-[calc(100vw-2rem)]">
                 {/* Search inside list */}
                 <div className="relative mb-2">
                   <input

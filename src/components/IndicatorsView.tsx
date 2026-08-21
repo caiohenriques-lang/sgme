@@ -1041,26 +1041,26 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
       </div>
 
       {/* Charts Row 1: 3 Gráficos em Grid 3x1 */}
-      <div id="indicators-charts-contrato" className="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-white p-2 rounded-2xl">
+      <div id="indicators-charts-contrato" className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6 bg-white p-1.5 sm:p-2 rounded-2xl">
 
         {/* Chart 1: Faixas por Contrato */}
-        <div id="chart-card-contrato-faixas" className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+        <div id="chart-card-contrato-faixas" className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-2 pb-3 border-b border-slate-100">
+            <div className="flex items-center justify-between mb-1.5 sm:mb-2 pb-2 sm:pb-3 border-b border-slate-100">
               <div>
-                <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
-                  <BarChart2 className="w-4 h-4 text-blue-600" />
-                  Faixas por Contrato
+                <h3 className="font-bold text-xs sm:text-sm text-slate-900 flex items-center gap-2">
+                  <BarChart2 className="w-4 h-4 text-blue-600 shrink-0" />
+                  <span>Faixas por Contrato</span>
                 </h3>
               </div>
             </div>
           </div>
-          <div className="h-72 w-full my-auto">
+          <div className="h-44 sm:h-64 w-full my-auto">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={contratoData} layout="vertical" margin={{ top: 15, right: 35, left: 20, bottom: 15 }}>
+              <BarChart data={contratoData} layout="vertical" margin={{ top: 8, right: 32, left: 10, bottom: 8 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                <XAxis type="number" tick={{ fontSize: 11, fill: '#64748b' }} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} width={90} />
+                <XAxis type="number" tick={{ fontSize: 10, fill: '#64748b' }} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: '#64748b' }} width={80} />
                 <Tooltip
                   formatter={(value: number) => [`${value} faixas`, 'Faixas']}
                   contentStyle={{ borderRadius: '12px', borderColor: '#e2e8f0', fontSize: '12px' }}
@@ -1089,23 +1089,23 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
         </div>
 
         {/* Chart 2: Equipamentos por Contrato */}
-        <div id="chart-card-contrato-equip" className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+        <div id="chart-card-contrato-equip" className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-2 pb-3 border-b border-slate-100">
+            <div className="flex items-center justify-between mb-1.5 sm:mb-2 pb-2 sm:pb-3 border-b border-slate-100">
               <div>
-                <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
-                  <BarChart2 className="w-4 h-4 text-purple-600" />
-                  Equipamentos por Contrato
+                <h3 className="font-bold text-xs sm:text-sm text-slate-900 flex items-center gap-2">
+                  <BarChart2 className="w-4 h-4 text-purple-600 shrink-0" />
+                  <span>Equipamentos por Contrato</span>
                 </h3>
               </div>
             </div>
           </div>
-          <div className="h-72 w-full my-auto">
+          <div className="h-44 sm:h-64 w-full my-auto">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={contratoData} layout="vertical" margin={{ top: 15, right: 35, left: 20, bottom: 15 }}>
+              <BarChart data={contratoData} layout="vertical" margin={{ top: 8, right: 32, left: 10, bottom: 8 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                <XAxis type="number" tick={{ fontSize: 11, fill: '#64748b' }} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} width={90} />
+                <XAxis type="number" tick={{ fontSize: 10, fill: '#64748b' }} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: '#64748b' }} width={80} />
                 <Tooltip
                   formatter={(value: number) => [`${value} equipamentos`, 'Equipamentos']}
                   contentStyle={{ borderRadius: '12px', borderColor: '#e2e8f0', fontSize: '12px' }}
@@ -1134,23 +1134,23 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
         </div>
 
         {/* Chart 3: Locais Fiscalizados por Contrato */}
-        <div id="chart-card-contrato-locais" className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+        <div id="chart-card-contrato-locais" className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-2 pb-3 border-b border-slate-100">
+            <div className="flex items-center justify-between mb-1.5 sm:mb-2 pb-2 sm:pb-3 border-b border-slate-100">
               <div>
-                <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
-                  <BarChart2 className="w-4 h-4 text-orange-500" />
-                  Locais Fiscalizados por Contrato
+                <h3 className="font-bold text-xs sm:text-sm text-slate-900 flex items-center gap-2">
+                  <BarChart2 className="w-4 h-4 text-orange-500 shrink-0" />
+                  <span>Locais por Contrato</span>
                 </h3>
               </div>
             </div>
           </div>
-          <div className="h-72 w-full my-auto">
+          <div className="h-44 sm:h-64 w-full my-auto">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={contratoData} layout="vertical" margin={{ top: 15, right: 35, left: 20, bottom: 15 }}>
+              <BarChart data={contratoData} layout="vertical" margin={{ top: 8, right: 32, left: 10, bottom: 8 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                <XAxis type="number" tick={{ fontSize: 11, fill: '#64748b' }} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} width={90} />
+                <XAxis type="number" tick={{ fontSize: 10, fill: '#64748b' }} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: '#64748b' }} width={80} />
                 <Tooltip
                   formatter={(value: number) => [`${value} locais`, 'Locais Únicos']}
                   contentStyle={{ borderRadius: '12px', borderColor: '#e2e8f0', fontSize: '12px' }}
@@ -1183,7 +1183,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
       {/* Chart Row 2: Gráficos por Tipo em Grid 2x1 */}
       <div id="indicators-charts-tipo" className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6 bg-white p-2 rounded-2xl">
         {/* Chart 4: Faixas por Tipo de Equipamento (BAR CHART COM RÓTULO) */}
-        <div id="chart-card-tipo-faixas" className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+        <div id="chart-card-tipo-faixas" className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2 pb-3 border-b border-slate-100">
               <div>
@@ -1195,41 +1195,43 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
             </div>
           </div>
 
-          <div className="h-72 w-full my-auto">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={tipoData} margin={{ top: 25, right: 20, left: -10, bottom: 25 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} angle={-20} textAnchor="end" />
-                <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
-                <Tooltip
-                  formatter={(value: number) => [`${value} faixas`, 'Soma de Faixas']}
-                  contentStyle={{ borderRadius: '12px', borderColor: '#e2e8f0', fontSize: '12px' }}
-                />
-                <Bar
-                  dataKey="SomaFaixas"
-                  fill="#059669"
-                  radius={[6, 6, 0, 0]}
-                  name="Soma de Faixas"
-                  onClick={(entry: any) => entry && entry.name && handleTipoClick(String(entry.name))}
-                  className="cursor-pointer hover:opacity-80 transition-opacity"
-                >
-                  <LabelList dataKey="SomaFaixas" position="top" fill="#0f172a" fontSize={11} fontWeight={700} />
-                  {tipoData.map((entry, index) => (
-                    <Cell
-                      key={`cell-tipo-${index}`}
-                      fill={selectedChartTipo === entry.name ? '#047857' : COLORS[index % COLORS.length]}
-                      stroke={selectedChartTipo === entry.name ? '#000' : 'none'}
-                      strokeWidth={selectedChartTipo === entry.name ? 2 : 0}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="w-full overflow-x-auto my-auto pb-1">
+            <div className="h-72 w-full min-w-[480px] sm:min-w-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={tipoData} margin={{ top: 25, right: 20, left: -10, bottom: 45 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#64748b' }} interval={0} angle={-20} textAnchor="end" height={45} />
+                  <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
+                  <Tooltip
+                    formatter={(value: number) => [`${value} faixas`, 'Soma de Faixas']}
+                    contentStyle={{ borderRadius: '12px', borderColor: '#e2e8f0', fontSize: '12px' }}
+                  />
+                  <Bar
+                    dataKey="SomaFaixas"
+                    fill="#059669"
+                    radius={[6, 6, 0, 0]}
+                    name="Soma de Faixas"
+                    onClick={(entry: any) => entry && entry.name && handleTipoClick(String(entry.name))}
+                    className="cursor-pointer hover:opacity-80 transition-opacity"
+                  >
+                    <LabelList dataKey="SomaFaixas" position="top" fill="#0f172a" fontSize={11} fontWeight={700} />
+                    {tipoData.map((entry, index) => (
+                      <Cell
+                        key={`cell-tipo-${index}`}
+                        fill={selectedChartTipo === entry.name ? '#047857' : COLORS[index % COLORS.length]}
+                        stroke={selectedChartTipo === entry.name ? '#000' : 'none'}
+                        strokeWidth={selectedChartTipo === entry.name ? 2 : 0}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
 
       {/* Chart Row 2: Locais Fiscalizados por Tipo */}
-      <div id="chart-card-tipo-locais" className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+      <div id="chart-card-tipo-locais" className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
         <div>
           <div className="flex items-center justify-between mb-2 pb-3 border-b border-slate-100">
             <div>
@@ -1241,34 +1243,36 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
           </div>
         </div>
 
-        <div className="h-72 w-full my-auto">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={tipoLocaisData} margin={{ top: 25, right: 20, left: -10, bottom: 25 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} angle={-20} textAnchor="end" />
-              <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
-              <Tooltip
-                formatter={(value: number) => [`${value} locais únicos`, 'Locais Únicos']}
-                contentStyle={{ borderRadius: '12px', borderColor: '#e2e8f0', fontSize: '12px' }}
-              />
-              <Bar
-                dataKey="LocaisUnicos"
-                fill="#7c3aed"
-                radius={[6, 6, 0, 0]}
-                name="Locais Únicos"
-                onClick={(entry: any) => entry && entry.name && handleTipoClick(String(entry.name))}
-                className="cursor-pointer hover:opacity-80 transition-opacity"
-              >
-                <LabelList dataKey="LocaisUnicos" position="top" fill="#0f172a" fontSize={11} fontWeight={700} />
-                {tipoLocaisData.map((entry, index) => (
-                  <Cell
-                    key={`cell-locais-${index}`}
-                    fill={selectedChartTipo === entry.name ? '#6d28d9' : '#8b5cf6'}
-                  />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+        <div className="w-full overflow-x-auto my-auto pb-1">
+          <div className="h-72 w-full min-w-[480px] sm:min-w-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={tipoLocaisData} margin={{ top: 25, right: 20, left: -10, bottom: 45 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#64748b' }} interval={0} angle={-20} textAnchor="end" height={45} />
+                <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
+                <Tooltip
+                  formatter={(value: number) => [`${value} locais únicos`, 'Locais Únicos']}
+                  contentStyle={{ borderRadius: '12px', borderColor: '#e2e8f0', fontSize: '12px' }}
+                />
+                <Bar
+                  dataKey="LocaisUnicos"
+                  fill="#7c3aed"
+                  radius={[6, 6, 0, 0]}
+                  name="Locais Únicos"
+                  onClick={(entry: any) => entry && entry.name && handleTipoClick(String(entry.name))}
+                  className="cursor-pointer hover:opacity-80 transition-opacity"
+                >
+                  <LabelList dataKey="LocaisUnicos" position="top" fill="#0f172a" fontSize={11} fontWeight={700} />
+                  {tipoLocaisData.map((entry, index) => (
+                    <Cell
+                      key={`cell-locais-${index}`}
+                      fill={selectedChartTipo === entry.name ? '#6d28d9' : '#8b5cf6'}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
       </div>
@@ -1294,8 +1298,11 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
           </span>
         </div>
 
+        <div className="block sm:hidden text-[10.5px] text-slate-500 font-medium px-4 py-1.5 bg-slate-100/90 border-b border-slate-200">
+          ↔ Deslize para os lados para ver todas as colunas
+        </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-center text-xs">
+          <table className="w-full min-w-[620px] sm:min-w-0 text-center text-xs">
             <thead className="bg-slate-100/90 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[11px]">
               <tr>
                 <th
@@ -1446,8 +1453,11 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
           </span>
         </div>
 
+        <div className="block sm:hidden text-[10.5px] text-slate-500 font-medium px-4 py-1.5 bg-slate-100/90 border-b border-slate-200">
+          ↔ Deslize para os lados para ver todas as colunas
+        </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-center text-xs">
+          <table className="w-full min-w-[620px] sm:min-w-0 text-center text-xs">
             <thead className="bg-slate-100/90 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[11px]">
               <tr>
                 <th
@@ -1582,7 +1592,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
 
       {/* Table 3: Implantações por Ano */}
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
-        <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+        <div className="bg-slate-50 px-4 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="p-2 bg-purple-100 text-purple-700 rounded-xl">
               <Calendar className="w-5 h-5" />
@@ -1596,8 +1606,11 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
           </span>
         </div>
 
+        <div className="block sm:hidden text-[10.5px] text-slate-500 font-medium px-4 py-1.5 bg-slate-100/90 border-b border-slate-200">
+          ↔ Deslize para os lados para ver todas as colunas
+        </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-center text-xs">
+          <table className="w-full min-w-[620px] sm:min-w-0 text-center text-xs">
             <thead className="bg-slate-100/90 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[11px]">
               <tr>
                 <th
@@ -1732,7 +1745,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
 
       {/* Table 4: Implantações por Mês */}
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
-        <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+        <div className="bg-slate-50 px-4 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="p-2 bg-indigo-100 text-indigo-700 rounded-xl">
               <CalendarDays className="w-5 h-5" />
@@ -1746,8 +1759,11 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
           </span>
         </div>
 
+        <div className="block sm:hidden text-[10.5px] text-slate-500 font-medium px-4 py-1.5 bg-slate-100/90 border-b border-slate-200">
+          ↔ Deslize para os lados para ver todas as colunas
+        </div>
         <div className="overflow-x-auto max-h-80 overflow-y-auto">
-          <table className="w-full text-center text-xs">
+          <table className="w-full min-w-[620px] sm:min-w-0 text-center text-xs">
             <thead className="bg-slate-100/95 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[11px] sticky top-0 z-10 shadow-xs">
               <tr>
                 <th
@@ -1882,7 +1898,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
 
       {/* Table 4: Ranking TOP 20 Corredores */}
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
-        <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+        <div className="bg-slate-50 px-4 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Award className="w-5 h-5 text-amber-600" />
             <div>
@@ -1899,8 +1915,11 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
           </span>
         </div>
 
+        <div className="block sm:hidden text-[10.5px] text-slate-500 font-medium px-4 py-1.5 bg-slate-100/90 border-b border-slate-200">
+          ↔ Deslize para os lados para ver todas as colunas
+        </div>
         <div className="overflow-x-auto max-h-96 overflow-y-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full min-w-[640px] sm:min-w-0 text-left text-xs">
             <thead className="bg-slate-100/90 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[11px] sticky top-0 z-10">
               <tr>
                 <th scope="col" className="px-4 py-3 text-center w-12">#</th>
@@ -2054,8 +2073,11 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
         </div>
 
         {/* Data Table */}
-        <div className="w-full overflow-hidden min-h-[300px]">
-          <table className="w-full table-fixed text-[11px] sm:text-xs text-left">
+        <div className="block lg:hidden text-[10.5px] text-slate-500 font-medium px-4 py-1.5 bg-slate-100/90 border-b border-slate-200">
+          ↔ Deslize para os lados para ver todas as colunas
+        </div>
+        <div className="w-full overflow-x-auto min-h-[300px]">
+          <table className="w-full min-w-[850px] lg:min-w-0 lg:table-fixed text-[11px] sm:text-xs text-left">
             <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200 text-[10px] sm:text-[11px]">
               <tr>
                 <th

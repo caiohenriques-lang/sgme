@@ -66,9 +66,6 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Acompanhamento em tempo real das Ordens de Serviço, Relocações, Termos Aditivos e Matriz de Equipamentos da Fiscalização Eletrônica (GEAPI/BHTRANS).
-              </p>
             </div>
           </div>
 
@@ -81,73 +78,74 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
         </div>
 
         {/* Global Summary KPI Bar directly connected to MATRIZ */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 mt-5 pt-4 border-t border-slate-100">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-2.5 mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-slate-100">
           
           {/* Card 1: Faixas Contratadas */}
-          <div className="bg-slate-50/90 border border-slate-200 rounded-xl p-3 text-center">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide block">
+          <div className="bg-slate-50/90 border border-slate-200 rounded-xl p-2.5 sm:p-3 text-center">
+            <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 uppercase tracking-wide block truncate">
               Contratadas
             </span>
-            <span className="text-xl sm:text-2xl font-bold text-slate-900 font-mono mt-0.5 block">
+            <span className="text-lg sm:text-2xl font-bold text-slate-900 font-mono mt-0.5 block">
               {data.totalFaixasContratadas}
             </span>
-            <span className="text-[10px] text-slate-500 font-medium">3 Contratos 2024</span>
+            <span className="text-[9.5px] sm:text-[10px] text-slate-500 font-medium truncate block">3 Contratos 2024</span>
           </div>
 
           {/* Card 2: Faixas com OS na Matriz */}
-          <div className="bg-blue-50/80 border border-blue-200 rounded-xl p-3 text-center">
-            <span className="text-[11px] font-semibold text-blue-700 uppercase tracking-wide block">
-              Cadastradas na Matriz
+          <div className="bg-blue-50/80 border border-blue-200 rounded-xl p-2.5 sm:p-3 text-center">
+            <span className="text-[10px] sm:text-[11px] font-semibold text-blue-700 uppercase tracking-wide block truncate">
+              Na Matriz
             </span>
-            <span className="text-xl sm:text-2xl font-bold text-blue-900 font-mono mt-0.5 block">
+            <span className="text-lg sm:text-2xl font-bold text-blue-900 font-mono mt-0.5 block">
               {data.totalFaixasMatriz}
             </span>
-            <span className="text-[10px] text-blue-700 font-semibold">
+            <span className="text-[9.5px] sm:text-[10px] text-blue-700 font-semibold truncate block">
               {((data.totalFaixasMatriz / data.totalFaixasContratadas) * 100).toFixed(1)}% do Contrato
             </span>
           </div>
 
           {/* Card 3: Em Operação */}
-          <div className="bg-emerald-50/80 border border-emerald-200 rounded-xl p-3 text-center">
-            <span className="text-[11px] font-semibold text-emerald-800 uppercase tracking-wide block">
+          <div className="bg-emerald-50/80 border border-emerald-200 rounded-xl p-2.5 sm:p-3 text-center">
+            <span className="text-[10px] sm:text-[11px] font-semibold text-emerald-800 uppercase tracking-wide block truncate">
               Em Operação
             </span>
-            <span className="text-xl sm:text-2xl font-bold text-emerald-950 font-mono mt-0.5 block">
+            <span className="text-lg sm:text-2xl font-bold text-emerald-950 font-mono mt-0.5 block">
               {data.totalFaixasOperacaoMatriz}
             </span>
-            <span className="text-[10px] text-emerald-800 font-semibold">Faixas Ativas</span>
+            <span className="text-[9.5px] sm:text-[10px] text-emerald-800 font-semibold truncate block">Faixas Ativas</span>
           </div>
 
           {/* Card 4: Em Implantação */}
-          <div className="bg-amber-50/80 border border-amber-200 rounded-xl p-3 text-center">
-            <span className="text-[11px] font-semibold text-amber-800 uppercase tracking-wide block">
-              Em Implantação
+          <div className="bg-amber-50/80 border border-amber-200 rounded-xl p-2.5 sm:p-3 text-center">
+            <span className="text-[10px] sm:text-[11px] font-semibold text-amber-800 uppercase tracking-wide block truncate">
+              Implantação
             </span>
-            <span className="text-xl sm:text-2xl font-bold text-amber-950 font-mono mt-0.5 block">
+            <span className="text-lg sm:text-2xl font-bold text-amber-950 font-mono mt-0.5 block">
               {data.totalFaixasImplantacaoMatriz}
             </span>
-            <span className="text-[10px] text-amber-800 font-medium">Aguardando Início</span>
+            <span className="text-[9.5px] sm:text-[10px] text-amber-800 font-medium truncate block">Aguardando Início</span>
           </div>
 
           {/* Card 5: Relocações */}
-          <div className="bg-indigo-50/80 border border-indigo-200 rounded-xl p-3 text-center">
-            <span className="text-[11px] font-semibold text-indigo-800 uppercase tracking-wide block">
+          <div className="bg-indigo-50/80 border border-indigo-200 rounded-xl p-2.5 sm:p-3 text-center">
+            <span className="text-[10px] sm:text-[11px] font-semibold text-indigo-800 uppercase tracking-wide block truncate">
               Relocações
             </span>
-            <span className="text-xl sm:text-2xl font-bold text-indigo-950 font-mono mt-0.5 block">
+            <span className="text-lg sm:text-2xl font-bold text-indigo-950 font-mono mt-0.5 block">
               {data.totalFaixasRelocacaoMatriz}
             </span>
-            <span className="text-[10px] text-indigo-800 font-medium">1º e 2º Uso</span>
+            <span className="text-[9.5px] sm:text-[10px] text-indigo-800 font-medium truncate block">1º e 2º Uso</span>
           </div>
 
           {/* Card 6: Restantes para Meta */}
-          <div className="bg-rose-50/80 border border-rose-200 rounded-xl p-3 text-center">
-            <span className="text-[11px] font-semibold text-rose-800 uppercase tracking-wide block">
-              Faixas Restantes
+          <div className="bg-rose-50/80 border border-rose-200 rounded-xl p-2.5 sm:p-3 text-center">
+            <span className="text-[10px] sm:text-[11px] font-semibold text-rose-800 uppercase tracking-wide block truncate">
+              Restantes
             </span>
-            <span className="text-xl sm:text-2xl font-bold text-rose-950 font-mono mt-0.5 block">
+            <span className="text-lg sm:text-2xl font-bold text-rose-950 font-mono mt-0.5 block">
               {data.totalFaixasRestantes}
             </span>
+            <span className="text-[9.5px] sm:text-[10px] text-rose-800 font-medium truncate block">Saldo p/ Meta</span>
           </div>
 
         </div>
@@ -203,6 +201,9 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
             </div>
 
             <div className="overflow-x-auto">
+              <div className="block sm:hidden text-[10px] text-slate-400 font-medium px-4 py-1.5 bg-slate-50 border-b border-slate-200">
+                ↔ Deslize a tabela para o lado para ver todas as colunas
+              </div>
               <table className="w-full text-left border-collapse min-w-[1050px]">
                 <thead>
                   <tr className="bg-slate-100/90 text-slate-700 font-bold border-b border-slate-200 uppercase tracking-wider text-[10px] sm:text-[11px]">
@@ -326,6 +327,9 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
             </div>
 
             <div className="overflow-x-auto">
+              <div className="block sm:hidden text-[10px] text-slate-400 font-medium px-4 py-1.5 bg-slate-50 border-b border-slate-200">
+                ↔ Deslize a tabela para o lado para ver todas as colunas
+              </div>
               <table className="w-full text-left text-xs border-collapse min-w-[750px]">
                 <thead>
                   <tr className="bg-slate-100/90 text-slate-700 font-bold border-b border-slate-200 uppercase tracking-wider text-[11px]">
@@ -422,6 +426,9 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
             </div>
 
             <div className="overflow-x-auto">
+              <div className="block sm:hidden text-[10px] text-slate-400 font-medium px-4 py-1.5 bg-slate-50 border-b border-slate-200">
+                ↔ Deslize a tabela para o lado para ver todas as colunas
+              </div>
               <table className="w-full text-left text-xs border-collapse min-w-[800px]">
                 <thead>
                   <tr className="bg-slate-100/90 text-slate-700 font-bold border-b border-slate-200 uppercase tracking-wider text-[11px]">

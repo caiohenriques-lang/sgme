@@ -381,71 +381,77 @@ export const BHDigitalView: React.FC = () => {
               </p>
             </div>
 
-            <div className="w-full h-72 sm:h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={stats.regionalSummary}
-                  margin={{ top: 20, right: 20, left: -10, bottom: 25 }}
-                >
-                  <XAxis
-                    dataKey="regional"
-                    interval={0}
-                    tick={(props: any) => {
-                      const { x, y, payload } = props;
-                      const isSelected = filters.regional === payload.value;
-                      return (
-                        <g transform={`translate(${x},${y})`}>
-                          <text
-                            x={0}
-                            y={0}
-                            dy={12}
-                            textAnchor="middle"
-                            fill={isSelected ? '#2563eb' : '#334155'}
-                            fontSize={10}
-                            fontWeight={isSelected ? 800 : 600}
-                            className="cursor-pointer"
-                          >
-                            {payload.value}
-                          </text>
-                        </g>
-                      );
-                    }}
-                    axisLine={{ stroke: '#cbd5e1' }}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    domain={[0, (dataMax: number) => Math.max(100, Math.ceil(dataMax * 1.15))]}
-                    tick={{ fontSize: 11, fill: '#64748b' }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <Tooltip
-                    formatter={(val: any) => [`${val} pedidos`, 'Quantidade']}
-                    cursor={{ fill: '#f8fafc' }}
-                  />
-                  <Bar
-                    dataKey="quantidade"
-                    fill="#64748b"
-                    radius={[2, 2, 0, 0]}
-                    maxBarSize={48}
-                    onClick={(data: any) => {
-                      if (data && data.regional) {
-                        toggleFilter('regional', data.regional);
-                      }
-                    }}
-                    className="cursor-pointer"
+            {/* Main Chart Canvas with horizontal scrolling on mobile */}
+            <div className="w-full overflow-x-auto pb-2">
+              <div className="block sm:hidden text-[10.5px] text-slate-500 font-medium text-center mb-1 bg-slate-50 py-1 rounded-lg border border-slate-200">
+                ↔ Deslize lateralmente para visualizar todas as regionais
+              </div>
+              <div className="w-full min-w-[640px] sm:min-w-0 h-72 sm:h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={stats.regionalSummary}
+                    margin={{ top: 25, right: 25, left: -5, bottom: 45 }}
                   >
-                    {stats.regionalSummary.map((entry) => (
-                      <Cell
-                        key={`reg-cell-${entry.regional}`}
-                        fill={filters.regional === entry.regional ? '#2563eb' : '#64748b'}
-                        className="hover:opacity-80 transition-opacity cursor-pointer"
-                      />
-                    ))}
-                    <LabelList dataKey="quantidade" content={renderBarCustomLabel} />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+                    <XAxis
+                      dataKey="regional"
+                      interval={0}
+                      tick={(props: any) => {
+                        const { x, y, payload } = props;
+                        const isSelected = filters.regional === payload.value;
+                        return (
+                          <g transform={`translate(${x},${y})`}>
+                            <text
+                              x={0}
+                              y={0}
+                              dy={18}
+                              textAnchor="middle"
+                              fill={isSelected ? '#2563eb' : '#334155'}
+                              fontSize={10.5}
+                              fontWeight={isSelected ? 800 : 600}
+                              className="cursor-pointer"
+                            >
+                              {payload.value}
+                            </text>
+                          </g>
+                        );
+                      }}
+                      axisLine={{ stroke: '#cbd5e1' }}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      domain={[0, (dataMax: number) => Math.max(100, Math.ceil(dataMax * 1.15))]}
+                      tick={{ fontSize: 11, fill: '#64748b' }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      formatter={(val: any) => [`${val} pedidos`, 'Quantidade']}
+                      cursor={{ fill: '#f8fafc' }}
+                    />
+                    <Bar
+                      dataKey="quantidade"
+                      fill="#64748b"
+                      radius={[2, 2, 0, 0]}
+                      maxBarSize={48}
+                      onClick={(data: any) => {
+                        if (data && data.regional) {
+                          toggleFilter('regional', data.regional);
+                        }
+                      }}
+                      className="cursor-pointer"
+                    >
+                      {stats.regionalSummary.map((entry) => (
+                        <Cell
+                          key={`reg-cell-${entry.regional}`}
+                          fill={filters.regional === entry.regional ? '#2563eb' : '#64748b'}
+                          className="hover:opacity-80 transition-opacity cursor-pointer"
+                        />
+                      ))}
+                      <LabelList dataKey="quantidade" content={renderBarCustomLabel} />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
 
@@ -816,8 +822,11 @@ export const BHDigitalView: React.FC = () => {
         </div>
 
         {/* Tabela Matricial */}
+        <div className="block sm:hidden text-[10.5px] text-slate-500 font-medium px-4 py-1.5 bg-slate-100/90 border-b border-slate-200">
+          ↔ Deslize para os lados para visualizar todos os tipos de equipamentos
+        </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-xs border-collapse">
+          <table className="w-full min-w-[760px] sm:min-w-0 text-xs border-collapse">
             <thead>
               {/* Linha Superior do Cabeçalho com banner span */}
               <tr className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">

@@ -21,6 +21,7 @@ import {
   Clock,
   CheckCircle2,
   Filter,
+  Loader2,
 } from 'lucide-react';
 import {
   InterrupcaoRecord,
@@ -201,6 +202,22 @@ export const InterrupcoesView: React.FC = () => {
   }, [filteredHistorico, pageHistorico]);
 
   const totalPagesHistorico = Math.ceil(filteredHistorico.length / rowsPerPageHistorico) || 1;
+
+  if (loading && records.length === 0) {
+    return (
+      <div className="bg-white rounded-2xl border border-slate-200 p-16 text-center space-y-4 my-6 shadow-xs">
+        <Loader2 className="w-10 h-10 text-blue-600 animate-spin mx-auto" />
+        <div>
+          <h3 className="text-base font-bold text-slate-800">
+            Carregando dados aba Interrupções...
+          </h3>
+          <p className="text-xs text-slate-500 mt-1">
+            Buscando dados de interrupções e inoperâncias no Google Sheets...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 pb-12">

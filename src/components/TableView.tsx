@@ -112,9 +112,14 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
         </div>
       </div>
 
-      {/* Main Data Table - Fitted to screen without horizontal scrolling */}
-      <div className="w-full overflow-x-auto lg:overflow-x-hidden min-h-[400px]">
-        <table className="w-full table-fixed text-[11px] text-left">
+      {/* Mobile Scroll Indicator */}
+      <div className="block lg:hidden text-[10.5px] text-slate-500 font-medium px-4 py-1.5 bg-slate-100/90 border-b border-slate-200">
+        ↔ Deslize para os lados para visualizar todas as colunas
+      </div>
+
+      {/* Main Data Table */}
+      <div className="w-full overflow-x-auto min-h-[400px]">
+        <table className="w-full min-w-[1020px] lg:min-w-0 lg:table-fixed text-[11px] text-left">
           <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200 text-[10px]">
             <tr>
               <th
