@@ -46,12 +46,8 @@ export const Header: React.FC<HeaderProps> = ({
                   GERÊNCIA DE ANÁLISE E PROCESSAMENTO DE INFRAÇÕES - GEAPI
                 </h1>
               </div>
-              <p className="text-xs sm:text-sm font-medium text-slate-700 flex items-center gap-2 mt-0.5 flex-wrap">
-                <span className="font-semibold text-slate-800">Fiscalização Eletrônica</span>
-                <span className="text-slate-300">•</span>
-                <span className="text-slate-600 font-normal">
-                  Sistema de Gestão e Monitoramento Espacial - SGME
-                </span>
+              <p className="text-xs sm:text-sm font-semibold text-slate-800 mt-0.5">
+                Fiscalização Eletrônica
               </p>
               <p className="text-[11px] text-slate-500 font-normal mt-0.5">
                 Desenvolvido por Caio Henriques de O. L. Cordeiro
@@ -64,110 +60,110 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="mt-3 pt-2.5 border-t border-slate-100">
           <nav className="hidden md:grid grid-cols-7 w-full gap-1.5 p-1.5 rounded-2xl bg-slate-100/90 border border-slate-200/90 shadow-2xs">
             
-            {/* 1. Monitoramento Espacial */}
-            <button
-              onClick={() => setActiveTab('mapa')}
-              className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center ${
-                activeTab === 'mapa'
-                  ? 'bg-blue-600 border-blue-600 text-white shadow-sm ring-2 ring-blue-500/30'
-                  : 'bg-white/80 border-slate-200/80 text-slate-700 hover:bg-blue-50/90 hover:border-blue-300 hover:text-blue-900 shadow-2xs'
-              }`}
-            >
-              <Map className={`w-4 h-4 shrink-0 mb-0.5 ${activeTab === 'mapa' ? 'text-white' : 'text-blue-600'}`} />
-              <div className="flex flex-col items-center text-[12px] font-bold leading-tight">
-                <span>Monitoramento</span>
-                <span>Espacial</span>
-              </div>
-            </button>
-
-            {/* 2. Gestão Contratual */}
+            {/* 1. Gestão Contratual - Vermelho-Escuro */}
             <button
               onClick={() => setActiveTab('gestao_contratual')}
-              className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center ${
+              className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center group ${
                 activeTab === 'gestao_contratual'
-                  ? 'bg-blue-600 border-blue-600 text-white shadow-sm ring-2 ring-blue-500/30'
-                  : 'bg-white/80 border-slate-200/80 text-slate-700 hover:bg-blue-50/90 hover:border-blue-300 hover:text-blue-900 shadow-2xs'
+                  ? 'bg-red-800 border-red-800 text-white shadow-sm ring-2 ring-red-700/30'
+                  : 'bg-white/80 border-slate-200/80 text-slate-700 hover:bg-red-50 hover:border-red-400 hover:text-red-900 shadow-2xs'
               }`}
             >
-              <FileSignature className={`w-4 h-4 shrink-0 mb-0.5 ${activeTab === 'gestao_contratual' ? 'text-white' : 'text-blue-600'}`} />
+              <FileSignature className={`w-4 h-4 shrink-0 mb-0.5 transition-colors ${activeTab === 'gestao_contratual' ? 'text-white' : 'text-red-800 group-hover:text-red-900'}`} />
               <div className="flex flex-col items-center text-[12px] font-bold leading-tight">
                 <span>Gestão</span>
                 <span>Contratual</span>
               </div>
             </button>
 
-            {/* 3. Indicadores */}
+            {/* 2. Monitoramento Espacial - Azul */}
             <button
-              onClick={() => setActiveTab('indicadores')}
-              className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center ${
-                activeTab === 'indicadores'
+              onClick={() => setActiveTab('mapa')}
+              className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center group ${
+                activeTab === 'mapa'
                   ? 'bg-blue-600 border-blue-600 text-white shadow-sm ring-2 ring-blue-500/30'
-                  : 'bg-white/80 border-slate-200/80 text-slate-700 hover:bg-blue-50/90 hover:border-blue-300 hover:text-blue-900 shadow-2xs'
+                  : 'bg-white/80 border-slate-200/80 text-slate-700 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700 shadow-2xs'
               }`}
             >
-              <BarChart3 className={`w-4 h-4 shrink-0 mb-0.5 ${activeTab === 'indicadores' ? 'text-white' : 'text-blue-600'}`} />
+              <Map className={`w-4 h-4 shrink-0 mb-0.5 transition-colors ${activeTab === 'mapa' ? 'text-white' : 'text-blue-600 group-hover:text-blue-700'}`} />
+              <div className="flex flex-col items-center text-[12px] font-bold leading-tight">
+                <span>Monitoramento</span>
+                <span>Espacial</span>
+              </div>
+            </button>
+
+            {/* 3. Indicadores - Azul */}
+            <button
+              onClick={() => setActiveTab('indicadores')}
+              className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center group ${
+                activeTab === 'indicadores'
+                  ? 'bg-blue-600 border-blue-600 text-white shadow-sm ring-2 ring-blue-500/30'
+                  : 'bg-white/80 border-slate-200/80 text-slate-700 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700 shadow-2xs'
+              }`}
+            >
+              <BarChart3 className={`w-4 h-4 shrink-0 mb-0.5 transition-colors ${activeTab === 'indicadores' ? 'text-white' : 'text-blue-600 group-hover:text-blue-700'}`} />
               <div className="flex flex-col items-center text-[12px] font-bold leading-tight">
                 <span>Indicadores</span>
               </div>
             </button>
 
-            {/* 4. Lista de Equipamentos */}
+            {/* 4. Lista de Equipamentos - Azul */}
             <button
               onClick={() => setActiveTab('tabela')}
-              className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center ${
+              className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center group ${
                 activeTab === 'tabela'
                   ? 'bg-blue-600 border-blue-600 text-white shadow-sm ring-2 ring-blue-500/30'
-                  : 'bg-white/80 border-slate-200/80 text-slate-700 hover:bg-blue-50/90 hover:border-blue-300 hover:text-blue-900 shadow-2xs'
+                  : 'bg-white/80 border-slate-200/80 text-slate-700 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700 shadow-2xs'
               }`}
             >
-              <Table className={`w-4 h-4 shrink-0 mb-0.5 ${activeTab === 'tabela' ? 'text-white' : 'text-blue-600'}`} />
+              <Table className={`w-4 h-4 shrink-0 mb-0.5 transition-colors ${activeTab === 'tabela' ? 'text-white' : 'text-blue-600 group-hover:text-blue-700'}`} />
               <div className="flex flex-col items-center text-[12px] font-bold leading-tight">
                 <span>Lista de</span>
                 <span>Equipamentos</span>
               </div>
             </button>
 
-            {/* 5. Relatórios */}
+            {/* 5. Relatórios - Azul */}
             <button
               onClick={() => setActiveTab('relatorios')}
-              className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center ${
+              className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center group ${
                 activeTab === 'relatorios'
                   ? 'bg-blue-600 border-blue-600 text-white shadow-sm ring-2 ring-blue-500/30'
-                  : 'bg-white/80 border-slate-200/80 text-slate-700 hover:bg-blue-50/90 hover:border-blue-300 hover:text-blue-900 shadow-2xs'
+                  : 'bg-white/80 border-slate-200/80 text-slate-700 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700 shadow-2xs'
               }`}
             >
-              <Printer className={`w-4 h-4 shrink-0 mb-0.5 ${activeTab === 'relatorios' ? 'text-white' : 'text-blue-600'}`} />
+              <Printer className={`w-4 h-4 shrink-0 mb-0.5 transition-colors ${activeTab === 'relatorios' ? 'text-white' : 'text-blue-600 group-hover:text-blue-700'}`} />
               <div className="flex flex-col items-center text-[12px] font-bold leading-tight">
                 <span>Relatórios</span>
               </div>
             </button>
 
-            {/* 6. Interrupções de Equipamentos */}
+            {/* 6. Interrupções de Equipamentos - Amarelo/Âmbar */}
             <button
               onClick={() => setActiveTab('interrupcoes')}
-              className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center ${
+              className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center group ${
                 activeTab === 'interrupcoes'
-                  ? 'bg-blue-600 border-blue-600 text-white shadow-sm ring-2 ring-blue-500/30'
-                  : 'bg-white/80 border-slate-200/80 text-slate-700 hover:bg-blue-50/90 hover:border-blue-300 hover:text-blue-900 shadow-2xs'
+                  ? 'bg-amber-600 border-amber-600 text-white shadow-sm ring-2 ring-amber-500/30'
+                  : 'bg-white/80 border-slate-200/80 text-slate-700 hover:bg-amber-50 hover:border-amber-400 hover:text-amber-900 shadow-2xs'
               }`}
             >
-              <AlertTriangle className={`w-4 h-4 shrink-0 mb-0.5 ${activeTab === 'interrupcoes' ? 'text-white' : 'text-amber-600'}`} />
+              <AlertTriangle className={`w-4 h-4 shrink-0 mb-0.5 transition-colors ${activeTab === 'interrupcoes' ? 'text-white' : 'text-amber-500 group-hover:text-amber-600'}`} />
               <div className="flex flex-col items-center text-[12px] font-bold leading-tight">
                 <span>Interrupções de</span>
                 <span>Equipamentos</span>
               </div>
             </button>
 
-            {/* 7. BHDIGITAL */}
+            {/* 7. BHDIGITAL - Amarelo/Âmbar */}
             <button
               onClick={() => setActiveTab('bhdigital')}
-              className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center ${
+              className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center group ${
                 activeTab === 'bhdigital'
-                  ? 'bg-blue-600 border-blue-600 text-white shadow-sm ring-2 ring-blue-500/30'
-                  : 'bg-white/80 border-slate-200/80 text-slate-700 hover:bg-blue-50/90 hover:border-blue-300 hover:text-blue-900 shadow-2xs'
+                  ? 'bg-amber-600 border-amber-600 text-white shadow-sm ring-2 ring-amber-500/30'
+                  : 'bg-white/80 border-slate-200/80 text-slate-700 hover:bg-amber-50 hover:border-amber-400 hover:text-amber-900 shadow-2xs'
               }`}
             >
-              <Layers className={`w-4 h-4 shrink-0 mb-0.5 ${activeTab === 'bhdigital' ? 'text-white' : 'text-amber-600'}`} />
+              <Layers className={`w-4 h-4 shrink-0 mb-0.5 transition-colors ${activeTab === 'bhdigital' ? 'text-white' : 'text-amber-500 group-hover:text-amber-600'}`} />
               <div className="flex flex-col items-center text-[12px] font-bold leading-tight">
                 <span>BHDIGITAL</span>
               </div>

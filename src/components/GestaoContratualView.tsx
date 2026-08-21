@@ -417,7 +417,7 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
               <div className="flex items-center gap-2">
                 <DollarSign className="w-5 h-5 text-emerald-600" />
                 <h3 className="font-bold text-sm sm:text-base text-slate-900 uppercase tracking-wide">
-                  CUSTO POR FAIXA E POR CONTRATO (CONTRATOS 2024)
+                  CUSTO POR FAIXA E POR CONTRATO
                 </h3>
               </div>
               <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg">

@@ -19,17 +19,17 @@ export const FooterLegend: React.FC<FooterLegendProps> = ({
   const versionHistory = getAllVersions();
 
   return (
-    <footer className="bg-slate-900 text-slate-300 border-t border-slate-800 py-6 mt-12 text-xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+    <footer className="bg-slate-900 text-slate-300 border-t border-slate-800 py-3 mt-6 text-xs">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-2.5">
         
         {/* Required Legend Box */}
-        <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800/80 shadow-inner space-y-1.5">
+        <div className="bg-slate-950 p-2.5 sm:p-3 rounded-lg border border-slate-800/80 shadow-inner space-y-1">
           <div className="flex items-center gap-1.5 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
             <Info className="w-3.5 h-3.5 text-blue-400 shrink-0" />
             <span>Legenda:</span>
           </div>
 
-          <div className="text-[11px] sm:text-xs text-slate-300 leading-relaxed font-normal space-y-3 pt-1">
+          <div className="text-[11px] text-slate-300 leading-snug font-normal space-y-1 pt-0.5">
             <p>
               <strong>2740/2024</strong> - ELISEU KOPP & CIA LTDA.; <strong>2741/2024</strong> - SPLICE INDÚSTRIA, COMÉRCIO E SERVIÇOS LTDA.; <strong>2742/2024</strong> - CONSÓRCIO TRÂNSITO SEGURO;
             </p>
@@ -43,10 +43,10 @@ export const FooterLegend: React.FC<FooterLegendProps> = ({
           </div>
         </div>
 
-        {/* Footer Brand & Info */}
-        <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-500 text-[11px]">
+        {/* Compact Footer Brand & Credits */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-slate-400 text-[11px]">
           <div className="flex items-center gap-2">
-            <SpeedLimit50Icon className="w-4 h-4 shrink-0" />
+            <SpeedLimit50Icon className="w-3.5 h-3.5 shrink-0" />
             <span>
               <strong>GEAPI</strong> — Gerência de Análise e Processamento de Infrações | Prefeitura de Belo Horizonte
             </span>
@@ -58,11 +58,11 @@ export const FooterLegend: React.FC<FooterLegendProps> = ({
               <button
                 onClick={onRefresh}
                 disabled={loading}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/90 hover:bg-slate-800 border border-slate-700/80 hover:border-slate-600 rounded-lg transition-colors cursor-pointer active:scale-95 disabled:opacity-60 shadow-2xs group"
+                className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-medium text-slate-300 hover:text-white bg-slate-800/90 hover:bg-slate-800 border border-slate-700/80 hover:border-slate-600 rounded-md transition-colors cursor-pointer active:scale-95 disabled:opacity-60 shadow-2xs group"
                 title="Atualizar dados de todas as planilhas e abas"
               >
                 <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin text-blue-400' : 'text-slate-400 group-hover:text-blue-400 transition-colors'}`} />
-                <span>Atualizar Dados</span>
+                <span>Atualizar</span>
                 {lastUpdated && (
                   <span className="text-[10px] text-slate-400 font-mono">
                     ({lastUpdated.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })})
@@ -71,37 +71,9 @@ export const FooterLegend: React.FC<FooterLegendProps> = ({
               </button>
             )}
 
-            <span>Atualização contínua via Google Sheets</span>
-            <span className="text-slate-700">•</span>
-            {/* Discrete Version Tag */}
-            <button
-              onClick={() => setIsChangelogOpen(true)}
-              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-800/90 hover:bg-slate-800 border border-slate-700/80 hover:border-slate-600 text-slate-300 hover:text-white transition-all cursor-pointer group shadow-2xs"
-              title="Clique para ver o histórico de versões"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="font-mono text-[10px] font-semibold tracking-wide text-slate-200 group-hover:text-white">
-                {currentVersion.version}
-              </span>
-              <GitBranch className="w-3 h-3 text-slate-400 group-hover:text-blue-400 transition-colors" />
-            </button>
-          </div>
-        </div>
-
-        {/* Extreme Bottom Credit & Version Info */}
-        <div className="pt-3 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400 font-medium">
-          <div>
-            Desenvolvido por <span className="text-white font-bold tracking-wide">Caio Henriques de O. L. Cordeiro</span>
-          </div>
-          <div className="text-[10px] text-slate-500 flex items-center gap-2 font-mono">
-            <span>GEAPI System</span>
-            <span>•</span>
-            <button
-              onClick={() => setIsChangelogOpen(true)}
-              className="hover:text-slate-300 transition-colors cursor-pointer underline decoration-dotted"
-            >
-              Build {currentVersion.version} ({currentVersion.date})
-            </button>
+            <div>
+              Desenvolvido por <span className="text-white font-bold tracking-wide">Caio Henriques de O. L. Cordeiro</span>
+            </div>
           </div>
         </div>
 
