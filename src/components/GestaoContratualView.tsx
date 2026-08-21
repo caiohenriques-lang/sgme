@@ -83,18 +83,18 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
           {/* Card 1: Faixas Contratadas */}
           <div className="bg-slate-50/90 border border-slate-200 rounded-xl p-2.5 sm:p-3 text-center">
             <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 uppercase tracking-wide block truncate">
-              Contratadas
+              Faixas Contratadas
             </span>
             <span className="text-lg sm:text-2xl font-bold text-slate-900 font-mono mt-0.5 block">
               {data.totalFaixasContratadas}
             </span>
-            <span className="text-[9.5px] sm:text-[10px] text-slate-500 font-medium truncate block">3 Contratos 2024</span>
+            <span className="text-[9.5px] sm:text-[10px] text-slate-500 font-medium truncate block invisible">&nbsp;</span>
           </div>
 
-          {/* Card 2: Faixas com OS na Matriz */}
+          {/* Card 2: Faixas Emitidas */}
           <div className="bg-blue-50/80 border border-blue-200 rounded-xl p-2.5 sm:p-3 text-center">
             <span className="text-[10px] sm:text-[11px] font-semibold text-blue-700 uppercase tracking-wide block truncate">
-              Na Matriz
+              Faixas Emitidas
             </span>
             <span className="text-lg sm:text-2xl font-bold text-blue-900 font-mono mt-0.5 block">
               {data.totalFaixasMatriz}
@@ -137,15 +137,15 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
             <span className="text-[9.5px] sm:text-[10px] text-indigo-800 font-medium truncate block">1º e 2º Uso</span>
           </div>
 
-          {/* Card 6: Restantes para Meta */}
+          {/* Card 6: Faixas Restantes */}
           <div className="bg-rose-50/80 border border-rose-200 rounded-xl p-2.5 sm:p-3 text-center">
             <span className="text-[10px] sm:text-[11px] font-semibold text-rose-800 uppercase tracking-wide block truncate">
-              Restantes
+              Faixas Restantes
             </span>
             <span className="text-lg sm:text-2xl font-bold text-rose-950 font-mono mt-0.5 block">
               {data.totalFaixasRestantes}
             </span>
-            <span className="text-[9.5px] sm:text-[10px] text-rose-800 font-medium truncate block">Saldo p/ Meta</span>
+            <span className="text-[9.5px] sm:text-[10px] text-rose-800 font-medium truncate block">Saldo</span>
           </div>
 
         </div>

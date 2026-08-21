@@ -459,7 +459,7 @@ export const BHDigitalView: React.FC = () => {
           <div className="lg:col-span-4 flex flex-col gap-4">
             
             {/* Banner: Tempo Médio de Resposta */}
-            <div className="bg-slate-100 rounded-2xl border border-slate-200/80 p-4 text-center shadow-xs">
+            <div className="bg-white rounded-2xl border border-slate-200 p-4 text-center shadow-xs">
               <span className="text-sm sm:text-base font-semibold text-slate-800">
                 Tempo médio de resposta:{' '}
                 <strong className="text-base sm:text-lg font-bold text-slate-900">

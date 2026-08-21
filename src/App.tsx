@@ -15,6 +15,7 @@ import { FooterLegend } from './components/FooterLegend';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { VercelGuideModal } from './components/VercelGuideModal';
 import { LockScreen } from './components/LockScreen';
+import { IOSInstallPrompt } from './components/IOSInstallPrompt';
 import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 
 const initialFilters: FilterState = {
@@ -503,6 +504,9 @@ export default function App() {
         totalRecords={records.length}
         coordRecords={coordCount}
       />
+
+      {/* iOS PWA Add to Home Screen Prompt */}
+      <IOSInstallPrompt />
 
       {/* Modals */}
       <EquipmentDetailModal

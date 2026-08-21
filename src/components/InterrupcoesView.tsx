@@ -17,11 +17,15 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
   AlertCircle,
   Clock,
   CheckCircle2,
   Filter,
   Loader2,
+  Download,
+  FileSpreadsheet,
 } from 'lucide-react';
 import {
   InterrupcaoRecord,
@@ -31,6 +35,9 @@ import {
   calculateTipoSummary,
   CONTRATOS_ATIVOS,
 } from '../services/interrupcoesService';
+
+type SortInoperantesKey = 'ct' | 'codigo' | 'tipo' | 'motivo' | 'dataParada';
+type SortHistoricoKey = 'ct' | 'codigo' | 'tipo' | 'motivo' | 'dataParada' | 'dataRetorno';
 
 const renderCustomPieLabel = ({
   cx,
@@ -83,18 +90,30 @@ export const InterrupcoesView: React.FC = () => {
   const [records, setRecords] = useState<InterrupcaoRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Filters and Search states
+  // Filters, Search and Sorting states
   const [searchInoperantes, setSearchInoperantes] = useState('');
   const [pageInoperantes, setPageInoperantes] = useState(1);
+  const [sortInoperantes, setSortInoperantes] = useState<{
+    key: SortInoperantesKey;
+    direction: 'asc' | 'desc';
+  }>({ key: 'dataParada', direction: 'desc' });
   const rowsPerPageInoperantes = 15;
 
   const [searchMensal, setSearchMensal] = useState('');
   const [pageMensal, setPageMensal] = useState(1);
+  const [sortMensal, setSortMensal] = useState<{
+    key: string;
+    direction: 'asc' | 'desc';
+  }>({ key: 'totalGeral', direction: 'desc' });
   const rowsPerPageMensal = 20;
 
   const [searchHistorico, setSearchHistorico] = useState('');
   const [filterMotivoHistorico, setFilterMotivoHistorico] = useState('TODOS');
   const [pageHistorico, setPageHistorico] = useState(1);
+  const [sortHistorico, setSortHistorico] = useState<{
+    key: SortHistoricoKey;
+    direction: 'asc' | 'desc';
+  }>({ key: 'dataParada', direction: 'desc' });
   const rowsPerPageHistorico = 25;
 
   useEffect(() => {
@@ -104,14 +123,34 @@ export const InterrupcoesView: React.FC = () => {
     });
   }, []);
 
+  // Handlers for sorting
+  const handleSortInoperantes = (key: SortInoperantesKey) => {
+    setSortInoperantes((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc',
+    }));
+    setPageInoperantes(1);
+  };
+
+  const handleSortMensal = (key: string) => {
+    setSortMensal((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc',
+    }));
+    setPageMensal(1);
+  };
+
+  const handleSortHistorico = (key: SortHistoricoKey) => {
+    setSortHistorico((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc',
+    }));
+    setPageHistorico(1);
+  };
+
   // 1. Calculations for Section 01
   const inoperantesList = useMemo(() => {
-    return records
-      .filter((r) => CONTRATOS_ATIVOS.includes(r.ct) && r.isInoperante)
-      .sort((a, b) => {
-        // Sort by data parada
-        return b.dataParada.localeCompare(a.dataParada);
-      });
+    return records.filter((r) => CONTRATOS_ATIVOS.includes(r.ct) && r.isInoperante);
   }, [records]);
 
   const filteredInoperantes = useMemo(() => {
@@ -126,12 +165,47 @@ export const InterrupcoesView: React.FC = () => {
     );
   }, [inoperantesList, searchInoperantes]);
 
+  const sortedInoperantes = useMemo(() => {
+    return [...filteredInoperantes].sort((a, b) => {
+      const valA = String(a[sortInoperantes.key] || '');
+      const valB = String(b[sortInoperantes.key] || '');
+      const cmp = valA.localeCompare(valB, 'pt-BR', { numeric: true, sensitivity: 'base' });
+      return sortInoperantes.direction === 'asc' ? cmp : -cmp;
+    });
+  }, [filteredInoperantes, sortInoperantes]);
+
   const paginatedInoperantes = useMemo(() => {
     const start = (pageInoperantes - 1) * rowsPerPageInoperantes;
-    return filteredInoperantes.slice(start, start + rowsPerPageInoperantes);
-  }, [filteredInoperantes, pageInoperantes]);
+    return sortedInoperantes.slice(start, start + rowsPerPageInoperantes);
+  }, [sortedInoperantes, pageInoperantes]);
 
-  const totalPagesInoperantes = Math.ceil(filteredInoperantes.length / rowsPerPageInoperantes) || 1;
+  const totalPagesInoperantes = Math.ceil(sortedInoperantes.length / rowsPerPageInoperantes) || 1;
+
+  // Export CSV for Inoperantes
+  const handleExportInoperantesCSV = () => {
+    if (sortedInoperantes.length === 0) return;
+    const headers = ['CONTRATO', 'CÓDIGO', 'TIPO', 'MOTIVO DA PARADA', 'DATA DA PARADA', 'ENDEREÇO COMPLETO', 'REGIONAL', 'BAIRRO'];
+    const rows = sortedInoperantes.map((r) => [
+      `"${r.ct}"`,
+      `"${r.codigo}"`,
+      `"${r.tipo}"`,
+      `"${(r.motivo || '').replace(/"/g, '""')}"`,
+      `"${r.dataParada}"`,
+      `"${(r.enderecoCompleto || '').replace(/"/g, '""')}"`,
+      `"${(r.regional || '').replace(/"/g, '""')}"`,
+      `"${(r.bairro || '').replace(/"/g, '""')}"`,
+    ]);
+
+    const csvContent = [headers.join(';'), ...rows.map((e) => e.join(';'))].join('\n');
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `equipamentos_inoperantes_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const contratoSummary = useMemo(() => {
     return calculateContratoSummary(records);
@@ -153,12 +227,26 @@ export const InterrupcoesView: React.FC = () => {
     );
   }, [mensalData.rows, searchMensal]);
 
+  const sortedMensalRows = useMemo(() => {
+    return [...filteredMensalRows].sort((a: any, b: any) => {
+      const valA = a[sortMensal.key];
+      const valB = b[sortMensal.key];
+      if (typeof valA === 'number' && typeof valB === 'number') {
+        return sortMensal.direction === 'asc' ? valA - valB : valB - valA;
+      }
+      const strA = String(valA ?? '');
+      const strB = String(valB ?? '');
+      const cmp = strA.localeCompare(strB, 'pt-BR', { numeric: true, sensitivity: 'base' });
+      return sortMensal.direction === 'asc' ? cmp : -cmp;
+    });
+  }, [filteredMensalRows, sortMensal]);
+
   const paginatedMensalRows = useMemo(() => {
     const start = (pageMensal - 1) * rowsPerPageMensal;
-    return filteredMensalRows.slice(start, start + rowsPerPageMensal);
-  }, [filteredMensalRows, pageMensal]);
+    return sortedMensalRows.slice(start, start + rowsPerPageMensal);
+  }, [sortedMensalRows, pageMensal]);
 
-  const totalPagesMensal = Math.ceil(filteredMensalRows.length / rowsPerPageMensal) || 1;
+  const totalPagesMensal = Math.ceil(sortedMensalRows.length / rowsPerPageMensal) || 1;
 
   // 3. Calculations for Section 03 (Types Chart + Full History Table)
   const tipoSummary = useMemo(() => {
@@ -167,8 +255,7 @@ export const InterrupcoesView: React.FC = () => {
 
   const historicoGeral = useMemo(() => {
     return records
-      .filter((r) => CONTRATOS_ATIVOS.includes(r.ct) || !!r.dataRetorno)
-      .sort((a, b) => b.dataParada.localeCompare(a.dataParada));
+      .filter((r) => CONTRATOS_ATIVOS.includes(r.ct) || !!r.dataRetorno);
   }, [records]);
 
   const motivosDisponiveis = useMemo(() => {
@@ -196,12 +283,21 @@ export const InterrupcoesView: React.FC = () => {
     });
   }, [historicoGeral, filterMotivoHistorico, searchHistorico]);
 
+  const sortedHistorico = useMemo(() => {
+    return [...filteredHistorico].sort((a, b) => {
+      const valA = String(a[sortHistorico.key] || '');
+      const valB = String(b[sortHistorico.key] || '');
+      const cmp = valA.localeCompare(valB, 'pt-BR', { numeric: true, sensitivity: 'base' });
+      return sortHistorico.direction === 'asc' ? cmp : -cmp;
+    });
+  }, [filteredHistorico, sortHistorico]);
+
   const paginatedHistorico = useMemo(() => {
     const start = (pageHistorico - 1) * rowsPerPageHistorico;
-    return filteredHistorico.slice(start, start + rowsPerPageHistorico);
-  }, [filteredHistorico, pageHistorico]);
+    return sortedHistorico.slice(start, start + rowsPerPageHistorico);
+  }, [sortedHistorico, pageHistorico]);
 
-  const totalPagesHistorico = Math.ceil(filteredHistorico.length / rowsPerPageHistorico) || 1;
+  const totalPagesHistorico = Math.ceil(sortedHistorico.length / rowsPerPageHistorico) || 1;
 
   if (loading && records.length === 0) {
     return (
@@ -209,7 +305,7 @@ export const InterrupcoesView: React.FC = () => {
         <Loader2 className="w-10 h-10 text-blue-600 animate-spin mx-auto" />
         <div>
           <h3 className="text-base font-bold text-slate-800">
-            Carregando dados aba Interrupções...
+            Carregando dados da aba Interrupções...
           </h3>
           <p className="text-xs text-slate-500 mt-1">
             Buscando dados de interrupções e inoperâncias no Google Sheets...
@@ -245,7 +341,7 @@ export const InterrupcoesView: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* SEÇÃO 01 (Imagem 01): Equipamentos Inoperantes + Acumulado por Contrato   */}
+      {/* SEÇÃO 01: Equipamentos Inoperantes + Acumulado por Contrato               */}
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Coluna Esquerda: Equipamentos Inoperantes Temporariamente (7 colunas lg) */}
@@ -257,21 +353,36 @@ export const InterrupcoesView: React.FC = () => {
                 Equipamentos Inoperantes Temporariamente
               </h3>
               <p className="text-xs text-slate-500">
-                Equipamentos com parada registrada e aguardando retorno ({filteredInoperantes.length} registros)
+                Equipamentos com parada registrada e aguardando retorno ({sortedInoperantes.length} registros)
               </p>
             </div>
-            <div className="relative min-w-[200px]">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Buscar equipamento..."
-                value={searchInoperantes}
-                onChange={(e) => {
-                  setSearchInoperantes(e.target.value);
-                  setPageInoperantes(1);
-                }}
-                className="w-full pl-9 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-800"
-              />
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Botão Exportar CSV */}
+              <button
+                type="button"
+                onClick={handleExportInoperantesCSV}
+                disabled={sortedInoperantes.length === 0}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-800 border border-emerald-300/80 rounded-lg text-xs font-semibold shadow-2xs transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Exportar equipamentos inoperantes para CSV (compatível com Excel)"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
+                <span>Exportar CSV</span>
+              </button>
+
+              {/* Input Busca */}
+              <div className="relative min-w-[160px] sm:min-w-[190px]">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Buscar equipamento..."
+                  value={searchInoperantes}
+                  onChange={(e) => {
+                    setSearchInoperantes(e.target.value);
+                    setPageInoperantes(1);
+                  }}
+                  className="w-full pl-9 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-800"
+                />
+              </div>
             </div>
           </div>
 
@@ -280,11 +391,96 @@ export const InterrupcoesView: React.FC = () => {
             <table className="w-full text-xs">
               <thead className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
                 <tr>
-                  <th className="py-2.5 px-3 text-center">CT</th>
-                  <th className="py-2.5 px-3 text-center">CÓDIGO</th>
-                  <th className="py-2.5 px-3 text-center">TIPO</th>
-                  <th className="py-2.5 px-3 text-center">MOTIVO</th>
-                  <th className="py-2.5 px-3 text-center">DATA DA PARADA ▲</th>
+                  <th
+                    onClick={() => handleSortInoperantes('ct')}
+                    className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
+                    title="Clique para ordenar por Contrato"
+                  >
+                    <div className="inline-flex items-center justify-center gap-1">
+                      <span>CT</span>
+                      {sortInoperantes.key === 'ct' ? (
+                        sortInoperantes.direction === 'asc' ? (
+                          <ArrowUp className="w-3.5 h-3.5 text-amber-600 font-bold" />
+                        ) : (
+                          <ArrowDown className="w-3.5 h-3.5 text-amber-600 font-bold" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSortInoperantes('codigo')}
+                    className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
+                    title="Clique para ordenar por Código"
+                  >
+                    <div className="inline-flex items-center justify-center gap-1">
+                      <span>CÓDIGO</span>
+                      {sortInoperantes.key === 'codigo' ? (
+                        sortInoperantes.direction === 'asc' ? (
+                          <ArrowUp className="w-3.5 h-3.5 text-amber-600 font-bold" />
+                        ) : (
+                          <ArrowDown className="w-3.5 h-3.5 text-amber-600 font-bold" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSortInoperantes('tipo')}
+                    className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
+                    title="Clique para ordenar por Tipo"
+                  >
+                    <div className="inline-flex items-center justify-center gap-1">
+                      <span>TIPO</span>
+                      {sortInoperantes.key === 'tipo' ? (
+                        sortInoperantes.direction === 'asc' ? (
+                          <ArrowUp className="w-3.5 h-3.5 text-amber-600 font-bold" />
+                        ) : (
+                          <ArrowDown className="w-3.5 h-3.5 text-amber-600 font-bold" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSortInoperantes('motivo')}
+                    className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
+                    title="Clique para ordenar por Motivo"
+                  >
+                    <div className="inline-flex items-center justify-center gap-1">
+                      <span>MOTIVO</span>
+                      {sortInoperantes.key === 'motivo' ? (
+                        sortInoperantes.direction === 'asc' ? (
+                          <ArrowUp className="w-3.5 h-3.5 text-amber-600 font-bold" />
+                        ) : (
+                          <ArrowDown className="w-3.5 h-3.5 text-amber-600 font-bold" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSortInoperantes('dataParada')}
+                    className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
+                    title="Clique para ordenar por Data da Parada"
+                  >
+                    <div className="inline-flex items-center justify-center gap-1">
+                      <span>DATA DA PARADA</span>
+                      {sortInoperantes.key === 'dataParada' ? (
+                        sortInoperantes.direction === 'asc' ? (
+                          <ArrowUp className="w-3.5 h-3.5 text-amber-600 font-bold" />
+                        ) : (
+                          <ArrowDown className="w-3.5 h-3.5 text-amber-600 font-bold" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </div>
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
@@ -324,11 +520,11 @@ export const InterrupcoesView: React.FC = () => {
           {/* Paginação da Tabela de Inoperantes */}
           <div className="p-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-xs text-slate-500">
             <span>
-              {filteredInoperantes.length > 0 ? (
+              {sortedInoperantes.length > 0 ? (
                 <>
                   {(pageInoperantes - 1) * rowsPerPageInoperantes + 1} -{' '}
-                  {Math.min(pageInoperantes * rowsPerPageInoperantes, filteredInoperantes.length)} /{' '}
-                  {filteredInoperantes.length}
+                  {Math.min(pageInoperantes * rowsPerPageInoperantes, sortedInoperantes.length)} /{' '}
+                  {sortedInoperantes.length}
                 </>
               ) : (
                 '0 / 0'
@@ -369,7 +565,7 @@ export const InterrupcoesView: React.FC = () => {
               <thead className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
                 <tr>
                   <th className="py-2.5 px-4 text-center">Contrato</th>
-                  <th className="py-2.5 px-4 text-center">Quantidade ▼</th>
+                  <th className="py-2.5 px-4 text-center">Quantidade</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-800">
@@ -456,7 +652,7 @@ export const InterrupcoesView: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* SEÇÃO 02 (Imagem 02): Acumulado de Interrupções por Mês (Pivot Matrix)    */}
+      {/* SEÇÃO 02: Acumulado de Interrupções por Mês (Pivot Matrix)                */}
       {/* ========================================================================= */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col overflow-hidden">
         {/* Header com Título e Busca */}
@@ -466,7 +662,7 @@ export const InterrupcoesView: React.FC = () => {
               Acumulado de Interrupções de Equipamentos por Mês
             </h3>
             <p className="text-xs text-slate-500">
-              Matriz mensal consolidada por equipamento e tipologia ({filteredMensalRows.length} equipamentos)
+              Matriz mensal consolidada por equipamento e tipologia ({sortedMensalRows.length} equipamentos)
             </p>
           </div>
           <div className="relative min-w-[220px]">
@@ -489,19 +685,43 @@ export const InterrupcoesView: React.FC = () => {
           <table className="w-full text-center text-xs border-collapse">
             <thead>
               <tr className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
-                <th className="py-2.5 px-3 text-center">CONTRATO</th>
-                <th className="py-2.5 px-3 text-center">CÓDIGO</th>
-                <th className="py-2.5 px-3 text-center">TIPO</th>
-                <th className="py-2.5 px-2 text-center">2025</th>
-                <th className="py-2.5 px-2 text-center">jan. de 2026</th>
-                <th className="py-2.5 px-2 text-center">fev. de 2026</th>
-                <th className="py-2.5 px-2 text-center">mar. de 2026</th>
-                <th className="py-2.5 px-2 text-center">abr. de 2026</th>
-                <th className="py-2.5 px-2 text-center">mai. de 2026</th>
-                <th className="py-2.5 px-2 text-center">jun. de 2026</th>
-                <th className="py-2.5 px-2 text-center">jul. de 2026</th>
-                <th className="py-2.5 px-2 text-center">ago. de 2026</th>
-                <th className="py-2.5 px-3 text-center bg-slate-200/70 font-bold">Total geral</th>
+                {[
+                  { key: 'contrato', label: 'CONTRATO' },
+                  { key: 'codigo', label: 'CÓDIGO' },
+                  { key: 'tipo', label: 'TIPO' },
+                  { key: 'ano2025', label: '2025' },
+                  { key: 'jan2026', label: 'jan. de 2026' },
+                  { key: 'fev2026', label: 'fev. de 2026' },
+                  { key: 'mar2026', label: 'mar. de 2026' },
+                  { key: 'abr2026', label: 'abr. de 2026' },
+                  { key: 'mai2026', label: 'mai. de 2026' },
+                  { key: 'jun2026', label: 'jun. de 2026' },
+                  { key: 'jul2026', label: 'jul. de 2026' },
+                  { key: 'ago2026', label: 'ago. de 2026' },
+                  { key: 'totalGeral', label: 'Total geral', isTotal: true },
+                ].map((col) => (
+                  <th
+                    key={col.key}
+                    onClick={() => handleSortMensal(col.key)}
+                    className={`py-2.5 px-2 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group ${
+                      col.isTotal ? 'bg-slate-200/70 font-bold' : ''
+                    }`}
+                    title={`Clique para ordenar por ${col.label}`}
+                  >
+                    <div className="inline-flex items-center justify-center gap-1">
+                      <span>{col.label}</span>
+                      {sortMensal.key === col.key ? (
+                        sortMensal.direction === 'asc' ? (
+                          <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold shrink-0" />
+                        ) : (
+                          <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold shrink-0" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                      )}
+                    </div>
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-800 font-medium">
@@ -585,11 +805,11 @@ export const InterrupcoesView: React.FC = () => {
         {/* Paginação da Tabela Mensal */}
         <div className="p-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-xs text-slate-500">
           <span>
-            {filteredMensalRows.length > 0 ? (
+            {sortedMensalRows.length > 0 ? (
               <>
                 {(pageMensal - 1) * rowsPerPageMensal + 1} -{' '}
-                {Math.min(pageMensal * rowsPerPageMensal, filteredMensalRows.length)} /{' '}
-                {filteredMensalRows.length}
+                {Math.min(pageMensal * rowsPerPageMensal, sortedMensalRows.length)} /{' '}
+                {sortedMensalRows.length}
               </>
             ) : (
               '0 / 0'
@@ -618,7 +838,7 @@ export const InterrupcoesView: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* SEÇÃO 03 (Imagem 03): Quantidade por Tipo + Relatório Histórico Geral     */}
+      {/* SEÇÃO 03: Quantidade por Tipo + Relatório Histórico Geral                 */}
       {/* ========================================================================= */}
       <div className="space-y-6">
         {/* Gráfico de Barras: Quantidade por Tipo de Equipamentos */}
@@ -671,7 +891,7 @@ export const InterrupcoesView: React.FC = () => {
                 Relatório Histórico de Parada e Retorno de Equipamentos
               </h3>
               <p className="text-xs text-slate-500">
-                Histórico cronológico de paradas e retornos registrados ({filteredHistorico.length} eventos)
+                Histórico cronológico de paradas e retornos registrados ({sortedHistorico.length} eventos)
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2.5">
@@ -716,12 +936,114 @@ export const InterrupcoesView: React.FC = () => {
             <table className="w-full text-xs">
               <thead className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
                 <tr>
-                  <th className="py-2.5 px-3 text-center">CT ▲</th>
-                  <th className="py-2.5 px-3 text-center">CÓDIGO</th>
-                  <th className="py-2.5 px-3 text-center">TIPO</th>
-                  <th className="py-2.5 px-4 text-center">Motivo da parada</th>
-                  <th className="py-2.5 px-3 text-center">Data de Parada</th>
-                  <th className="py-2.5 px-3 text-center">Data de Retorno</th>
+                  <th
+                    onClick={() => handleSortHistorico('ct')}
+                    className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
+                    title="Clique para ordenar por Contrato"
+                  >
+                    <div className="inline-flex items-center justify-center gap-1">
+                      <span>CT</span>
+                      {sortHistorico.key === 'ct' ? (
+                        sortHistorico.direction === 'asc' ? (
+                          <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                        ) : (
+                          <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSortHistorico('codigo')}
+                    className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
+                    title="Clique para ordenar por Código"
+                  >
+                    <div className="inline-flex items-center justify-center gap-1">
+                      <span>CÓDIGO</span>
+                      {sortHistorico.key === 'codigo' ? (
+                        sortHistorico.direction === 'asc' ? (
+                          <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                        ) : (
+                          <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSortHistorico('tipo')}
+                    className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
+                    title="Clique para ordenar por Tipo"
+                  >
+                    <div className="inline-flex items-center justify-center gap-1">
+                      <span>TIPO</span>
+                      {sortHistorico.key === 'tipo' ? (
+                        sortHistorico.direction === 'asc' ? (
+                          <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                        ) : (
+                          <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSortHistorico('motivo')}
+                    className="py-2.5 px-4 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
+                    title="Clique para ordenar por Motivo da parada"
+                  >
+                    <div className="inline-flex items-center justify-center gap-1">
+                      <span>Motivo da parada</span>
+                      {sortHistorico.key === 'motivo' ? (
+                        sortHistorico.direction === 'asc' ? (
+                          <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                        ) : (
+                          <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSortHistorico('dataParada')}
+                    className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
+                    title="Clique para ordenar por Data de Parada"
+                  >
+                    <div className="inline-flex items-center justify-center gap-1">
+                      <span>Data de Parada</span>
+                      {sortHistorico.key === 'dataParada' ? (
+                        sortHistorico.direction === 'asc' ? (
+                          <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                        ) : (
+                          <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSortHistorico('dataRetorno')}
+                    className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
+                    title="Clique para ordenar por Data de Retorno"
+                  >
+                    <div className="inline-flex items-center justify-center gap-1">
+                      <span>Data de Retorno</span>
+                      {sortHistorico.key === 'dataRetorno' ? (
+                        sortHistorico.direction === 'asc' ? (
+                          <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                        ) : (
+                          <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </div>
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
@@ -768,11 +1090,11 @@ export const InterrupcoesView: React.FC = () => {
           {/* Paginação do Histórico */}
           <div className="p-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-xs text-slate-500">
             <span>
-              {filteredHistorico.length > 0 ? (
+              {sortedHistorico.length > 0 ? (
                 <>
                   {(pageHistorico - 1) * rowsPerPageHistorico + 1} -{' '}
-                  {Math.min(pageHistorico * rowsPerPageHistorico, filteredHistorico.length)} /{' '}
-                  {filteredHistorico.length}
+                  {Math.min(pageHistorico * rowsPerPageHistorico, sortedHistorico.length)} /{' '}
+                  {sortedHistorico.length}
                 </>
               ) : (
                 '0 / 0'

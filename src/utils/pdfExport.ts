@@ -1679,7 +1679,7 @@ export async function exportMapWithFiltersPdf(
   doc.setTextColor(100, 116, 139);
   doc.text('Faixas ativas fiscalizadas', kpiC2, currentY + 12, { align: 'center' });
 
-  // Box 3: Locais Únicos
+  // Box 3: Locais Fiscalizados
   const kpiC3 = 12 + (boxWidth + gap) * 2 + (boxWidth / 2);
   doc.setDrawColor(253, 230, 138);
   doc.setFillColor(241, 245, 249);
@@ -1687,7 +1687,7 @@ export async function exportMapWithFiltersPdf(
   doc.setFontSize(6.5);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(217, 119, 6);
-  doc.text('LOCAIS ÚNICOS', kpiC3, currentY + 4, { align: 'center' });
+  doc.text('LOCAIS FISCALIZADOS', kpiC3, currentY + 4, { align: 'center' });
   doc.setFontSize(11);
   doc.setTextColor(15, 23, 42);
   doc.text(String(locaisUnicos), kpiC3, currentY + 9, { align: 'center' });
