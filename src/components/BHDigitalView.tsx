@@ -88,6 +88,7 @@ const renderBarCustomLabel = (props: any) => {
 export const BHDigitalView: React.FC = () => {
   const [allRecords, setAllRecords] = useState<BHDigitalRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
@@ -105,23 +106,51 @@ export const BHDigitalView: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const rowsPerPage = 15;
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
+  const loadData = useCallback(async (silent = false) => {
+    if (!silent) {
+      setLoading(true);
+    } else {
+      setIsRefreshing(true);
+    }
     setError(null);
     try {
       const data = await fetchBHDigitalData();
-      setAllRecords(data);
-      setLastUpdated(new Date());
+      if (data && data.length > 0) {
+        setAllRecords(data);
+        setLastUpdated(new Date());
+      } else if (!silent) {
+        setError('Nenhum dado encontrado na planilha BHDIGITAL.');
+      }
     } catch (err) {
       console.error('Erro ao carregar dados BHDIGITAL:', err);
-      setError('Não foi possível carregar os dados da aba BHDIGITAL.');
+      if (!silent) {
+        setError('Não foi possível carregar os dados da aba BHDIGITAL.');
+      }
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
   }, []);
 
+  // Carga inicial e configuração de sincronização automática
   useEffect(() => {
-    loadData();
+    loadData(false);
+
+    // Auto-refresh periódico em segundo plano a cada 60 segundos
+    const interval = setInterval(() => {
+      loadData(true);
+    }, 60000);
+
+    // Auto-refresh ao focar novamente na aba do navegador
+    const handleFocus = () => {
+      loadData(true);
+    };
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, [loadData]);
 
   // Handle Clear Filters
@@ -279,6 +308,27 @@ export const BHDigitalView: React.FC = () => {
 
         {/* Action Controls */}
         <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Status de Sincronização / Última Atualização */}
+          {lastUpdated && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-600 text-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>
+                Atualizado às <strong>{lastUpdated.toLocaleTimeString('pt-BR')}</strong>
+              </span>
+            </div>
+          )}
+
+          {/* Botão Atualizar Manualmente */}
+          <button
+            onClick={() => loadData(false)}
+            disabled={loading || isRefreshing}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 rounded-lg border border-slate-200 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+            title="Recarregar dados mais recentes da planilha Google Sheets em tempo real"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-blue-600 ${isRefreshing || loading ? 'animate-spin' : ''}`} />
+            <span>{isRefreshing || loading ? 'Sincronizando...' : 'Atualizar'}</span>
+          </button>
+
           {hasActiveFilters && (
             <button
               onClick={handleClearFilters}

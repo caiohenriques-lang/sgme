@@ -81,13 +81,46 @@ function normalizeKey(str: string): string {
 }
 
 export async function fetchBHDigitalData(): Promise<BHDigitalRecord[]> {
-  try {
-    const urlWithCacheBust = `${BHDIGITAL_CSV_URL}&_cb=${Date.now()}`;
-    const response = await fetch(urlWithCacheBust, { cache: 'no-store' });
-    if (!response.ok) {
-      throw new Error(`HTTP error ${response.status}`);
+  const urls = [
+    `${BHDIGITAL_CSV_URL}&_cb=${Date.now()}`,
+    `https://corsproxy.io/?${encodeURIComponent(`${BHDIGITAL_CSV_URL}&_cb=${Date.now()}`)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(`${BHDIGITAL_CSV_URL}&_cb=${Date.now()}`)}`
+  ];
+
+  let csvText = '';
+
+  for (const url of urls) {
+    try {
+      const response = await fetch(url, { cache: 'no-store' });
+      if (response.ok) {
+        const text = await response.text();
+        if (text && (text.includes('BHDIGITAL') || text.includes('BH DIGITAL') || text.includes('LOGRADOURO'))) {
+          csvText = text;
+          break;
+        }
+      }
+    } catch (err) {
+      console.warn(`Tentativa de carregar BHDigital falhou para ${url}:`, err);
     }
-    const csvText = await response.text();
+  }
+
+  // Se o fetch falhar, tenta recuperar do cache local
+  if (!csvText) {
+    const cached = localStorage.getItem('geapi_bhdigital_cache');
+    if (cached) {
+      try {
+        const parsedCached = JSON.parse(cached);
+        if (Array.isArray(parsedCached) && parsedCached.length > 0) {
+          return parsedCached;
+        }
+      } catch (e) {
+        console.error('Erro ao ler cache do BHDigital:', e);
+      }
+    }
+    return [];
+  }
+
+  try {
     const parsed = Papa.parse<Record<string, string>>(csvText, {
       header: true,
       skipEmptyLines: true,
@@ -184,9 +217,17 @@ export async function fetchBHDigitalData(): Promise<BHDigitalRecord[]> {
       });
     });
 
+    if (records.length > 0) {
+      try {
+        localStorage.setItem('geapi_bhdigital_cache', JSON.stringify(records));
+      } catch (e) {
+        console.warn('Não foi possível salvar cache local de BHDigital:', e);
+      }
+    }
+
     return records;
   } catch (error) {
-    console.error('Erro ao buscar dados BHDIGITAL:', error);
+    console.error('Erro ao processar dados BHDIGITAL:', error);
     return [];
   }
 }
