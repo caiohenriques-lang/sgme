@@ -1638,7 +1638,11 @@ export async function exportMapWithFiltersPdf(
 
   // 2. KPIS BAR (Total Equip, Total Faixas, Locais Únicos, Coordenadas)
   const totalFaixas = records.reduce((acc, r) => acc + (Number(r.FAIXAS) || 0), 0);
-  const locaisUnicos = new Set(records.map(r => r['COD LOG'] || r['ENDEREÇO COMPLETO'] || r.CÓDIGO)).size;
+  const locaisUnicos = new Set(
+    records
+      .map(r => (r['ENDEREÇO COMPLETO'] || r['ENDEREÇOS DOS EQUIPAMENTOS'] || r.CÓDIGO || '').trim().toLowerCase())
+      .filter(Boolean)
+  ).size;
   const comCoords = records.filter(r => r.hasValidCoord).length;
 
   const boxWidth = 44;
@@ -1705,7 +1709,7 @@ export async function exportMapWithFiltersPdf(
   doc.setFontSize(6.5);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(147, 51, 234);
-  doc.text('TIPOLOGIAS', kpiC4, currentY + 4, { align: 'center' });
+  doc.text('TIPOS DE FISCALIZAÇÃO', kpiC4, currentY + 4, { align: 'center' });
   doc.setFontSize(11);
   doc.setTextColor(15, 23, 42);
   doc.text(String(distinctTipos.length), kpiC4, currentY + 9, { align: 'center' });
@@ -1803,7 +1807,7 @@ export async function exportMapWithFiltersPdf(
   doc.setFontSize(6.8);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(30, 41, 59);
-  doc.text('DISTRIBUIÇÃO DOS EQUIPAMENTOS POR TIPOLOGIA NO RECORTE ATUAL', 14, currentY + 3.2);
+  doc.text('DISTRIBUIÇÃO DOS EQUIPAMENTOS POR TIPOS DE FISCALIZAÇÃO NO RECORTE ATUAL', 14, currentY + 3.2);
 
   currentY += 5;
 
