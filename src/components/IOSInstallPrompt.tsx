@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Share, PlusSquare, X, Smartphone, Check } from 'lucide-react';
-import { SpeedRadarIcon } from './SpeedRadarIcon';
 
 export const IOSInstallPrompt: React.FC = () => {
   const [showPrompt, setShowPrompt] = useState(false);
@@ -52,11 +51,15 @@ export const IOSInstallPrompt: React.FC = () => {
   return (
     <aside aria-label="Instalação do Aplicativo iOS" className="fixed bottom-20 left-3 right-3 sm:left-auto sm:right-6 sm:max-w-md z-50 animate-in fade-in slide-in-from-bottom-5 duration-300">
       <div className="bg-slate-900/95 text-white backdrop-blur-md rounded-2xl p-4 shadow-2xl border border-slate-700/80 space-y-3">
-        {/* Header */}
+        {/* Header com o Favicon Padrão do Portal */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center p-1.5 shadow-md shrink-0 ring-2 ring-blue-400/30">
-              <SpeedRadarIcon className="w-7 h-7 text-white" />
+            <div className="w-11 h-11 rounded-2xl overflow-hidden shadow-lg shrink-0 ring-2 ring-blue-400/40 bg-slate-950 flex items-center justify-center p-0.5">
+              <img
+                src="/icon.svg"
+                alt="Favicon GEAPI FE"
+                className="w-full h-full object-contain rounded-xl"
+              />
             </div>
             <div>
               <h4 className="font-bold text-sm text-slate-100 flex items-center gap-1.5">
@@ -64,7 +67,7 @@ export const IOSInstallPrompt: React.FC = () => {
                 <span>Adicionar ao iPhone / iPad</span>
               </h4>
               <p className="text-[11px] text-slate-300">
-                Instale o WebApp do GEAPI FE na sua tela de início
+                Instale o ícone do GEAPI FE na sua tela de início
               </p>
             </div>
           </div>
@@ -109,7 +112,7 @@ export const IOSInstallPrompt: React.FC = () => {
               3
             </span>
             <p className="leading-snug text-slate-300">
-              Toque em <strong>Adicionar</strong> no canto superior direito para criar o ícone direto no seu smartphone.
+              Toque em <strong>Adicionar</strong> no canto superior direito para criar o ícone idêntico ao portal direto na sua Área de Trabalho / Tela Inicial.
             </p>
           </div>
         </div>

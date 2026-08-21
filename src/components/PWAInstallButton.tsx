@@ -93,8 +93,12 @@ export const PWAInstallButton: React.FC = () => {
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-50 text-blue-600 rounded-2xl border border-blue-100">
-                  <SpeedRadarIcon className="w-6 h-6" />
+                <div className="w-10 h-10 rounded-2xl overflow-hidden shadow-xs shrink-0 ring-1 ring-blue-200/60 bg-slate-950 flex items-center justify-center p-0.5">
+                  <img
+                    src="/icon.svg"
+                    alt="Favicon GEAPI FE"
+                    className="w-full h-full object-contain rounded-xl"
+                  />
                 </div>
                 <div>
                   <h4 className="font-bold text-sm text-slate-900 leading-tight">GEAPI FE · WebApp</h4>
