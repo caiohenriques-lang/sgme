@@ -54,11 +54,23 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   onReset,
   onClearAll,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 768;
+    }
+    return true;
+  });
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isCodigoPopoverOpen, setIsCodigoPopoverOpen] = useState(false);
   const [codigoSearch, setCodigoSearch] = useState('');
   const codigoPopoverRef = useRef<HTMLDivElement>(null);
+
+  // Garantir que no mobile a barra de filtros inicie sempre recolhida ao mudar de aba
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setIsExpanded(false);
+    }
+  }, [activeTab]);
 
   // Close popover when clicking outside
   useEffect(() => {

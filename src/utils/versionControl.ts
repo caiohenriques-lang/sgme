@@ -6,15 +6,23 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.1.1';
+export const APP_VERSION = 'v3.1.2';
 export const BUILD_DATE = '22/08/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.1.2',
+    date: '22/08/2026',
+    tag: 'Menu de Pesquisa e Filtros Sempre Recolhido por Padrão no Mobile',
+    isLatest: true,
+    changes: [
+      'Configurado para que a barra de pesquisa e filtros interativa inicie sempre recolhida por padrão em dispositivos móveis (ao carregar o portal ou alternar entre abas), liberando imediatamente o espaço visual para visualização dos mapas e dados.'
+    ]
+  },
+  {
     version: 'v3.1.1',
     date: '22/08/2026',
     tag: 'Suavização Visual do Botão Expandir/Recolher no Mobile e Desktop',
-    isLatest: true,
     changes: [
       'Design do botão "Expandir / Recolher" refinado para um estilo mais suave, elegante e discreto (fundo suave, tipografia equilibrada em negrito e bordas delicadas), mantendo excelente legibilidade e usabilidade.'
     ]
