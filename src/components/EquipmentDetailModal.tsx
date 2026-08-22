@@ -12,6 +12,7 @@ interface EquipmentDetailModalProps {
 
 export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ record, onClose }) => {
   const [copiedCoord, setCopiedCoord] = useState(false);
+  const [copiedSerial, setCopiedSerial] = useState(false);
 
   if (!record) return null;
 
@@ -28,6 +29,16 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
       setTimeout(() => setCopiedCoord(false), 2000);
     }).catch((err) => {
       console.error('Erro ao copiar link do Google Maps:', err);
+    });
+  };
+
+  const handleCopySerial = (serialText: string) => {
+    if (!serialText) return;
+    navigator.clipboard.writeText(serialText.trim()).then(() => {
+      setCopiedSerial(true);
+      setTimeout(() => setCopiedSerial(false), 2000);
+    }).catch((err) => {
+      console.error('Erro ao copiar número de série:', err);
     });
   };
 
@@ -221,16 +232,39 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
                                 <ExternalLink className="w-3.5 h-3.5 text-blue-500 shrink-0" />
                               </a>
                             ) : rbmlqUrl ? (
-                              <a
-                                href={rbmlqUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1.5 font-medium text-blue-600 hover:text-blue-800 hover:underline bg-blue-50/80 hover:bg-blue-100/80 px-2.5 py-0.5 rounded-md border border-blue-200/80 transition-colors shadow-2xs"
-                                title={`Consultar instrumento nº ${value} no portal de serviços RBMLQ`}
-                              >
-                                <span>{value}</span>
-                                <ExternalLink className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-                              </a>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <a
+                                  href={rbmlqUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 font-medium text-blue-600 hover:text-blue-800 hover:underline bg-blue-50/80 hover:bg-blue-100/80 px-2.5 py-0.5 rounded-md border border-blue-200/80 transition-colors shadow-2xs"
+                                  title={`Consultar instrumento nº ${value} no portal de serviços RBMLQ`}
+                                >
+                                  <span>{value}</span>
+                                  <ExternalLink className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                                </a>
+                                <button
+                                  onClick={() => handleCopySerial(value)}
+                                  className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-md border transition-all cursor-pointer shadow-2xs active:scale-95 ${
+                                    copiedSerial
+                                      ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                                      : 'bg-white hover:bg-slate-100 text-slate-700 hover:text-slate-900 border-slate-300'
+                                  }`}
+                                  title="Copiar número de série para a área de transferência"
+                                >
+                                  {copiedSerial ? (
+                                    <>
+                                      <Check className="w-3 h-3 text-emerald-600 shrink-0" />
+                                      <span className="text-[11px] font-semibold text-emerald-700">Copiado!</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy className="w-3 h-3 text-slate-500 shrink-0" />
+                                      <span className="text-[11px]">Copiar</span>
+                                    </>
+                                  )}
+                                </button>
+                              </div>
                             ) : isCoord ? (
                               value && value !== '-' ? (
                                 <div className="flex items-center gap-2 flex-wrap">

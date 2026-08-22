@@ -6,15 +6,82 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v2.7.0';
-export const BUILD_DATE = '21/08/2026';
+export const APP_VERSION = 'v3.1.1';
+export const BUILD_DATE = '22/08/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v3.1.1',
+    date: '22/08/2026',
+    tag: 'Suavização Visual do Botão Expandir/Recolher no Mobile e Desktop',
+    isLatest: true,
+    changes: [
+      'Design do botão "Expandir / Recolher" refinado para um estilo mais suave, elegante e discreto (fundo suave, tipografia equilibrada em negrito e bordas delicadas), mantendo excelente legibilidade e usabilidade.'
+    ]
+  },
+  {
+    version: 'v3.1.0',
+    date: '22/08/2026',
+    tag: 'Destaque no Botão EXPANDIR, Ocultação da Legenda no Mobile e Remoção de Contadores',
+    changes: [
+      'Botão "EXPANDIR / RECOLHER" destacado com tipografia em negrito e contraste visual aprimorado para facilitar a identificação rápida.',
+      'Removido o indicador quantitativo numérico (ex: 257/1012) tanto no Desktop quanto no Mobile, proporcionando um cabeçalho mais limpo.',
+      'Ocultado o botão e painel de "Legenda" no mapa do Monitoramento Espacial em dispositivos móveis, maximizando a área de navegação cartográfica.'
+    ]
+  },
+  {
+    version: 'v3.0.0',
+    date: '22/08/2026',
+    tag: 'Filtros Expansíveis e Recolhíveis no Portal (Monitoramento, Indicadores e Lista)',
+    changes: [
+      'Interação intuitiva de expandir e recolher os campos de pesquisa e seletores de filtros disponibilizada para todo o portal (Monitoramento Espacial, Indicadores, Lista de Equipamentos e Resumo Gerencial), tanto no Desktop quanto no Mobile.',
+      'Preservado o indicador quantitativo de equipamentos (ex: 657/1012) diretamente no cabeçalho dos filtros.',
+      'Clique no cabeçalho ou no botão interativo "Recolher / Expandir" alterna suavemente o painel de filtros.'
+    ]
+  },
+  {
+    version: 'v2.9.3',
+    date: '22/08/2026',
+    tag: 'Ocultação do Texto de Contagem Total de Equipamentos na Barra de Filtros',
+    changes: [
+      'Removida a exibição do texto "Exibindo X de Y equipamentos" na barra de filtros principal e na aba de Resumo Gerencial, proporcionando um layout mais limpo e focado.'
+    ]
+  },
+  {
+    version: 'v2.9.2',
+    date: '22/08/2026',
+    tag: 'Barra Principal de Filtros e Pesquisa Recolhível no Mobile',
+    changes: [
+      'Barra superior de filtros e pesquisa rápida (FilterBar) adaptada para modo recolhível no mobile por padrão, exibindo cabeçalho compacto com resumo de equipamentos e status de filtros.',
+      'Toque intuitivo no cabeçalho mobile ou no botão "Expandir/Recolher" para exibir ou ocultar os filtros a qualquer momento, liberando espaço visual para o mapa e tabelas.',
+      'Suporte a recolhimento implementado também para os filtros do Resumo Gerencial.'
+    ]
+  },
+  {
+    version: 'v2.8.1',
+    date: '22/08/2026',
+    tag: 'Copiar Nº de Série em Equipamentos CEV no Modal de Detalhes',
+    changes: [
+      'Adicionado botão interativo de cópia rápida do "Nº DE SÉRIE" à direita do campo em equipamentos do tipo CEV no modal de detalhes.',
+      'Feedback visual de cópia instantâneo ("Copiado!") integrado ao botão.'
+    ]
+  },
+  {
+    version: 'v2.8.0',
+    date: '22/08/2026',
+    tag: 'Hiperlink Direto Google Maps, Copiar Link no Modal & Controle de Versão no Rodapé',
+    changes: [
+      'Controle de versões dinâmico e interativo adicionado diretamente no rodapé à esquerda do botão "Atualizar".',
+      'Coordenadas geográficas no modal de detalhes transformadas em hiperlink direto para o Google Maps (https://www.google.com/maps/place/<coordenada>).',
+      'Função de copiar no modal atualizada para copiar a URL completa do Google Maps para a área de transferência com feedback visual imediato ("Link Copiado!").',
+      'Padronização no relatório em PDF do Monitoramento Espacial de "Tipologia" para "Tipos de Fiscalização" nos cards e tabelas.',
+      'Cálculo corrigido de locais fiscalizados distintos na exportação de relatórios em PDF do Monitoramento Espacial.'
+    ]
+  },
   {
     version: 'v2.7.0',
     date: '21/08/2026',
     tag: 'Exportação CSV, Ordenações Dinâmicas, Ajustes Visuais e Suporte PWA iOS',
-    isLatest: true,
     changes: [
       'Exportação em CSV nas tabelas "Equipamentos Inoperantes Temporariamente" e "Relatório Histórico de Parada e Retorno de Equipamentos" com suporte nativo a acentuação (BOM UTF-8).',
       'Ordenação dinâmica por clique nos cabeçalhos de coluna de todas as tabelas da aba Interrupções de Equipamentos (Inoperantes, Matriz Mensal e Histórico Geral).',

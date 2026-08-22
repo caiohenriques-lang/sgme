@@ -52,7 +52,18 @@ export const FooterLegend: React.FC<FooterLegendProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-3 flex-wrap justify-center sm:justify-end">
+          <div className="flex items-center gap-2.5 flex-wrap justify-center sm:justify-end">
+            {/* Version Control Badge / Button directly to the left of Atualizar */}
+            <button
+              onClick={() => setIsChangelogOpen(true)}
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-medium text-slate-300 hover:text-white bg-slate-800/90 hover:bg-slate-800 border border-slate-700/80 hover:border-slate-600 rounded-md transition-colors cursor-pointer active:scale-95 shadow-2xs group"
+              title={`Controle de Versões: ${currentVersion.version} (${currentVersion.date}) - Clique para ver o histórico de atualizações`}
+            >
+              <GitBranch className="w-3 h-3 text-blue-400 group-hover:text-blue-300 transition-colors" />
+              <span className="font-mono font-semibold text-white">{currentVersion.version}</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" title="Versão mais recente instalada" />
+            </button>
+
             {/* Global Refresh Button Styled for Footer */}
             {onRefresh && (
               <button

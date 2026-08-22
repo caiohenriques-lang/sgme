@@ -291,11 +291,11 @@ export const MapView: React.FC<MapViewProps> = ({ records, filters, onSelectReco
       
       {/* Floating Map Controls & Export Bar */}
       <div className="absolute top-3 right-3 z-30 flex items-center gap-2 pointer-events-auto">
-        {/* Legend Toggle Button */}
+        {/* Legend Toggle Button - Hidden on mobile */}
         <button
           type="button"
           onClick={() => setShowLegend(!showLegend)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold shadow-sm transition-all ${
+          className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold shadow-sm transition-all ${
             showLegend
               ? 'bg-slate-900 text-white border-slate-900'
               : 'bg-white/95 hover:bg-white text-slate-700 border-slate-200 hover:border-slate-300'
@@ -329,9 +329,9 @@ export const MapView: React.FC<MapViewProps> = ({ records, filters, onSelectReco
         </button>
       </div>
 
-      {/* Floating Legend Overlay */}
+      {/* Floating Legend Overlay - Hidden on mobile */}
       {showLegend && (
-        <div className="absolute top-14 right-3 z-40 bg-white/95 backdrop-blur-md p-3.5 rounded-xl border border-slate-200 shadow-xl max-w-xs w-72 max-h-[calc(100%-80px)] overflow-y-auto space-y-2 pointer-events-auto animate-in fade-in zoom-in-95 duration-150">
+        <div className="hidden sm:block absolute top-14 right-3 z-40 bg-white/95 backdrop-blur-md p-3.5 rounded-xl border border-slate-200 shadow-xl max-w-xs w-72 max-h-[calc(100%-80px)] overflow-y-auto space-y-2 pointer-events-auto animate-in fade-in zoom-in-95 duration-150">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2">
             <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Tipologia dos Equipamentos</h4>
             <button
