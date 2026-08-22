@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { EquipmentRecord } from '../types';
 import { ALL_SHEET_HEADERS } from '../services/dataService';
 import { exportSingleRecordPDF } from '../utils/pdfExport';
-import { X, FileDown, MapPin, Building, Calendar, Layers, Tag, ExternalLink } from 'lucide-react';
+import { X, FileDown, MapPin, Building, Calendar, Layers, Tag, ExternalLink, Copy, Check } from 'lucide-react';
 import { SpeedRadarIcon } from './SpeedRadarIcon';
 
 interface EquipmentDetailModalProps {
@@ -11,10 +11,24 @@ interface EquipmentDetailModalProps {
 }
 
 export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ record, onClose }) => {
+  const [copiedCoord, setCopiedCoord] = useState(false);
+
   if (!record) return null;
 
   const handleExportPDF = () => {
     exportSingleRecordPDF(record);
+  };
+
+  const handleCopyCoordinates = (coordText: string) => {
+    if (!coordText) return;
+    const cleanCoord = coordText.trim().replace(/\s+/g, '');
+    const mapsLink = `https://www.google.com/maps/place/${cleanCoord}`;
+    navigator.clipboard.writeText(mapsLink).then(() => {
+      setCopiedCoord(true);
+      setTimeout(() => setCopiedCoord(false), 2000);
+    }).catch((err) => {
+      console.error('Erro ao copiar link do Google Maps:', err);
+    });
   };
 
   // Group headers into clean sections
@@ -186,13 +200,15 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
                       const isNumSerie = header === 'Nº DE SÉRIE' || header === 'Nº de Série' || labelText === 'Nº DE SÉRIE';
                       const rbmlqUrl = isCEV && isNumSerie && value && value !== '-' ? 'https://servicos.rbmlq.gov.br/Instrumento' : null;
 
+                      const isCoord = header === 'COORD_LAT_LONG' || labelText === 'COORDENADAS GEOGRÁFICAS';
+
                       return (
                         <div key={header} className="grid grid-cols-1 sm:grid-cols-3 px-4 py-2.5 hover:bg-slate-50/80 transition-colors">
                           <span className="font-semibold text-slate-600 text-xs flex items-center gap-1">
                             <Tag className="w-3 h-3 text-slate-400 shrink-0" />
                             {labelText}
                           </span>
-                          <span className="sm:col-span-2 text-slate-900 font-normal break-words flex items-center gap-2">
+                          <span className="sm:col-span-2 text-slate-900 font-normal break-words flex items-center gap-2 flex-wrap">
                             {inmetroUrl ? (
                               <a
                                 href={inmetroUrl}
@@ -215,6 +231,44 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
                                 <span>{value}</span>
                                 <ExternalLink className="w-3.5 h-3.5 text-blue-500 shrink-0" />
                               </a>
+                            ) : isCoord ? (
+                              value && value !== '-' ? (
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <a
+                                    href={`https://www.google.com/maps/place/${value.trim().replace(/\s+/g, '')}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="font-mono bg-blue-50/70 hover:bg-blue-100 text-blue-700 hover:text-blue-900 px-2 py-0.5 rounded border border-blue-200 hover:border-blue-300 transition-colors inline-flex items-center gap-1.5 group font-medium"
+                                    title="Abrir localização no Google Maps"
+                                  >
+                                    <span>{value}</span>
+                                    <ExternalLink className="w-3.5 h-3.5 text-blue-500 group-hover:text-blue-700 shrink-0" />
+                                  </a>
+                                  <button
+                                    onClick={() => handleCopyCoordinates(value)}
+                                    className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-md border transition-all cursor-pointer shadow-2xs active:scale-95 ${
+                                      copiedCoord
+                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                                        : 'bg-white hover:bg-slate-100 text-slate-700 hover:text-slate-900 border-slate-300'
+                                    }`}
+                                    title="Copiar link do Google Maps para a área de transferência"
+                                  >
+                                    {copiedCoord ? (
+                                      <>
+                                        <Check className="w-3 h-3 text-emerald-600 shrink-0" />
+                                        <span className="text-[11px] font-semibold text-emerald-700">Link Copiado!</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Copy className="w-3 h-3 text-slate-500 shrink-0" />
+                                        <span className="text-[11px]">Copiar Link</span>
+                                      </>
+                                    )}
+                                  </button>
+                                </div>
+                              ) : (
+                                '-'
+                              )
                             ) : (
                               value
                             )}
