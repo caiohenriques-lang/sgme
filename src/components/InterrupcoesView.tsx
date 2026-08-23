@@ -37,7 +37,7 @@ import {
 } from '../services/interrupcoesService';
 
 type SortInoperantesKey = 'ct' | 'codigo' | 'tipo' | 'motivo' | 'dataParada';
-type SortHistoricoKey = 'ct' | 'codigo' | 'tipo' | 'motivo' | 'dataParada' | 'dataRetorno';
+type SortHistoricoKey = 'ct' | 'codigo' | 'tipo' | 'motivo' | 'oficioInicial' | 'dataParada' | 'oficioRetorno' | 'dataRetorno';
 
 const renderCustomPieLabel = ({
   cx,
@@ -278,6 +278,8 @@ export const InterrupcoesView: React.FC = () => {
         r.motivo.toLowerCase().includes(q) ||
         r.tipo.toLowerCase().includes(q) ||
         r.ct.toLowerCase().includes(q) ||
+        r.oficioInicial.toLowerCase().includes(q) ||
+        r.oficioRetorno.toLowerCase().includes(q) ||
         r.enderecoCompleto.toLowerCase().includes(q)
       );
     });
@@ -285,9 +287,25 @@ export const InterrupcoesView: React.FC = () => {
 
   const sortedHistorico = useMemo(() => {
     return [...filteredHistorico].sort((a, b) => {
-      const valA = String(a[sortHistorico.key] || '');
-      const valB = String(b[sortHistorico.key] || '');
-      const cmp = valA.localeCompare(valB, 'pt-BR', { numeric: true, sensitivity: 'base' });
+      const valA = a[sortHistorico.key] || '';
+      const valB = b[sortHistorico.key] || '';
+
+      // Ordenação cronológica para datas de parada e retorno DD/MM/AAAA
+      if (sortHistorico.key === 'dataParada' || sortHistorico.key === 'dataRetorno') {
+        const parseBRDate = (d: string) => {
+          if (!d) return 0;
+          const parts = d.split('/');
+          if (parts.length !== 3) return 0;
+          return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10)).getTime();
+        };
+        const timeA = parseBRDate(valA);
+        const timeB = parseBRDate(valB);
+        if (timeA !== timeB) {
+          return sortHistorico.direction === 'asc' ? timeA - timeB : timeB - timeA;
+        }
+      }
+
+      const cmp = String(valA).localeCompare(String(valB), 'pt-BR', { numeric: true, sensitivity: 'base' });
       return sortHistorico.direction === 'asc' ? cmp : -cmp;
     });
   }, [filteredHistorico, sortHistorico]);
@@ -307,13 +325,13 @@ export const InterrupcoesView: React.FC = () => {
       'CÓDIGO',
       'TIPO',
       'MOTIVO DA PARADA',
+      'OFÍCIO DE PARADA',
       'DATA DA PARADA',
+      'OFÍCIO DE RETORNO',
       'DATA DE RETORNO',
       'STATUS',
       'ENDEREÇO COMPLETO',
-      'OFÍCIO INICIAL',
       'INFORMADO INICIAL',
-      'OFÍCIO RETORNO',
       'INFORMADO FINAL',
       'HORÁRIO VANDALISMO',
     ];
@@ -322,13 +340,13 @@ export const InterrupcoesView: React.FC = () => {
       `"${r.codigo}"`,
       `"${r.tipo}"`,
       `"${(r.motivo || '').replace(/"/g, '""')}"`,
+      `"${(r.oficioInicial || '').replace(/"/g, '""')}"`,
       `"${r.dataParada}"`,
+      `"${(r.oficioRetorno || '').replace(/"/g, '""')}"`,
       `"${r.dataRetorno || ''}"`,
       `"${r.dataRetorno ? 'RETORNADO' : 'INOPERANTE'}"`,
       `"${(r.enderecoCompleto || '').replace(/"/g, '""')}"`,
-      `"${(r.oficioInicial || '').replace(/"/g, '""')}"`,
       `"${(r.informadoInicial || '').replace(/"/g, '""')}"`,
-      `"${(r.oficioRetorno || '').replace(/"/g, '""')}"`,
       `"${(r.informadoFinal || '').replace(/"/g, '""')}"`,
       `"${(r.horarioVandalismo || '').replace(/"/g, '""')}"`,
     ]);
@@ -1066,6 +1084,24 @@ export const InterrupcoesView: React.FC = () => {
                     </div>
                   </th>
                   <th
+                    onClick={() => handleSortHistorico('oficioInicial')}
+                    className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
+                    title="Clique para ordenar por Ofício de Parada"
+                  >
+                    <div className="inline-flex items-center justify-center gap-1">
+                      <span>Ofício de Parada</span>
+                      {sortHistorico.key === 'oficioInicial' ? (
+                        sortHistorico.direction === 'asc' ? (
+                          <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                        ) : (
+                          <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </div>
+                  </th>
+                  <th
                     onClick={() => handleSortHistorico('dataParada')}
                     className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
                     title="Clique para ordenar por Data de Parada"
@@ -1073,6 +1109,24 @@ export const InterrupcoesView: React.FC = () => {
                     <div className="inline-flex items-center justify-center gap-1">
                       <span>Data de Parada</span>
                       {sortHistorico.key === 'dataParada' ? (
+                        sortHistorico.direction === 'asc' ? (
+                          <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                        ) : (
+                          <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSortHistorico('oficioRetorno')}
+                    className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
+                    title="Clique para ordenar por Ofício de Retorno"
+                  >
+                    <div className="inline-flex items-center justify-center gap-1">
+                      <span>Ofício de Retorno</span>
+                      {sortHistorico.key === 'oficioRetorno' ? (
                         sortHistorico.direction === 'asc' ? (
                           <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
                         ) : (
@@ -1106,7 +1160,7 @@ export const InterrupcoesView: React.FC = () => {
               <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
                 {paginatedHistorico.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-8 text-center text-slate-400">
+                    <td colSpan={8} className="py-8 text-center text-slate-400">
                       Nenhum registro de histórico encontrado para os filtros selecionados.
                     </td>
                   </tr>
@@ -1127,8 +1181,14 @@ export const InterrupcoesView: React.FC = () => {
                       <td className="py-2.5 px-4 text-center text-slate-700">
                         {row.motivo}
                       </td>
+                      <td className="py-2.5 px-3 text-center whitespace-nowrap font-mono text-slate-700">
+                        {row.oficioInicial || '-'}
+                      </td>
                       <td className="py-2.5 px-3 text-center whitespace-nowrap font-mono text-slate-600">
                         {row.dataParada}
+                      </td>
+                      <td className="py-2.5 px-3 text-center whitespace-nowrap font-mono text-slate-700">
+                        {row.oficioRetorno || '-'}
                       </td>
                       <td className="py-2.5 px-3 text-center whitespace-nowrap font-mono font-semibold">
                         {row.dataRetorno ? (

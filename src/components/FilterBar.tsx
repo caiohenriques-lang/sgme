@@ -190,8 +190,16 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             </div>
           </div>
 
-          <div className={`${isExpanded ? 'block' : 'hidden'} space-y-3 pt-2 border-t border-slate-100`}>
-            {/* Row 1: Status do equipamento, OS, Regional, Bairro */}
+          {/* Collapsible Content with smooth CSS max-height and opacity transition */}
+          <div
+            className={`transition-[max-height,opacity,margin,padding] duration-300 ease-in-out ${
+              isExpanded
+                ? 'max-h-[800px] opacity-100 overflow-visible pt-2 border-t border-slate-100'
+                : 'max-h-0 opacity-0 overflow-hidden pointer-events-none pt-0 border-t-0'
+            }`}
+          >
+            <div className="space-y-3">
+              {/* Row 1: Status do equipamento, OS, Regional, Bairro */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
               {/* 1. STATUS DO EQUIPAMENTO */}
               <div className="lg:col-span-3">
@@ -337,7 +345,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                 </div>
               </div>
             </div>
-
+            </div>
           </div>
         </div>
       </div>
@@ -397,9 +405,16 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           </div>
         </div>
 
-        {/* Collapsible Filters Wrapper */}
-        <div className={`${isExpanded ? 'block' : 'hidden'} space-y-3 pt-1`}>
-        {/* Search & Main Filter Grid - Row 1 */}
+        {/* Collapsible Filters Wrapper with smooth CSS max-height and opacity transition */}
+        <div
+          className={`transition-[max-height,opacity,margin,padding] duration-300 ease-in-out ${
+            isExpanded
+              ? 'max-h-[1400px] opacity-100 overflow-visible pt-1'
+              : 'max-h-0 opacity-0 overflow-hidden pointer-events-none pt-0'
+          }`}
+        >
+          <div className="space-y-3">
+          {/* Search & Main Filter Grid - Row 1 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
           
           {/* Quick Search */}
@@ -849,6 +864,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           </div>
         )}
 
+          </div>
         </div>
 
       </div>

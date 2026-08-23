@@ -31,8 +31,29 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
         return sortOrder === 'asc' ? valA - valB : valB - valA;
       }
 
-      valA = String(valA).toLowerCase();
-      valB = String(valB).toLowerCase();
+      // Suporte para ordenação cronológica de datas brasileiras DD/MM/AAAA
+      const strA = String(valA).trim();
+      const strB = String(valB).trim();
+      const isDateA = /^\d{1,2}\/\d{1,2}\/\d{4}/.test(strA);
+      const isDateB = /^\d{1,2}\/\d{1,2}\/\d{4}/.test(strB);
+
+      if (isDateA && isDateB) {
+        const parseBRDate = (d: string) => {
+          const parts = d.split('/');
+          const day = parseInt(parts[0], 10);
+          const month = parseInt(parts[1], 10);
+          const year = parseInt(parts[2], 10);
+          return new Date(year, month - 1, day).getTime();
+        };
+        const timeA = parseBRDate(strA);
+        const timeB = parseBRDate(strB);
+        if (!isNaN(timeA) && !isNaN(timeB)) {
+          return sortOrder === 'asc' ? timeA - timeB : timeB - timeA;
+        }
+      }
+
+      valA = strA.toLowerCase();
+      valB = strB.toLowerCase();
 
       if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
       if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
@@ -119,54 +140,66 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
 
       {/* Main Data Table */}
       <div className="w-full overflow-x-auto min-h-[400px]">
-        <table className="w-full min-w-[1020px] lg:min-w-0 lg:table-fixed text-[11px] text-left">
+        <table className="w-full min-w-[1150px] lg:min-w-0 lg:table-fixed text-[11px] text-left">
           <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200 text-[10px]">
             <tr>
+              {/* 1. CONTRATO (CT) */}
               <th
                 onClick={() => handleSort('CONTRATO')}
-                className="w-[7%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
+                className="w-[5%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
+                title="Contrato (CT)"
               >
                 <div className="flex items-center justify-center gap-0.5">
-                  <span>Contrato</span>
+                  <span>CT</span>
                   <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                 </div>
               </th>
+
+              {/* 2. CÓDIGO */}
               <th
                 onClick={() => handleSort('CÓDIGO')}
-                className="w-[7%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
+                className="w-[5.5%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
               >
                 <div className="flex items-center justify-center gap-0.5">
                   <span>Código</span>
                   <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                 </div>
               </th>
+
+              {/* 3. ENDEREÇO COMPLETO */}
               <th
                 onClick={() => handleSort('ENDEREÇO COMPLETO')}
-                className="w-[26%] py-2.5 px-1.5 cursor-pointer hover:bg-slate-200 transition-colors text-left"
+                className="w-[22%] py-2.5 px-1.5 cursor-pointer hover:bg-slate-200 transition-colors text-left"
               >
                 <div className="flex items-center gap-0.5">
                   <span>Endereço Completo</span>
                   <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                 </div>
               </th>
+
+              {/* 4. BAIRRO */}
               <th
                 onClick={() => handleSort('BAIRRO')}
-                className="w-[9%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
+                className="w-[8%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
               >
                 <div className="flex items-center justify-center gap-0.5">
                   <span>Bairro</span>
                   <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                 </div>
               </th>
+
+              {/* 5. REGIONAL */}
               <th
                 onClick={() => handleSort('REGIONAL')}
-                className="w-[7%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
+                className="w-[6%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
               >
                 <div className="flex items-center justify-center gap-0.5">
                   <span>Regional</span>
                   <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                 </div>
               </th>
+
+              {/* 6. TIPO */}
               <th
                 onClick={() => handleSort('TIPO')}
                 className="w-[6%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
@@ -176,6 +209,8 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
                   <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                 </div>
               </th>
+
+              {/* 7. FAIXAS */}
               <th
                 onClick={() => handleSort('FAIXAS')}
                 className="w-[4%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
@@ -185,24 +220,44 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
                   <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                 </div>
               </th>
+
+              {/* 8. ACEITE (Data de Aceite) */}
+              <th
+                onClick={() => handleSort('Data de aceite')}
+                className="w-[7.5%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center leading-tight"
+                title="Data de Aceite"
+              >
+                <div className="flex items-center justify-center gap-0.5">
+                  <span>Aceite</span>
+                  <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                </div>
+              </th>
+
+              {/* 9. INÍCIO OP. */}
               <th
                 onClick={() => handleSort('Data início operação')}
-                className="w-[8%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center leading-tight"
+                className="w-[7.5%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center leading-tight"
+                title="Data início operação"
               >
                 <div className="flex items-center justify-center gap-0.5">
                   <span>Início Op.</span>
                   <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                 </div>
               </th>
+
+              {/* 10. VENC. AFERIÇÃO (Data de Vencimento da Aferição) */}
               <th
-                onClick={() => handleSort('OS')}
-                className="w-[6%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
+                onClick={() => handleSort('Data de Vencimento da Aferição')}
+                className="w-[8.5%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center leading-tight"
+                title="Data de Vencimento da Aferição"
               >
                 <div className="flex items-center justify-center gap-0.5">
-                  <span>OS</span>
+                  <span>Venc. Aferição</span>
                   <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                 </div>
               </th>
+
+              {/* 11. CONDIÇÃO */}
               <th
                 onClick={() => handleSort('CONDIÇÃO')}
                 className="w-[6%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
@@ -212,22 +267,26 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
                   <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                 </div>
               </th>
+
+              {/* 12. SITUAÇÃO */}
               <th
                 onClick={() => handleSort('Situação')}
-                className="w-[9%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
+                className="w-[8.5%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
               >
                 <div className="flex items-center justify-center gap-0.5">
                   <span>Situação</span>
                   <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                 </div>
               </th>
+
+              {/* 13. AÇÕES */}
               <th className="w-[5%] py-2.5 px-1 text-center">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-slate-800">
             {paginatedRecords.length === 0 ? (
               <tr>
-                <td colSpan={12} className="py-12 text-center text-slate-400">
+                <td colSpan={13} className="py-12 text-center text-slate-400">
                   Nenhum equipamento encontrado com os filtros selecionados.
                 </td>
               </tr>
@@ -238,59 +297,64 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
                   className="hover:bg-blue-50/50 transition-colors cursor-pointer group"
                   onClick={() => onSelectRecord(r)}
                 >
-                  {/* CONTRATO */}
+                  {/* 1. CONTRATO */}
                   <td className="py-1.5 px-1 font-medium text-slate-700 text-center truncate">
                     {r.CONTRATO || '-'}
                   </td>
 
-                  {/* CÓDIGO */}
+                  {/* 2. CÓDIGO */}
                   <td className="py-1.5 px-1 font-bold text-slate-900 group-hover:text-blue-700 text-center truncate">
                     {r.CÓDIGO || '-'}
                   </td>
 
-                  {/* ENDEREÇO COMPLETO */}
+                  {/* 3. ENDEREÇO COMPLETO */}
                   <td className="py-1.5 px-1.5 font-normal text-slate-800 break-words whitespace-normal leading-tight text-[10.5px]">
                     {r['ENDEREÇO COMPLETO'] || '-'}
                   </td>
 
-                  {/* BAIRRO */}
+                  {/* 4. BAIRRO */}
                   <td className="py-1.5 px-1 text-slate-600 text-center break-words whitespace-normal leading-tight text-[10px]">
                     {r.BAIRRO || '-'}
                   </td>
 
-                  {/* REGIONAL */}
+                  {/* 5. REGIONAL */}
                   <td className="py-1.5 px-1 text-slate-600 text-center truncate text-[10px]">
                     {r.REGIONAL || '-'}
                   </td>
 
-                  {/* TIPO */}
+                  {/* 6. TIPO */}
                   <td className="py-1.5 px-1 text-center truncate">
                     <span className="inline-block bg-slate-100 text-slate-800 font-semibold px-1 py-0.5 rounded text-[9.5px] border border-slate-200 truncate max-w-full">
                       {r.TIPO || '-'}
                     </span>
                   </td>
 
-                  {/* FAIXAS */}
-                  <td className="py-1.5 px-1 text-center font-bold text-blue-700">
+                  {/* 7. FAIXAS */}
+                  <td className="py-1.5 px-1 text-center font-bold text-blue-700 text-[10.5px]">
                     {r.FAIXAS ?? '-'}
                   </td>
 
-                  {/* INÍCIO DA OPERAÇÃO */}
-                  <td className="py-1.5 px-1 text-slate-600 text-center text-[10px] break-words whitespace-normal leading-tight">
+                  {/* 8. ACEITE ('Data de Aceite') */}
+                  <td className="py-1.5 px-1 text-slate-600 text-center text-[10px] break-words whitespace-normal leading-tight font-medium">
+                    {r['Data de aceite'] || '-'}
+                  </td>
+
+                  {/* 9. INÍCIO DA OPERAÇÃO */}
+                  <td className="py-1.5 px-1 text-slate-600 text-center text-[10px] break-words whitespace-normal leading-tight font-medium">
                     {r['Data início operação'] || '-'}
                   </td>
 
-                  {/* OS */}
-                  <td className="py-1.5 px-1 text-slate-600 text-center truncate text-[10px]">
-                    {r.OS || '-'}
+                  {/* 10. VENC. AFERIÇÃO ('Data de Vencimento da Aferição') */}
+                  <td className="py-1.5 px-1 text-slate-600 text-center text-[10px] break-words whitespace-normal leading-tight font-medium">
+                    {r['Data de Vencimento da Aferição'] || '-'}
                   </td>
 
-                  {/* CONDIÇÃO */}
+                  {/* 11. CONDIÇÃO */}
                   <td className="py-1.5 px-1 text-slate-600 text-center truncate text-[10px]">
                     {r.CONDIÇÃO || '-'}
                   </td>
 
-                  {/* SITUAÇÃO */}
+                  {/* 12. SITUAÇÃO */}
                   <td className="py-1.5 px-1 text-center text-[9.5px]">
                     <span
                       className={`inline-block px-1 py-0.5 rounded-full font-medium truncate max-w-full ${
@@ -305,7 +369,7 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
                     </span>
                   </td>
 
-                  {/* AÇÕES */}
+                  {/* 13. AÇÕES */}
                   <td className="py-1.5 px-1 text-center" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center justify-center gap-0.5">
                       <button

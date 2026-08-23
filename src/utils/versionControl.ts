@@ -6,15 +6,54 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.1.2';
-export const BUILD_DATE = '22/08/2026';
+export const APP_VERSION = 'v3.2.2';
+export const BUILD_DATE = '23/08/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v3.2.2',
+    date: '23/08/2026',
+    tag: 'Inclusão das Colunas Ofício de Parada e Ofício de Retorno no Histórico de Interrupções',
+    isLatest: true,
+    changes: [
+      'Adicionada a coluna "Ofício de Parada" (baseada no campo OF da aba EQUIPAMENTOS OFF) antes da data de parada na tabela de Histórico de Parada e Retorno.',
+      'Adicionada a coluna "Ofício de Retorno" (baseada no campo OFÍCIO DE RETORNO da aba EQUIPAMENTOS OFF) antes da data de retorno na tabela de Histórico.',
+      'Habilitada ordenação interativa e busca em tempo real por números de ofício de parada e retorno.',
+      'Ajustada a exportação de dados em CSV para incluir os novos campos na ordem correta.'
+    ]
+  },
+  {
+    version: 'v3.2.1',
+    date: '23/08/2026',
+    tag: 'Renomeação da Coluna Contrato para CT na Lista de Equipamentos',
+    changes: [
+      'Cabeçalho da coluna "Contrato" renomeado para "CT" na tabela de Lista de Equipamentos para melhor aproveitamento do espaço horizontal.'
+    ]
+  },
+  {
+    version: 'v3.2.0',
+    date: '23/08/2026',
+    tag: 'Inclusão de Colunas de Aceite e Vencimento da Aferição na Lista de Equipamentos',
+    changes: [
+      'Adicionadas as colunas "Data de Aceite" e "Data de Vencimento da Aferição" na tabela da Lista de Equipamentos (dados da planilha oficial).',
+      'Reordenadas as colunas conforme especificação: CONTRATO, CÓDIGO, ENDEREÇO COMPLETO, BAIRRO, REGIONAL, TIPO, FAIXAS, ACEITE, INÍCIO OP., VENC. AFERIÇÃO, CONDIÇÃO, SITUAÇÃO e AÇÕES.',
+      'Ajustadas as proporções e larguras das colunas para visualização fluida e equilibrada na tela desktop e rolagem horizontal otimizada no mobile.',
+      'Implementada ordenação cronológica inteligente para datas no formato brasileiro (DD/MM/AAAA).'
+    ]
+  },
+  {
+    version: 'v3.1.3',
+    date: '22/08/2026',
+    tag: 'Transição Fluida CSS de Expansão e Recolhimento dos Filtros',
+    changes: [
+      'Substituída a alternância instantânea por animações suaves em CSS com transições contínuas de max-height, opacity e padding/margin.',
+      'Expansão e recolhimento fluidos tanto no Mobile quanto no Desktop, eliminando saltos visuais na renderização dos componentes.'
+    ]
+  },
   {
     version: 'v3.1.2',
     date: '22/08/2026',
     tag: 'Menu de Pesquisa e Filtros Sempre Recolhido por Padrão no Mobile',
-    isLatest: true,
     changes: [
       'Configurado para que a barra de pesquisa e filtros interativa inicie sempre recolhida por padrão em dispositivos móveis (ao carregar o portal ou alternar entre abas), liberando imediatamente o espaço visual para visualização dos mapas e dados.'
     ]
