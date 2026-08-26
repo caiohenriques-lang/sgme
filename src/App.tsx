@@ -16,6 +16,8 @@ import { MobileBottomNav } from './components/MobileBottomNav';
 import { VercelGuideModal } from './components/VercelGuideModal';
 import { LockScreen } from './components/LockScreen';
 import { IOSInstallPrompt } from './components/IOSInstallPrompt';
+import { AIAssistantModal } from './components/AIAssistantModal';
+import { AIAssistantButton } from './components/AIAssistantButton';
 import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 
 const initialFilters: FilterState = {
@@ -72,6 +74,7 @@ export default function App() {
   
   const [selectedRecord, setSelectedRecord] = useState<EquipmentRecord | null>(null);
   const [isVercelGuideOpen, setIsVercelGuideOpen] = useState<boolean>(false);
+  const [isAIAssistantOpen, setIsAIAssistantOpen] = useState<boolean>(false);
 
   // Load data from published Google Sheet CSV
   const loadData = useCallback(async () => {
@@ -386,6 +389,7 @@ export default function App() {
         loading={loading}
         onRefresh={loadData}
         lastUpdated={lastUpdated}
+        onOpenAI={() => setIsAIAssistantOpen(true)}
       />
 
       {/* Filter Bar - Hidden in Gestão Contratual, Interrupções, BHDIGITAL and Relatórios */}
@@ -508,7 +512,7 @@ export default function App() {
       {/* iOS PWA Add to Home Screen Prompt */}
       <IOSInstallPrompt />
 
-      {/* Modals */}
+      {/* Modals and Overlays */}
       <EquipmentDetailModal
         record={selectedRecord}
         onClose={() => setSelectedRecord(null)}
@@ -517,6 +521,24 @@ export default function App() {
       <VercelGuideModal
         isOpen={isVercelGuideOpen}
         onClose={() => setIsVercelGuideOpen(false)}
+      />
+
+      {/* Floating AI Assistant Trigger Button */}
+      <AIAssistantButton
+        onClick={() => setIsAIAssistantOpen(true)}
+        isOpen={isAIAssistantOpen}
+      />
+
+      {/* AI Assistant Modal Window */}
+      <AIAssistantModal
+        isOpen={isAIAssistantOpen}
+        onClose={() => setIsAIAssistantOpen(false)}
+        records={records}
+        filters={filters}
+        setFilters={setFilters}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onSelectRecord={(rec) => setSelectedRecord(rec)}
       />
 
     </div>

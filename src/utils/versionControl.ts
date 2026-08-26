@@ -6,15 +6,27 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.2.2';
-export const BUILD_DATE = '23/08/2026';
+export const APP_VERSION = 'v3.3.0';
+export const BUILD_DATE = '25/08/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v3.3.0',
+    date: '25/08/2026',
+    tag: 'Integração do Assistente Inteligente com Inteligência Artificial (IA GEAPI)',
+    isLatest: true,
+    changes: [
+      'Implementado o Assistente Inteligente IA GEAPI (Gemini), com botão flutuante e atalho rápido no cabeçalho.',
+      'Suporte a perguntas e respostas em linguagem natural sobre contratos (2740/24, 2741/24, 2742/24), radares (CEV, DAS, DIF, DTLP, DCP), status operacional e aferições.',
+      'Consulta e extração instantânea de coordenadas geográficas com botão interativo "Ver no Mapa" e link direto para o Google Maps.',
+      'Geração e download de relatórios em PDF diretamente através do chat interativo.',
+      'Navegação inteligente e aplicação automática de filtros no portal orientada por comandos de voz/texto.'
+    ]
+  },
   {
     version: 'v3.2.2',
     date: '23/08/2026',
     tag: 'Inclusão das Colunas Ofício de Parada e Ofício de Retorno no Histórico de Interrupções',
-    isLatest: true,
     changes: [
       'Adicionada a coluna "Ofício de Parada" (baseada no campo OF da aba EQUIPAMENTOS OFF) antes da data de parada na tabela de Histórico de Parada e Retorno.',
       'Adicionada a coluna "Ofício de Retorno" (baseada no campo OFÍCIO DE RETORNO da aba EQUIPAMENTOS OFF) antes da data de retorno na tabela de Histórico.',
