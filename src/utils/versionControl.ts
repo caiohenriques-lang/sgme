@@ -6,15 +6,24 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.3.0';
-export const BUILD_DATE = '25/08/2026';
+export const APP_VERSION = 'v3.3.1';
+export const BUILD_DATE = '26/08/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v3.3.1',
+    date: '26/08/2026',
+    tag: 'Suporte a Serverless Functions Vercel para o Assistente de IA',
+    isLatest: true,
+    changes: [
+      'Adicionada a estrutura de Serverless Functions (api/gemini/chat.ts) e vercel.json para suporte nativo e instantâneo à GEMINI_API_KEY na Vercel.',
+      'Atualizado o Guia de Hospedagem na Vercel com instruções passo a passo para configuração da chave de API de IA.'
+    ]
+  },
   {
     version: 'v3.3.0',
     date: '25/08/2026',
     tag: 'Integração do Assistente Inteligente com Inteligência Artificial (IA GEAPI)',
-    isLatest: true,
     changes: [
       'Implementado o Assistente Inteligente IA GEAPI (Gemini), com botão flutuante e atalho rápido no cabeçalho.',
       'Suporte a perguntas e respostas em linguagem natural sobre contratos (2740/24, 2741/24, 2742/24), radares (CEV, DAS, DIF, DTLP, DCP), status operacional e aferições.',

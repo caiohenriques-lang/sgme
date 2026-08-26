@@ -88,9 +88,22 @@ export const VercelGuideModal: React.FC<VercelGuideModalProps> = ({ isOpen, onCl
               <div className="flex items-start gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
                 <span className="bg-blue-600 text-white font-bold text-xs w-6 h-6 rounded-full flex items-center justify-center shrink-0">4</span>
                 <div>
+                  <h5 className="font-bold text-slate-900 text-xs">Variável de Ambiente para IA (Opcional/Recomendado)</h5>
+                  <p className="text-xs text-slate-600 mt-0.5">
+                    Em <strong>Project Settings &gt; Environment Variables</strong>, adicione:
+                  </p>
+                  <div className="mt-1 font-mono text-[11px] bg-slate-900 text-emerald-400 p-2 rounded border border-slate-800">
+                    GEMINI_API_KEY = &lt;sua_chave_do_google_ai_studio&gt;
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <span className="bg-blue-600 text-white font-bold text-xs w-6 h-6 rounded-full flex items-center justify-center shrink-0">5</span>
+                <div>
                   <h5 className="font-bold text-slate-900 text-xs">Pronto! Clique em "Deploy"</h5>
                   <p className="text-xs text-slate-600 mt-0.5">
-                    Em segundos seu site estará online na nuvem com certificado SSL gratuito e domínio da Vercel!
+                    Em segundos seu site estará online com inteligência artificial, mapa interativo e relatórios funcionando na nuvem!
                   </p>
                 </div>
               </div>
