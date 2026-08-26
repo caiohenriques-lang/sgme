@@ -6,15 +6,25 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.4.0';
+export const APP_VERSION = 'v3.4.1';
 export const BUILD_DATE = '26/08/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.4.1',
+    date: '26/08/2026',
+    tag: 'Precisão Matemática por Tipo (CEV/DAS/DIF) e Respostas Ultra-Sucintas na IA',
+    isLatest: true,
+    changes: [
+      'Injetadas métricas pré-calculadas exatas por tipo de equipamento (faixas e equipamentos em operação, implantação e relocação para CEV, DAS, DIF, etc.).',
+      'Configurada diretriz estrita para respostas cirúrgicas e diretas ao ponto, sem tabelas ou introduções longas não solicitadas.',
+      'Diferenciação clara entre quantidade de faixas (soma) e quantidade de postos/equipamentos de fiscalização.'
+    ]
+  },
+  {
     version: 'v3.4.0',
     date: '26/08/2026',
     tag: 'Aceleração Instantânea do Motor de IA com gemini-2.5-flash',
-    isLatest: true,
     changes: [
       'Configurado o modelo ultra-rápido gemini-2.5-flash com chamada direta de única etapa, eliminando loops de retentativa que causavam até 4 minutos de espera.',
       'Ajustado limite de tokens de saída (maxOutputTokens: 1000) e temperatura calibrada para respostas precisas e imediatas em 2-3 segundos.',

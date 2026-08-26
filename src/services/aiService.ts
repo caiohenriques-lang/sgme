@@ -94,8 +94,21 @@ export async function sendChatMessage({
   const porContrato: Record<string, { equipamentos: number; faixas: number; faixasOperacao: number; faixasImplantacao: number }> = {};
   // Regionais
   const porRegional: Record<string, { equipamentos: number; faixas: number; faixasOperacao: number }> = {};
-  // Tipos
-  const porTipo: Record<string, { equipamentos: number; faixas: number; faixasOperacao: number }> = {};
+  // Tipos detalhados (equipamentos e faixas em operação, implantação e relocação)
+  const porTipo: Record<
+    string,
+    {
+      equipamentos: number;
+      faixas: number;
+      faixasOperacao: number;
+      faixasImplantacao: number;
+      faixasRelocacao: number;
+      faixasInoperantes: number;
+      equipamentosOperacao: number;
+      equipamentosImplantacao: number;
+      equipamentosRelocacao: number;
+    }
+  > = {};
   // Corredores / Principais Logradouros
   const porCorredor: Record<
     string,
@@ -147,10 +160,33 @@ export async function sendChatMessage({
     if (isOp) porRegional[reg].faixasOperacao += numFaixas;
 
     const tp = r.TIPO || 'N/D';
-    if (!porTipo[tp]) porTipo[tp] = { equipamentos: 0, faixas: 0, faixasOperacao: 0 };
+    if (!porTipo[tp]) {
+      porTipo[tp] = {
+        equipamentos: 0,
+        faixas: 0,
+        faixasOperacao: 0,
+        faixasImplantacao: 0,
+        faixasRelocacao: 0,
+        faixasInoperantes: 0,
+        equipamentosOperacao: 0,
+        equipamentosImplantacao: 0,
+        equipamentosRelocacao: 0,
+      };
+    }
     porTipo[tp].equipamentos += 1;
     porTipo[tp].faixas += numFaixas;
-    if (isOp) porTipo[tp].faixasOperacao += numFaixas;
+    if (isOp) {
+      porTipo[tp].faixasOperacao += numFaixas;
+      porTipo[tp].equipamentosOperacao += 1;
+    } else if (isRel) {
+      porTipo[tp].faixasRelocacao += numFaixas;
+      porTipo[tp].equipamentosRelocacao += 1;
+    } else if (isInop) {
+      porTipo[tp].faixasInoperantes += numFaixas;
+    } else {
+      porTipo[tp].faixasImplantacao += numFaixas;
+      porTipo[tp].equipamentosImplantacao += 1;
+    }
 
     // Normaliza nome do Corredor ou Logradouro
     const corredorRaw = (r.CORREDOR || '').trim();
