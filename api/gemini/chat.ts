@@ -107,53 +107,44 @@ ${JSON.stringify(context, null, 2)}
       parts: [{ text: message }],
     });
 
-    // Modelos para alta velocidade e baixa latência de resposta:
-    // 1º: gemini-flash-latest (ou gemini-3.1-flash-lite para respostas quase instantâneas)
-    const fallbackModels = ['gemini-flash-latest', 'gemini-3.1-flash-lite', 'gemini-3.7-flash'];
-
+    // Modelo padrão de alta velocidade e resposta instantânea
+    const modelName = 'gemini-2.5-flash';
     let response: any = null;
-    let lastError: any = null;
 
-    for (const modelToTry of fallbackModels) {
-      for (let attempt = 0; attempt < 2; attempt++) {
-        try {
-          response = await ai.models.generateContent({
-            model: modelToTry,
-            contents: formattedContents,
-            config: {
-              systemInstruction,
-              temperature: 0.7,
-            },
-          });
-          if (response && response.text) {
-            break;
-          }
-        } catch (err: any) {
-          lastError = err;
-          const errMsg = String(err?.message || '');
-          const isRetryable =
-            errMsg.includes('503') ||
-            errMsg.includes('high demand') ||
-            errMsg.includes('429') ||
-            errMsg.includes('RESOURCE_EXHAUSTED') ||
-            errMsg.includes('UNAVAILABLE');
-
-          if (isRetryable && attempt === 0) {
-            // Espera 1.2 segundos antes de retentar o mesmo modelo
-            await new Promise((resolve) => setTimeout(resolve, 1200));
-            continue;
-          }
-          // Se for 404 (modelo descontinuado) ou falha persistente, passa direto para o próximo modelo válido
-          break;
-        }
+    try {
+      response = await ai.models.generateContent({
+        model: modelName,
+        contents: formattedContents,
+        config: {
+          systemInstruction,
+          temperature: 0.3,
+          maxOutputTokens: 1000,
+        },
+      });
+    } catch (err: any) {
+      console.warn(`Tentando fallback para gemini-flash-latest devido a:`, err?.message);
+      try {
+        response = await ai.models.generateContent({
+          model: 'gemini-flash-latest',
+          contents: formattedContents,
+          config: {
+            systemInstruction,
+            temperature: 0.3,
+            maxOutputTokens: 1000,
+          },
+        });
+      } catch (err2: any) {
+        console.warn(`Tentando fallback para gemini-3.1-flash-lite devido a:`, err2?.message);
+        response = await ai.models.generateContent({
+          model: 'gemini-3.1-flash-lite',
+          contents: formattedContents,
+          config: {
+            systemInstruction,
+            temperature: 0.3,
+            maxOutputTokens: 1000,
+          },
+        });
       }
-      if (response && response.text) {
-        break;
-      }
-    }
-
-    if (!response && lastError) {
-      throw lastError;
     }
 
     const fullText = response?.text || 'Não foi possível gerar uma resposta no momento.';

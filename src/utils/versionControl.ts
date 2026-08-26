@@ -6,15 +6,25 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.3.9';
+export const APP_VERSION = 'v3.4.0';
 export const BUILD_DATE = '26/08/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.4.0',
+    date: '26/08/2026',
+    tag: 'Aceleração Instantânea do Motor de IA com gemini-2.5-flash',
+    isLatest: true,
+    changes: [
+      'Configurado o modelo ultra-rápido gemini-2.5-flash com chamada direta de única etapa, eliminando loops de retentativa que causavam até 4 minutos de espera.',
+      'Ajustado limite de tokens de saída (maxOutputTokens: 1000) e temperatura calibrada para respostas precisas e imediatas em 2-3 segundos.',
+      'Sincronizado fallback inteligente para gemini-flash-latest e gemini-3.1-flash-lite no servidor Express e na Vercel.'
+    ]
+  },
+  {
     version: 'v3.3.9',
     date: '26/08/2026',
     tag: 'Correção e Sincronização do Status das Faixas em Operação na IA',
-    isLatest: true,
     changes: [
       'Corrigida a lógica de classificação de status na IA para reconhecer "Em operação" e "Operação" exatamente como nos Indicadores do portal.',
       'Sincronizada a soma e diferenciação matemática exata de faixas em operação (~700), em implantação e em relocação.',
