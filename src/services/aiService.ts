@@ -9,7 +9,7 @@ export interface ChatMessage {
 }
 
 export interface AIAction {
-  type: 'NAVIGATE_TAB' | 'VIEW_EQUIPMENT' | 'APPLY_FILTERS' | 'DOWNLOAD_PDF' | 'OPEN_GOOGLE_MAPS';
+  type: 'NAVIGATE_TAB' | 'VIEW_EQUIPMENT' | 'APPLY_FILTERS' | 'DOWNLOAD_PDF' | 'OPEN_GOOGLE_MAPS' | 'QUICK_PROMPT';
   label: string;
   payload?: any;
 }

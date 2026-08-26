@@ -6,15 +6,25 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.4.2';
+export const APP_VERSION = 'v3.4.3';
 export const BUILD_DATE = '26/08/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.4.3',
+    date: '26/08/2026',
+    tag: 'Diálogo Proativo com Sugestões de Complemento e Ações Rápidas (1-Clique)',
+    isLatest: true,
+    changes: [
+      'Implementado fluxo conversacional proativo na IA para propor desdobramentos operacionais inteligentes (por contrato, tipo ou regional) ao responder perguntas amplas.',
+      'Criado o tipo de ação QUICK_PROMPT com botões interativos de 1 toque no modal de chat, agilizando consultas complementares em smartphones e desktops.',
+      'Sincronizadas diretrizes de resposta concisa mantendo o número direto inicial com ofertas de aprofundamento claras.'
+    ]
+  },
+  {
     version: 'v3.4.2',
     date: '26/08/2026',
     tag: 'Otimização com Gemini 3.7 Flash em Modo de Latência Zero (thinkingBudget: 0)',
-    isLatest: true,
     changes: [
       'Configurado o modelo oficial gemini-3.7-flash com thinkingBudget: 0 para desligar o ciclo de raciocínio oculto e entregar respostas instantâneas (1-3 segundos).',
       'Corrigidos os identificadores de modelo do SDK (@google/genai) para evitar quedas em cascatas de erro e timeouts.',

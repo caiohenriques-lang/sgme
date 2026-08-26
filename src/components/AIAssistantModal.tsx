@@ -176,7 +176,9 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
 
   // Action Handlers
   const handleExecuteAction = (action: AIAction) => {
-    if (action.type === 'NAVIGATE_TAB' && action.payload?.tab) {
+    if (action.type === 'QUICK_PROMPT' && action.payload?.prompt) {
+      handleSend(action.payload.prompt);
+    } else if (action.type === 'NAVIGATE_TAB' && action.payload?.tab) {
       setActiveTab(action.payload.tab as ActiveTab);
     } else if (action.type === 'VIEW_EQUIPMENT' && action.payload?.codigo) {
       const code = String(action.payload.codigo).trim().toUpperCase();
@@ -445,6 +447,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                           onClick={() => handleExecuteAction(act)}
                           className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-300 hover:border-blue-400 font-semibold text-[11px] rounded-lg transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 shadow-2xs"
                         >
+                          {act.type === 'QUICK_PROMPT' && <Sparkles className="w-3 h-3 text-blue-600" />}
                           {act.type === 'DOWNLOAD_PDF' && <Download className="w-3 h-3 text-blue-600" />}
                           {act.type === 'NAVIGATE_TAB' && <Compass className="w-3 h-3 text-blue-600" />}
                           {act.type === 'VIEW_EQUIPMENT' && <FileText className="w-3 h-3 text-blue-600" />}
