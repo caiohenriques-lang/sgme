@@ -6,15 +6,55 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.3.3';
+export const APP_VERSION = 'v3.3.7';
 export const BUILD_DATE = '26/08/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.3.7',
+    date: '26/08/2026',
+    tag: 'Registro de Service Worker e Banner Universal de Instalação PWA Mobile',
+    isLatest: true,
+    changes: [
+      'Implementado e registrado o Service Worker (/sw.js) com suporte offline e gatilho nativo PWA para dispositivos Android e navegadores baseados em Chromium.',
+      'Criado o banner inteligente universal SmartphoneInstallPrompt que exibe automaticamente o aviso de instalação com 1 clique para smartphones Android e passo a passo para iOS (Safari).',
+      'Integrado botão de instalação PWA direto no cabeçalho do portal para acesso rápido em qualquer dispositivo.'
+    ]
+  },
+  {
+    version: 'v3.3.6',
+    date: '26/08/2026',
+    tag: 'Especialização da IA em Locais, Equipamentos e Faixas Fiscalizadas',
+    changes: [
+      'Configurada instrução mandatória para máxima atenção e precisão na contagem e correlação de Locais (vias/corredores/regionais), Equipamentos (códigos/status) e Faixas.',
+      'Reforçada a diferenciação matemática estrita de faixas em operação vs. em implantação vs. inoperantes para cada logradouro consultado.',
+      'Aumentada a amplitude de busca contextual e tokenização inteligente para cruzamento de vias, bairros e códigos de equipamentos.'
+    ]
+  },
+  {
+    version: 'v3.3.5',
+    date: '26/08/2026',
+    tag: 'Otimização de Objetividade e Agregação de Faixas por Corredor na IA',
+    changes: [
+      'Implementada agregação matemática direta de faixas fiscalizadas (ativas, em implantação e inoperantes) por corredor de tráfego e vias principais.',
+      'Refinada a instrução de sistema da IA para respostas executivas, diretas e com destaque visual numérico imediato (sem introduções prolixas).',
+      'Aprimorada a busca semântica contextual para reconhecimento inteligente de nomes de avenidas, ruas e corredores de Belo Horizonte.'
+    ]
+  },
+  {
+    version: 'v3.3.4',
+    date: '26/08/2026',
+    tag: 'Priorização Padrão dos Contratos Vigentes (2740, 2741 e 2742) no Assistente de IA',
+    changes: [
+      'Configurada a priorização estrita e automática dos contratos vigentes (2740/2024, 2741/2024 e 2742/2024) para todas as consultas, estatísticas e listagens do Assistente de IA.',
+      'Contratos anteriores (2585/20, 2586/20 e 2587/20) só serão incluídos caso o usuário solicite explicitamente na pergunta.',
+      'Ajustado o contexto analítico enviado aos modelos para manter o foco operacional nos equipamentos atuais.'
+    ]
+  },
+  {
     version: 'v3.3.3',
     date: '26/08/2026',
     tag: 'Atualização dos Modelos e Aliases Ativos do Gemini na API v1beta',
-    isLatest: true,
     changes: [
       'Corrigido o identificador dos modelos para os aliases oficiais suportados na API @google/genai (gemini-flash-latest, gemini-3.7-flash e gemini-3.1-flash-lite).',
       'Eliminado o erro 404 de modelo descontinuado, assegurando roteamento resiliente e compatibilidade total.'

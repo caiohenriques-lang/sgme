@@ -2,6 +2,7 @@ import React from 'react';
 import { ActiveTab } from '../types';
 import { Map, BarChart3, Table, Printer, FileSignature, AlertTriangle, Layers, Bot, Sparkles } from 'lucide-react';
 import { SpeedRadarIcon } from './SpeedRadarIcon';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface HeaderProps {
   activeTab: ActiveTab;
@@ -25,8 +26,10 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           
-          {/* Top Right: Timbre / Logo Image & AI Trigger */}
-          <div className="flex items-center justify-center md:justify-end gap-3 shrink-0 w-full md:w-auto order-first md:order-last">
+          {/* Top Right: Timbre / Logo Image, Install WebApp & AI Trigger */}
+          <div className="flex items-center justify-center md:justify-end gap-2.5 shrink-0 w-full md:w-auto order-first md:order-last flex-wrap">
+            <PWAInstallButton />
+
             {onOpenAI && (
               <button
                 onClick={onOpenAI}

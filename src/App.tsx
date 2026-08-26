@@ -15,7 +15,7 @@ import { FooterLegend } from './components/FooterLegend';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { VercelGuideModal } from './components/VercelGuideModal';
 import { LockScreen } from './components/LockScreen';
-import { IOSInstallPrompt } from './components/IOSInstallPrompt';
+import { SmartphoneInstallPrompt } from './components/SmartphoneInstallPrompt';
 import { AIAssistantModal } from './components/AIAssistantModal';
 import { AIAssistantButton } from './components/AIAssistantButton';
 import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
@@ -509,8 +509,8 @@ export default function App() {
         coordRecords={coordCount}
       />
 
-      {/* iOS PWA Add to Home Screen Prompt */}
-      <IOSInstallPrompt />
+      {/* Smartphone (Android & iOS) PWA Add to Home Screen Prompt */}
+      <SmartphoneInstallPrompt />
 
       {/* Modals and Overlays */}
       <EquipmentDetailModal

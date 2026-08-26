@@ -29,44 +29,187 @@ export async function sendChatMessage({
   filters,
   activeTab,
 }: SendMessageParams): Promise<{ text: string; actions?: AIAction[] }> {
+  const lowerMsg = message.toLowerCase();
+  
+  // Regra de priorização: Se o usuário NÃO pediu expressamente contratos antigos (ex: 2585, 2586, 2587, "contratos antigos", "histórico antigo", "todos os contratos"),
+  // filtramos prioritariamente pelos contratos vigentes 2740, 2741 e 2742.
+  const asksForLegacyOrAll = 
+    lowerMsg.includes('2585') ||
+    lowerMsg.includes('2586') ||
+    lowerMsg.includes('2587') ||
+    lowerMsg.includes('antigo') ||
+    lowerMsg.includes('anteriores') ||
+    lowerMsg.includes('todos os contratos') ||
+    lowerMsg.includes('todas as épocas') ||
+    lowerMsg.includes('histórico completo');
+
+  const activeContractRecords = asksForLegacyOrAll
+    ? records
+    : records.filter(r => {
+        const ct = (r.CONTRATO || '').toString().toLowerCase();
+        return ct.includes('2740') || ct.includes('2741') || ct.includes('2742');
+      });
+
+  // Base de trabalho principal conforme a diretriz de prioridade
+  const targetRecords = activeContractRecords.length > 0 ? activeContractRecords : records;
+
   // Prepara um resumo contextual compacto e rico dos dados do GEAPI
-  const total = records.length;
-  const ativos = records.filter(r => r.Situação?.toLowerCase().includes('ativo')).length;
-  const inoperantes = records.filter(r => r.Situação?.toLowerCase().includes('inoperante')).length;
-  const emImplantacao = records.filter(r => r.Situação?.toLowerCase().includes('implantação')).length;
-  const comCoords = records.filter(r => r.hasValidCoord).length;
+  const total = targetRecords.length;
+  const ativos = targetRecords.filter(r => r.Situação?.toLowerCase().includes('ativo')).length;
+  const inoperantes = targetRecords.filter(r => r.Situação?.toLowerCase().includes('inoperante')).length;
+  const emImplantacao = targetRecords.filter(r => r.Situação?.toLowerCase().includes('implantação')).length;
+  const comCoords = targetRecords.filter(r => r.hasValidCoord).length;
+
+  // Agregações de Faixas no total
+  let totalFaixasGeral = 0;
+  let faixasAtivasGeral = 0;
+  let faixasEmImplantacaoGeral = 0;
+  let faixasInoperantesGeral = 0;
 
   // Contratos
-  const porContrato: Record<string, number> = {};
+  const porContrato: Record<string, { equipamentos: number; faixas: number }> = {};
   // Regionais
-  const porRegional: Record<string, number> = {};
+  const porRegional: Record<string, { equipamentos: number; faixas: number }> = {};
   // Tipos
-  const porTipo: Record<string, number> = {};
+  const porTipo: Record<string, { equipamentos: number; faixas: number }> = {};
+  // Corredores / Principais Logradouros
+  const porCorredor: Record<
+    string,
+    {
+      totalEquipamentos: number;
+      totalFaixas: number;
+      faixasAtivas: number;
+      faixasEmImplantacao: number;
+      faixasInoperantes: number;
+      codigos: string[];
+      contratos: Set<string>;
+    }
+  > = {};
 
-  records.forEach(r => {
+  targetRecords.forEach(r => {
+    const numFaixas = typeof r.FAIXAS === 'number' && !isNaN(r.FAIXAS) ? r.FAIXAS : 1;
+    totalFaixasGeral += numFaixas;
+
+    const sit = (r.Situação || '').toLowerCase();
+    const cond = (r.CONDIÇÃO || '').toLowerCase();
+    const isAtivo = sit.includes('ativo') || cond.includes('existente');
+    const isImplantacao = sit.includes('implantação') || cond.includes('projetado');
+    const isInoperante = sit.includes('inoperante') || sit.includes('desativado');
+
+    if (isAtivo && !isInoperante) {
+      faixasAtivasGeral += numFaixas;
+    } else if (isImplantacao) {
+      faixasEmImplantacaoGeral += numFaixas;
+    } else if (isInoperante) {
+      faixasInoperantesGeral += numFaixas;
+    }
+
     const ct = r.CONTRATO || 'Outro';
-    porContrato[ct] = (porContrato[ct] || 0) + 1;
+    if (!porContrato[ct]) porContrato[ct] = { equipamentos: 0, faixas: 0 };
+    porContrato[ct].equipamentos += 1;
+    porContrato[ct].faixas += numFaixas;
+
     const reg = r.REGIONAL || 'N/D';
-    porRegional[reg] = (porRegional[reg] || 0) + 1;
+    if (!porRegional[reg]) porRegional[reg] = { equipamentos: 0, faixas: 0 };
+    porRegional[reg].equipamentos += 1;
+    porRegional[reg].faixas += numFaixas;
+
     const tp = r.TIPO || 'N/D';
-    porTipo[tp] = (porTipo[tp] || 0) + 1;
+    if (!porTipo[tp]) porTipo[tp] = { equipamentos: 0, faixas: 0 };
+    porTipo[tp].equipamentos += 1;
+    porTipo[tp].faixas += numFaixas;
+
+    // Normaliza nome do Corredor ou Logradouro
+    const corredorRaw = (r.CORREDOR || '').trim();
+    const endRaw = (r['ENDEREÇOS DOS EQUIPAMENTOS'] || r['ENDEREÇO COMPLETO'] || '').trim();
+    
+    // Identifica via principal
+    let corredorKey = corredorRaw;
+    if (!corredorKey || corredorKey.length < 3) {
+      const matchVia = endRaw.match(/^(AV\.|AVENIDA|RUA|RODOVIA|PRAÇA|ALAMEDA|VIADUTO|TRINCHEIRA)\s+([^,]+)/i);
+      corredorKey = matchVia ? `${matchVia[1].toUpperCase()} ${matchVia[2].trim().toUpperCase()}` : endRaw.split(',')[0].toUpperCase().trim();
+    }
+
+    if (corredorKey) {
+      if (!porCorredor[corredorKey]) {
+        porCorredor[corredorKey] = {
+          totalEquipamentos: 0,
+          totalFaixas: 0,
+          faixasAtivas: 0,
+          faixasEmImplantacao: 0,
+          faixasInoperantes: 0,
+          codigos: [],
+          contratos: new Set(),
+        };
+      }
+      porCorredor[corredorKey].totalEquipamentos += 1;
+      porCorredor[corredorKey].totalFaixas += numFaixas;
+      if (r.CÓDIGO) porCorredor[corredorKey].codigos.push(r.CÓDIGO);
+      if (r.CONTRATO) porCorredor[corredorKey].contratos.add(r.CONTRATO);
+
+      if (isAtivo && !isInoperante) {
+        porCorredor[corredorKey].faixasAtivas += numFaixas;
+      } else if (isImplantacao) {
+        porCorredor[corredorKey].faixasEmImplantacao += numFaixas;
+      } else if (isInoperante) {
+        porCorredor[corredorKey].faixasInoperantes += numFaixas;
+      }
+    }
   });
 
-  // Amostra de busca caso a mensagem cite um código específico ou rua
-  const lowerMsg = message.toLowerCase();
-  const matchedRecords = records.filter(r => {
-    if (r.CÓDIGO && lowerMsg.includes(r.CÓDIGO.toLowerCase())) return true;
-    if (r['ENDEREÇO COMPLETO'] && lowerMsg.includes(r['ENDEREÇO COMPLETO'].toLowerCase().slice(0, 15))) return true;
+  // Identifica se a pergunta busca um corredor específico
+  const corredoresFormatados: any[] = [];
+  Object.entries(porCorredor).forEach(([nome, dados]) => {
+    const nomeLower = nome.toLowerCase();
+    // Se a mensagem mencionar partes do nome do corredor ou for um dos principais
+    const isMencionado = lowerMsg.split(' ').some(word => word.length > 3 && nomeLower.includes(word));
+    if (isMencionado || dados.totalFaixas >= 10) {
+      corredoresFormatados.push({
+        corredor: nome,
+        totalEquipamentos: dados.totalEquipamentos,
+        totalFaixas: dados.totalFaixas,
+        faixasEmOperacao: dados.faixasAtivas,
+        faixasEmImplantacao: dados.faixasEmImplantacao,
+        faixasInoperantes: dados.faixasInoperantes,
+        contratos: Array.from(dados.contratos),
+        codigosAmostra: dados.codigos.slice(0, 8),
+      });
+    }
+  });
+
+  // Extração de termos-chave e normalização para busca de Locais, Vias, Bairros e Equipamentos
+  const searchTokens = lowerMsg
+    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, ' ')
+    .split(/\s+/)
+    .filter(t => t.length >= 3 && !['onde', 'qual', 'quais', 'quantos', 'quantas', 'faixa', 'faixas', 'radar', 'radares', 'equipamento', 'equipamentos', 'para', 'com', 'tem', 'estao', 'está'].includes(t));
+
+  // Amostra rica de busca caso a mensagem cite um código específico, rua, bairro, regional ou corredor
+  const matchedRecords = targetRecords.filter(r => {
+    const cod = (r.CÓDIGO || '').toLowerCase();
+    const end = (r['ENDEREÇO COMPLETO'] || r['ENDEREÇOS DOS EQUIPAMENTOS'] || '').toLowerCase();
+    const cor = (r.CORREDOR || '').toLowerCase();
+    const bai = (r.BAIRRO || '').toLowerCase();
+    const reg = (r.REGIONAL || '').toLowerCase();
+
+    if (cod && lowerMsg.includes(cod)) return true;
+    if (cor && (lowerMsg.includes(cor) || searchTokens.some(tok => cor.includes(tok)))) return true;
+    if (searchTokens.some(tok => end.includes(tok) || bai.includes(tok) || reg.includes(tok))) return true;
     return false;
-  }).slice(0, 10);
+  }).slice(0, 35);
 
   // Lista de equipamentos com aferição vencida ou próxima
   const contextPayload = {
+    prioridadeContratosVigentes: !asksForLegacyOrAll,
+    escopoContratos: asksForLegacyOrAll ? 'Todos os contratos (incluindo anteriores 2585, 2586, 2587)' : 'Contratos Atuais Vigentes: 2740/2024, 2741/2024 e 2742/2024',
     summary: {
-      total,
-      ativos,
-      inoperantes,
-      emImplantacao,
+      totalEquipamentos: total,
+      totalFaixasFiscalizadas: totalFaixasGeral,
+      faixasEmOperacao: faixasAtivasGeral,
+      faixasEmImplantacao: faixasEmImplantacaoGeral,
+      faixasInoperantes: faixasInoperantesGeral,
+      equipamentosAtivos: ativos,
+      equipamentosInoperantes: inoperantes,
+      equipamentosEmImplantacao: emImplantacao,
       comCoords,
       porContrato,
       porRegional,
@@ -74,9 +217,11 @@ export async function sendChatMessage({
       filtroAtual: filters,
       abaAtual: activeTab,
     },
+    dadosAgregadosCorredores: corredoresFormatados.slice(0, 25),
     matchedRecords: matchedRecords.map(r => ({
       codigo: r.CÓDIGO,
       contrato: r.CONTRATO,
+      corredor: r.CORREDOR,
       tipo: r.TIPO,
       faixas: r.FAIXAS,
       endereco: r['ENDEREÇO COMPLETO'],
@@ -94,8 +239,7 @@ export async function sendChatMessage({
       serie: r['Nº DE SÉRIE'],
       empresa: r.CONTRATADA,
     })),
-    // Amostra geral de até 80 registros se necessário para queries específicas
-    sampleRecordsCount: records.length,
+    sampleRecordsCount: targetRecords.length,
   };
 
   const response = await fetch('/api/gemini/chat', {
