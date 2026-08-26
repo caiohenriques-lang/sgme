@@ -104,16 +104,49 @@ ${JSON.stringify(context, null, 2)}
       parts: [{ text: message }],
     });
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.7-flash',
-      contents: formattedContents,
-      config: {
-        systemInstruction,
-        temperature: 0.7,
-      },
-    });
+    // Tenta com gemini-2.5-flash (mais estável na cota gratuita do Google AI Studio)
+    // e fallback automático caso ocorra sobrecarga temporária (503 / 429)
+    const fallbackModels = ['gemini-2.5-flash', 'gemini-1.5-flash'];
 
-    const fullText = response.text || 'Não foi possível gerar uma resposta no momento.';
+    let response: any = null;
+    let lastError: any = null;
+
+    for (const modelToTry of fallbackModels) {
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          response = await ai.models.generateContent({
+            model: modelToTry,
+            contents: formattedContents,
+            config: {
+              systemInstruction,
+              temperature: 0.7,
+            },
+          });
+          if (response && response.text) {
+            break;
+          }
+        } catch (err: any) {
+          lastError = err;
+          const errMsg = String(err?.message || '');
+          const is503Or429 = errMsg.includes('503') || errMsg.includes('high demand') || errMsg.includes('429') || errMsg.includes('RESOURCE_EXHAUSTED');
+          if (is503Or429 && attempt === 0) {
+            // Espera 1 segundo antes de retentar
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            continue;
+          }
+          break;
+        }
+      }
+      if (response && response.text) {
+        break;
+      }
+    }
+
+    if (!response && lastError) {
+      throw lastError;
+    }
+
+    const fullText = response?.text || 'Não foi possível gerar uma resposta no momento.';
 
     let text = fullText;
     let actions: any[] = [];
