@@ -75,6 +75,8 @@ export default function App() {
   const [selectedRecord, setSelectedRecord] = useState<EquipmentRecord | null>(null);
   const [isVercelGuideOpen, setIsVercelGuideOpen] = useState<boolean>(false);
   const [isAIAssistantOpen, setIsAIAssistantOpen] = useState<boolean>(false);
+  // Controle de visibilidade dos botões da IA (temporariamente oculto conforme solicitado)
+  const showAIControls = false;
 
   // Load data from published Google Sheet CSV
   const loadData = useCallback(async () => {
@@ -389,7 +391,7 @@ export default function App() {
         loading={loading}
         onRefresh={loadData}
         lastUpdated={lastUpdated}
-        onOpenAI={() => setIsAIAssistantOpen(true)}
+        onOpenAI={showAIControls ? () => setIsAIAssistantOpen(true) : undefined}
       />
 
       {/* Filter Bar - Hidden in Gestão Contratual, Interrupções, BHDIGITAL and Relatórios */}
@@ -523,23 +525,27 @@ export default function App() {
         onClose={() => setIsVercelGuideOpen(false)}
       />
 
-      {/* Floating AI Assistant Trigger Button */}
-      <AIAssistantButton
-        onClick={() => setIsAIAssistantOpen(true)}
-        isOpen={isAIAssistantOpen}
-      />
+      {/* Floating AI Assistant Trigger Button (Oculto temporariamente) */}
+      {showAIControls && (
+        <AIAssistantButton
+          onClick={() => setIsAIAssistantOpen(true)}
+          isOpen={isAIAssistantOpen}
+        />
+      )}
 
       {/* AI Assistant Modal Window */}
-      <AIAssistantModal
-        isOpen={isAIAssistantOpen}
-        onClose={() => setIsAIAssistantOpen(false)}
-        records={records}
-        filters={filters}
-        setFilters={setFilters}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        onSelectRecord={(rec) => setSelectedRecord(rec)}
-      />
+      {showAIControls && (
+        <AIAssistantModal
+          isOpen={isAIAssistantOpen}
+          onClose={() => setIsAIAssistantOpen(false)}
+          records={records}
+          filters={filters}
+          setFilters={setFilters}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          onSelectRecord={(rec) => setSelectedRecord(rec)}
+        />
+      )}
 
     </div>
   );

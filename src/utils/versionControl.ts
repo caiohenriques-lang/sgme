@@ -6,15 +6,24 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.4.3';
+export const APP_VERSION = 'v3.4.4';
 export const BUILD_DATE = '26/08/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.4.4',
+    date: '26/08/2026',
+    tag: 'Ocultação Temporária dos Botões de Acesso ao Assistente de IA',
+    isLatest: true,
+    changes: [
+      'Ocultados temporariamente os botões de acionamento do Assistente de IA (cabeçalho e botão flutuante) conforme solicitado.',
+      'Mantida toda a estrutura de serviços, rotas de IA e lógica de resposta preservadas para reexibição imediata sob demanda.'
+    ]
+  },
+  {
     version: 'v3.4.3',
     date: '26/08/2026',
     tag: 'Diálogo Proativo com Sugestões de Complemento e Ações Rápidas (1-Clique)',
-    isLatest: true,
     changes: [
       'Implementado fluxo conversacional proativo na IA para propor desdobramentos operacionais inteligentes (por contrato, tipo ou regional) ao responder perguntas amplas.',
       'Criado o tipo de ação QUICK_PROMPT com botões interativos de 1 toque no modal de chat, agilizando consultas complementares em smartphones e desktops.',
