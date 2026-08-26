@@ -104,9 +104,9 @@ ${JSON.stringify(context, null, 2)}
         parts: [{ text: message }],
       });
 
-      // Modelos válidos suportados na API @google/genai (v1beta):
-      // gemini-flash-latest (ou gemini-3.7-flash) e gemini-3.1-flash-lite
-      const fallbackModels = ['gemini-flash-latest', 'gemini-3.7-flash', 'gemini-3.1-flash-lite'];
+      // Modelos para alta velocidade e baixa latência de resposta:
+      // 1º: gemini-flash-latest (ou gemini-3.1-flash-lite para respostas quase instantâneas)
+      const fallbackModels = ['gemini-flash-latest', 'gemini-3.1-flash-lite', 'gemini-3.7-flash'];
 
       let response: any = null;
       let lastError: any = null;

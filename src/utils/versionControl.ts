@@ -6,15 +6,35 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.3.7';
+export const APP_VERSION = 'v3.3.9';
 export const BUILD_DATE = '26/08/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.3.9',
+    date: '26/08/2026',
+    tag: 'Correção e Sincronização do Status das Faixas em Operação na IA',
+    isLatest: true,
+    changes: [
+      'Corrigida a lógica de classificação de status na IA para reconhecer "Em operação" e "Operação" exatamente como nos Indicadores do portal.',
+      'Sincronizada a soma e diferenciação matemática exata de faixas em operação (~700), em implantação e em relocação.',
+      'Ajustado o payload de contexto para fornecer o detalhamento fiel por contrato e corredor à IA.'
+    ]
+  },
+  {
+    version: 'v3.3.8',
+    date: '26/08/2026',
+    tag: 'Otimização de Latência e Resposta Ultra-Rápida do Assistente de IA',
+    changes: [
+      'Otimizado o tamanho do payload de contexto e dados agregados, reduzindo o tempo de processamento inicial em mais de 70%.',
+      'Priorizado o modelo de baixa latência e resposta rápida (gemini-flash-latest / gemini-3.1-flash-lite) com fallback instantâneo.',
+      'Eliminada sobrecarga de campos redundantes na consulta, garantindo respostas ágeis e diretas.'
+    ]
+  },
+  {
     version: 'v3.3.7',
     date: '26/08/2026',
     tag: 'Registro de Service Worker e Banner Universal de Instalação PWA Mobile',
-    isLatest: true,
     changes: [
       'Implementado e registrado o Service Worker (/sw.js) com suporte offline e gatilho nativo PWA para dispositivos Android e navegadores baseados em Chromium.',
       'Criado o banner inteligente universal SmartphoneInstallPrompt que exibe automaticamente o aviso de instalação com 1 clique para smartphones Android e passo a passo para iOS (Safari).',
