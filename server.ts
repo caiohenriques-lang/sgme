@@ -102,10 +102,9 @@ ${JSON.stringify(context, null, 2)}
         parts: [{ text: message }],
       });
 
-      // Tenta primeiramente com gemini-2.5-flash (mais estável e com alta disponibilidade na cota gratuita)
-      // e fallback automático caso ocorra sobrecarga temporária (503 / 429)
-      const primaryModel = 'gemini-2.5-flash';
-      const fallbackModels = ['gemini-2.5-flash', 'gemini-1.5-flash'];
+      // Modelos válidos suportados na API @google/genai (v1beta):
+      // gemini-flash-latest (ou gemini-3.7-flash) e gemini-3.1-flash-lite
+      const fallbackModels = ['gemini-flash-latest', 'gemini-3.7-flash', 'gemini-3.1-flash-lite'];
 
       let response: any = null;
       let lastError: any = null;
@@ -127,12 +126,19 @@ ${JSON.stringify(context, null, 2)}
           } catch (err: any) {
             lastError = err;
             const errMsg = String(err?.message || '');
-            const is503Or429 = errMsg.includes('503') || errMsg.includes('high demand') || errMsg.includes('429') || errMsg.includes('RESOURCE_EXHAUSTED');
-            if (is503Or429 && attempt === 0) {
-              // Espera 1 segundo antes de retentar
-              await new Promise((resolve) => setTimeout(resolve, 1000));
+            const isRetryable =
+              errMsg.includes('503') ||
+              errMsg.includes('high demand') ||
+              errMsg.includes('429') ||
+              errMsg.includes('RESOURCE_EXHAUSTED') ||
+              errMsg.includes('UNAVAILABLE');
+
+            if (isRetryable && attempt === 0) {
+              // Espera 1.2 segundos antes de retentar o mesmo modelo
+              await new Promise((resolve) => setTimeout(resolve, 1200));
               continue;
             }
+            // Se for 404 (modelo não existe nessa versão) ou falha persistente, passa direto para o próximo modelo válido
             break;
           }
         }

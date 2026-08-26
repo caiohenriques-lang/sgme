@@ -6,18 +6,27 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.3.2';
+export const APP_VERSION = 'v3.3.3';
 export const BUILD_DATE = '26/08/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.3.3',
+    date: '26/08/2026',
+    tag: 'Atualização dos Modelos e Aliases Ativos do Gemini na API v1beta',
+    isLatest: true,
+    changes: [
+      'Corrigido o identificador dos modelos para os aliases oficiais suportados na API @google/genai (gemini-flash-latest, gemini-3.7-flash e gemini-3.1-flash-lite).',
+      'Eliminado o erro 404 de modelo descontinuado, assegurando roteamento resiliente e compatibilidade total.'
+    ]
+  },
+  {
     version: 'v3.3.2',
     date: '26/08/2026',
     tag: 'Tolerância a Falhas e Fallback Inteligente para o Assistente de IA',
-    isLatest: true,
     changes: [
       'Implementado mecanismo de auto-recuperação e re-tentativa automática (retry com backoff) para erros 503 (sobrecarga de servidores da API do Google).',
-      'Configurado fallback dinâmico entre modelos (gemini-2.5-flash e gemini-1.5-flash), garantindo alta disponibilidade mesmo sob picos de demanda na cota gratuita.',
+      'Configurado fallback dinâmico entre modelos, garantindo alta disponibilidade mesmo sob picos de demanda na cota gratuita.',
       'Melhoria nas respostas de erro amigáveis no chat em caso de instabilidade temporária na rede.'
     ]
   },
