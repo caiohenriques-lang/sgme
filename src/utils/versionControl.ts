@@ -6,15 +6,35 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.4.8';
+export const APP_VERSION = 'v3.5.0';
 export const BUILD_DATE = '27/08/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.5.0',
+    date: '27/08/2026',
+    tag: 'Visibilidade Direta dos Filtros de Situação, Início de Operação, Aceite e Coordenadas',
+    isLatest: true,
+    changes: [
+      'Disponibilizados diretamente na barra de filtros os campos de Situação (Condição), Intervalo de Datas de Início de Operação, Intervalo de Datas de Aceite e alternador "Apenas com Coordenadas".',
+      'Eliminada a necessidade de expansão secundária ("Datas/Cond."), mantendo visualização imediata e integrada em todas as abas (Monitoramento Espacial, Indicadores e Lista de Equipamentos).',
+      'Adicionados chips interativos dedicados no rodapé da barra para remoção rápida de filtros de Situação, Início de Operação, Aceite e Coordenadas.'
+    ]
+  },
+  {
+    version: 'v3.4.9',
+    date: '27/08/2026',
+    tag: 'Filtros com Caixa de Seleção Múltipla para Tipo, Regional e Bairro',
+    changes: [
+      'Implementadas caixas de seleção múltipla (checkbox com popover interativo) para os filtros Tipo de Equipamento, Regional e Bairro em todas as abas (Monitoramento Espacial, Indicadores e Lista de Equipamentos).',
+      'Adicionada busca instantânea, contadores dinâmicos, ações rápidas de "Marcar Todos" e "Limpar" para cada filtro múltiplo.',
+      'Criados chips informativos de filtros ativos no rodapé da barra com remoção individual e botão de limpeza rápida.'
+    ]
+  },
+  {
     version: 'v3.4.8',
     date: '27/08/2026',
     tag: 'Correção de Proporção e Geometria do Mapa na Exportação em PDF',
-    isLatest: true,
     changes: [
       'Corrigida a distorção horizontal na plotagem do mapa no PDF do Monitoramento Espacial, preservando 100% da proporção original (aspect-ratio) sem esticamento.',
       'Implementado cálculo dinâmico de dimensões e centralização automática da moldura geográfica no documento A4.',

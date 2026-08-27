@@ -25,6 +25,9 @@ const initialFilters: FilterState = {
   regional: 'ALL',
   bairro: 'ALL',
   tipo: 'ALL',
+  regionais: [],
+  bairros: [],
+  tipos: [],
   situacao: 'ALL',
   condicao: 'ALL',
   os: 'ALL',
@@ -42,6 +45,9 @@ const emptyFilters: FilterState = {
   regional: 'ALL',
   bairro: 'ALL',
   tipo: 'ALL',
+  regionais: [],
+  bairros: [],
+  tipos: [],
   situacao: 'ALL',
   condicao: 'ALL',
   os: 'ALL',
@@ -119,19 +125,31 @@ export default function App() {
       }
     }
 
-    // 2. Regional
+    // 2. Regional (Caixa de Seleção Múltipla)
     if (excludeKey !== 'regional') {
-      if (currentFilters.regional !== 'ALL' && r.REGIONAL?.trim() !== currentFilters.regional) return false;
+      if (currentFilters.regionais && currentFilters.regionais.length > 0) {
+        if (!r.REGIONAL || !currentFilters.regionais.includes(r.REGIONAL.trim())) return false;
+      } else if (currentFilters.regional && currentFilters.regional !== 'ALL') {
+        if (r.REGIONAL?.trim() !== currentFilters.regional) return false;
+      }
     }
 
-    // 3. Bairro
+    // 3. Bairro (Caixa de Seleção Múltipla)
     if (excludeKey !== 'bairro') {
-      if (currentFilters.bairro !== 'ALL' && r.BAIRRO?.trim() !== currentFilters.bairro) return false;
+      if (currentFilters.bairros && currentFilters.bairros.length > 0) {
+        if (!r.BAIRRO || !currentFilters.bairros.includes(r.BAIRRO.trim())) return false;
+      } else if (currentFilters.bairro && currentFilters.bairro !== 'ALL') {
+        if (r.BAIRRO?.trim() !== currentFilters.bairro) return false;
+      }
     }
 
-    // 4. Tipo
+    // 4. Tipo (Caixa de Seleção Múltipla)
     if (excludeKey !== 'tipo') {
-      if (currentFilters.tipo !== 'ALL' && r.TIPO !== currentFilters.tipo) return false;
+      if (currentFilters.tipos && currentFilters.tipos.length > 0) {
+        if (!r.TIPO || !currentFilters.tipos.includes(r.TIPO.trim())) return false;
+      } else if (currentFilters.tipo && currentFilters.tipo !== 'ALL') {
+        if (r.TIPO !== currentFilters.tipo) return false;
+      }
     }
 
     // 5. Situação
@@ -314,6 +332,36 @@ export default function App() {
         const validCodigos = next.codigos.filter((code) => validCodesSet.has(code));
         if (validCodigos.length !== next.codigos.length) {
           next.codigos = validCodigos;
+          updated = true;
+        }
+      }
+
+      // Clean selected regionais
+      if (next.regionais && next.regionais.length > 0) {
+        const validRegionaisSet = new Set(availableRegionais);
+        const validRegionais = next.regionais.filter((r) => validRegionaisSet.has(r));
+        if (validRegionais.length !== next.regionais.length) {
+          next.regionais = validRegionais;
+          updated = true;
+        }
+      }
+
+      // Clean selected bairros
+      if (next.bairros && next.bairros.length > 0) {
+        const validBairrosSet = new Set(availableBairros);
+        const validBairros = next.bairros.filter((b) => validBairrosSet.has(b));
+        if (validBairros.length !== next.bairros.length) {
+          next.bairros = validBairros;
+          updated = true;
+        }
+      }
+
+      // Clean selected tipos
+      if (next.tipos && next.tipos.length > 0) {
+        const validTiposSet = new Set(availableTipos);
+        const validTipos = next.tipos.filter((t) => validTiposSet.has(t));
+        if (validTipos.length !== next.tipos.length) {
+          next.tipos = validTipos;
           updated = true;
         }
       }

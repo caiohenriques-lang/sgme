@@ -45,6 +45,9 @@ export interface FilterState {
   regional: string;
   bairro: string;
   tipo: string;
+  regionais: string[];
+  bairros: string[];
+  tipos: string[];
   situacao: string;
   condicao: string;
   os: string;
