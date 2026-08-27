@@ -108,7 +108,7 @@ export const extractRecordCoordinates = (r: any): { lat: number; lng: number } |
 export async function captureMap(records: any[]): Promise<string | null> {
   const mapDiv = document.createElement('div');
   mapDiv.style.width = '1920px';
-  mapDiv.style.height = '1440px';
+  mapDiv.style.height = '1080px';
   mapDiv.style.position = 'absolute';
   mapDiv.style.top = '0px';
   mapDiv.style.left = '-10000px';
@@ -217,7 +217,7 @@ export async function captureMap(records: any[]): Promise<string | null> {
       scale: 2,
       // Fix for leaflet + html2canvas offset issues
       windowWidth: 1920,
-      windowHeight: 1440,
+      windowHeight: 1080,
       onclone: (clonedDoc) => {
         const styleTags = clonedDoc.querySelectorAll('style');
         styleTags.forEach((style) => {

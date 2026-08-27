@@ -207,6 +207,19 @@ async function getLogoDataUrl(): Promise<string | null> {
   });
 }
 
+const getImageDimensions = (dataUrl: string): Promise<{ width: number; height: number }> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      resolve({ width: img.naturalWidth || 1920, height: img.naturalHeight || 1080 });
+    };
+    img.onerror = () => {
+      resolve({ width: 1920, height: 1080 });
+    };
+    img.src = dataUrl;
+  });
+};
+
 const formatDate = (dateStr?: string) => {
   if (!dateStr) return '-';
   try {
@@ -1614,14 +1627,29 @@ export async function exportMapWithFiltersPdf(
   try {
     const mapDataUrl = await captureMap(records);
     if (mapDataUrl) {
-      const mapWidth = 186;
-      const mapHeight = 98;
-      doc.addImage(mapDataUrl, 'JPEG', 12, currentY, mapWidth, mapHeight);
+      const { width: imgW, height: imgH } = await getImageDimensions(mapDataUrl);
+      const imgAspect = (imgW && imgH && imgH > 0) ? (imgW / imgH) : (16 / 9);
 
-      // Border around map
+      const maxMapWidth = 186; // mm
+      const maxMapHeight = 98; // mm
+
+      let mapWidth = maxMapWidth;
+      let mapHeight = mapWidth / imgAspect;
+
+      if (mapHeight > maxMapHeight) {
+        mapHeight = maxMapHeight;
+        mapWidth = mapHeight * imgAspect;
+      }
+
+      // Center horizontally in the available 186mm width (12mm left margin)
+      const mapX = 12 + ((maxMapWidth - mapWidth) / 2);
+
+      doc.addImage(mapDataUrl, 'JPEG', mapX, currentY, mapWidth, mapHeight);
+
+      // Border around map maintaining exact aspect-ratio proportions
       doc.setDrawColor(30, 41, 59); // slate-800
       doc.setLineWidth(0.4);
-      doc.rect(12, currentY, mapWidth, mapHeight);
+      doc.rect(mapX, currentY, mapWidth, mapHeight);
 
       currentY += mapHeight + 4;
     }
@@ -1856,15 +1884,16 @@ export async function exportMapWithFiltersPdf(
       r['ENDEREÇO COMPLETO'] || r['ENDEREÇOS DOS EQUIPAMENTOS'] || '-',
       r.BAIRRO || '-',
       r.REGIONAL || '-',
-      r.TIPO || '-',
       String(r.FAIXAS || '-'),
+      r.TIPO || '-',
+      r.OS?.trim() || '-',
       r.Situação || '-',
       r.CONDIÇÃO || '-',
     ]);
 
     autoTable(doc, {
       startY: 30,
-      head: [['Código', 'Contrato', 'Endereço Completo', 'Bairro', 'Regional', 'Tipo', 'Faixas', 'Situação', 'Condição']],
+      head: [['Código', 'Contrato', 'Endereço Completo', 'Bairro', 'Regional', 'Faixas', 'Tipo', 'OS', 'Situação', 'Condição']],
       body: equipRows,
       theme: 'striped',
       headStyles: {
@@ -1885,14 +1914,15 @@ export async function exportMapWithFiltersPdf(
       },
       columnStyles: {
         0: { halign: 'center', fontStyle: 'bold', cellWidth: 14 },
-        1: { halign: 'center', cellWidth: 16 },
+        1: { halign: 'center', cellWidth: 15 },
         2: { halign: 'left' },
-        3: { halign: 'center', cellWidth: 20 },
-        4: { halign: 'center', cellWidth: 18 },
-        5: { halign: 'center', cellWidth: 15 },
-        6: { halign: 'center', fontStyle: 'bold', textColor: [37, 99, 235], cellWidth: 12 },
-        7: { halign: 'center', cellWidth: 18 },
+        3: { halign: 'center', cellWidth: 18 },
+        4: { halign: 'center', cellWidth: 16 },
+        5: { halign: 'center', fontStyle: 'bold', textColor: [37, 99, 235], cellWidth: 11 },
+        6: { halign: 'center', cellWidth: 14 },
+        7: { halign: 'center', cellWidth: 13 },
         8: { halign: 'center', cellWidth: 16 },
+        9: { halign: 'center', cellWidth: 15 },
       },
       margin: { left: 10, right: 10, top: 30, bottom: 18 },
     });

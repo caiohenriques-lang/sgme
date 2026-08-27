@@ -6,15 +6,43 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.4.5';
+export const APP_VERSION = 'v3.4.8';
 export const BUILD_DATE = '27/08/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.4.8',
+    date: '27/08/2026',
+    tag: 'Correção de Proporção e Geometria do Mapa na Exportação em PDF',
+    isLatest: true,
+    changes: [
+      'Corrigida a distorção horizontal na plotagem do mapa no PDF do Monitoramento Espacial, preservando 100% da proporção original (aspect-ratio) sem esticamento.',
+      'Implementado cálculo dinâmico de dimensões e centralização automática da moldura geográfica no documento A4.',
+      'Ajustada a resolução de captura panorâmica (1920x1080) com renderização de alta fidelidade visual.'
+    ]
+  },
+  {
+    version: 'v3.4.7',
+    date: '27/08/2026',
+    tag: 'Reorganização da Sequência de Colunas no PDF do Monitoramento Espacial (Mapa)',
+    changes: [
+      'Reordenada a sequência exata de colunas da tabela de relação nominal de equipamentos no PDF do mapa: Código, Contrato, Endereço Completo, Bairro, Regional, Faixas, Tipo, OS, Situação e Condição.',
+      'Ajustadas as larguras individuais e alinhamentos de células para acomodar a nova disposição com máxima legibilidade.'
+    ]
+  },
+  {
+    version: 'v3.4.6',
+    date: '27/08/2026',
+    tag: 'Inclusão da Coluna OS na Exportação de PDF do Monitoramento Espacial (Mapa)',
+    changes: [
+      'Adicionada a coluna OS (Ordem de Serviço) na tabela de relação nominal de equipamentos do PDF exportado pelo mapa.',
+      'Ajustadas as proporções e larguras das colunas para alinhamento estético e legibilidade ideal em formato A4.'
+    ]
+  },
+  {
     version: 'v3.4.5',
     date: '27/08/2026',
     tag: 'Aplicação do Logotipo Oficial PBH/BHTRANS na Tela de Bloqueio/Senha',
-    isLatest: true,
     changes: [
       'Substituído o ícone genérico de cadeado pelo logotipo oficial de timbre PBH / BHTRANS no card de autenticação da tela de senha.',
       'Ajustada a moldura e contraste do emblema sobre o fundo escuro com acabamento e sombras refinadas.'
