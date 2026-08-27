@@ -6,15 +6,35 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.5.0';
+export const APP_VERSION = 'v3.5.2';
 export const BUILD_DATE = '27/08/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.5.2',
+    date: '27/08/2026',
+    tag: 'Máscara Automática de Data (DD/MM/AAAA) nos Filtros de Início de Operação e Aceite',
+    isLatest: true,
+    changes: [
+      'Implementada máscara inteligente de data (DD/MM/AAAA) nos 4 campos de intervalo dos filtros "Início de Operação" e "Aceite" (Início e Fim).',
+      'Adicionada inserção automática das barras "/" durante a digitação contínua (ex: "01012026" formata instantaneamente para "01/01/2026").',
+      'Configurado modo numérico (inputMode="numeric") e limitação a 10 caracteres para otimização da digitação no teclado móvel e desktop.'
+    ]
+  },
+  {
+    version: 'v3.5.1',
+    date: '27/08/2026',
+    tag: 'Padronização da Relação "Em implantação" na Tabela de Implantações por Mês',
+    changes: [
+      'Ajustada a tabela "Implantações por Mês" na aba Indicadores para exibir "Em implantação" para registros sem data de início de operação (mês/ano) definida, alinhando a nomenclatura com a tabela "Implantações por Ano".',
+      'Refatorada a ordenação temporal e a agregação de dados para posicionamento consistente de itens em processo de implantação.',
+      'Refletida a mesma padronização e totalização nos relatórios executivos em PDF.'
+    ]
+  },
+  {
     version: 'v3.5.0',
     date: '27/08/2026',
     tag: 'Visibilidade Direta dos Filtros de Situação, Início de Operação, Aceite e Coordenadas',
-    isLatest: true,
     changes: [
       'Disponibilizados diretamente na barra de filtros os campos de Situação (Condição), Intervalo de Datas de Início de Operação, Intervalo de Datas de Aceite e alternador "Apenas com Coordenadas".',
       'Eliminada a necessidade de expansão secundária ("Datas/Cond."), mantendo visualização imediata e integrada em todas as abas (Monitoramento Espacial, Indicadores e Lista de Equipamentos).',

@@ -230,6 +230,14 @@ const MultiSelectCheckboxDropdown: React.FC<MultiSelectCheckboxDropdownProps> = 
   );
 };
 
+// Função utilitária para aplicar máscara de data brasileira DD/MM/AAAA automaticamente
+const maskDateInput = (val: string): string => {
+  const digits = val.replace(/\D/g, '').slice(0, 8);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
+};
+
 export const FilterBar: React.FC<FilterBarProps> = ({
   activeTab,
   filters,
@@ -740,16 +748,20 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               <input
                 type="text"
                 placeholder="Início (DD/MM/AAAA)"
+                maxLength={10}
+                inputMode="numeric"
                 value={filters.dataInicioStart}
-                onChange={(e) => handleFilterChange('dataInicioStart', e.target.value)}
-                className="w-full text-[11px] bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500"
+                onChange={(e) => handleFilterChange('dataInicioStart', maskDateInput(e.target.value))}
+                className="w-full text-[11px] bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500 font-medium"
               />
               <input
                 type="text"
                 placeholder="Fim (DD/MM/AAAA)"
+                maxLength={10}
+                inputMode="numeric"
                 value={filters.dataInicioEnd}
-                onChange={(e) => handleFilterChange('dataInicioEnd', e.target.value)}
-                className="w-full text-[11px] bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500"
+                onChange={(e) => handleFilterChange('dataInicioEnd', maskDateInput(e.target.value))}
+                className="w-full text-[11px] bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500 font-medium"
               />
             </div>
           </div>
@@ -763,16 +775,20 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               <input
                 type="text"
                 placeholder="Início (DD/MM/AAAA)"
+                maxLength={10}
+                inputMode="numeric"
                 value={filters.dataAceiteStart}
-                onChange={(e) => handleFilterChange('dataAceiteStart', e.target.value)}
-                className="w-full text-[11px] bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500"
+                onChange={(e) => handleFilterChange('dataAceiteStart', maskDateInput(e.target.value))}
+                className="w-full text-[11px] bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500 font-medium"
               />
               <input
                 type="text"
                 placeholder="Fim (DD/MM/AAAA)"
+                maxLength={10}
+                inputMode="numeric"
                 value={filters.dataAceiteEnd}
-                onChange={(e) => handleFilterChange('dataAceiteEnd', e.target.value)}
-                className="w-full text-[11px] bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500"
+                onChange={(e) => handleFilterChange('dataAceiteEnd', maskDateInput(e.target.value))}
+                className="w-full text-[11px] bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500 font-medium"
               />
             </div>
           </div>

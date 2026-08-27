@@ -500,7 +500,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
 
     filteredByChartRecords.forEach((r) => {
       const rawAno = (r.ANO || '').toString().trim();
-      const key = rawAno || 'Não Informado';
+      const key = (rawAno && rawAno.toLowerCase() !== 'não informado') ? rawAno : 'Em implantação';
       if (!map.has(key)) {
         map.set(key, { ano: key, faixas: 0, count: 0, addresses: new Set() });
       }
@@ -518,10 +518,22 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
       let valB: number | string = 0;
 
       switch (anoSortField) {
-        case 'ano':
-          valA = a.ano;
-          valB = b.ano;
+        case 'ano': {
+          const isNumA = /^\d+$/.test(a.ano);
+          const isNumB = /^\d+$/.test(b.ano);
+          if (isNumA && isNumB) {
+            valA = parseInt(a.ano, 10);
+            valB = parseInt(b.ano, 10);
+          } else if (isNumA && !isNumB) {
+            return anoSortOrder === 'asc' ? -1 : 1;
+          } else if (!isNumA && isNumB) {
+            return anoSortOrder === 'asc' ? 1 : -1;
+          } else {
+            valA = a.ano;
+            valB = b.ano;
+          }
           break;
+        }
         case 'count':
         case 'pctEquip':
           valA = a.count;
@@ -558,15 +570,15 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
 
     filteredByChartRecords.forEach((r) => {
       const rawDate = (r['Data início operação'] || '').trim();
-      let key = 'Não Informado';
+      let key = 'Em implantação';
       let sortKey = 999999;
 
-      if (rawDate) {
+      if (rawDate && rawDate.toLowerCase() !== 'em implantação' && rawDate.toLowerCase() !== 'não informado') {
         const parts = rawDate.split('/');
         if (parts.length === 3) {
           const month = parseInt(parts[1], 10);
           const year = parseInt(parts[2], 10);
-          if (!isNaN(month) && !isNaN(year) && month >= 1 && month <= 12) {
+          if (!isNaN(month) && !isNaN(year) && month >= 1 && month <= 12 && year >= 1900) {
             const mStr = month.toString().padStart(2, '0');
             key = `${mStr}/${year}`;
             sortKey = year * 100 + month;
@@ -574,21 +586,11 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
         } else if (parts.length === 2) {
           const month = parseInt(parts[0], 10);
           const year = parseInt(parts[1], 10);
-          if (!isNaN(month) && !isNaN(year) && month >= 1 && month <= 12) {
+          if (!isNaN(month) && !isNaN(year) && month >= 1 && month <= 12 && year >= 1900) {
             const mStr = month.toString().padStart(2, '0');
             key = `${mStr}/${year}`;
             sortKey = year * 100 + month;
           }
-        }
-      }
-
-      // If date was not parsed, fallback to ANO if available
-      if (key === 'Não Informado') {
-        const rawAno = (r.ANO || '').toString().trim();
-        if (rawAno && /^\d{4}$/.test(rawAno)) {
-          const y = parseInt(rawAno, 10);
-          key = `Não inf./${y}`;
-          sortKey = y * 100;
         }
       }
 
@@ -1853,7 +1855,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
 
                   return (
                     <tr key={item.mes} className={idx % 2 === 0 ? 'bg-white hover:bg-slate-50/80' : 'bg-slate-50/40 hover:bg-slate-50/90'}>
-                      <td className="px-4 py-3 font-semibold text-slate-900 text-center font-mono">
+                      <td className="px-4 py-3 font-semibold text-slate-900 text-center">
                         {item.mes}
                       </td>
                       <td className="px-4 py-3 text-center font-mono font-medium text-slate-800">
