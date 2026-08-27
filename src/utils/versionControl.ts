@@ -6,15 +6,24 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.4.4';
-export const BUILD_DATE = '26/08/2026';
+export const APP_VERSION = 'v3.4.5';
+export const BUILD_DATE = '27/08/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v3.4.5',
+    date: '27/08/2026',
+    tag: 'Aplicação do Logotipo Oficial PBH/BHTRANS na Tela de Bloqueio/Senha',
+    isLatest: true,
+    changes: [
+      'Substituído o ícone genérico de cadeado pelo logotipo oficial de timbre PBH / BHTRANS no card de autenticação da tela de senha.',
+      'Ajustada a moldura e contraste do emblema sobre o fundo escuro com acabamento e sombras refinadas.'
+    ]
+  },
   {
     version: 'v3.4.4',
     date: '26/08/2026',
     tag: 'Ocultação Temporária dos Botões de Acesso ao Assistente de IA',
-    isLatest: true,
     changes: [
       'Ocultados temporariamente os botões de acionamento do Assistente de IA (cabeçalho e botão flutuante) conforme solicitado.',
       'Mantida toda a estrutura de serviços, rotas de IA e lógica de resposta preservadas para reexibição imediata sob demanda.'
