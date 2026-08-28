@@ -477,6 +477,73 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
 
           </div>
 
+          {/* TABELA 4: CUSTO POR RELOCAÇÃO E POR CONTRATO */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+            
+            <div className="p-4 sm:p-5 border-b border-slate-200 bg-slate-50/80 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <ArrowRightLeft className="w-5 h-5 text-indigo-600" />
+                <h3 className="font-bold text-sm sm:text-base text-slate-900 uppercase tracking-wide">
+                  CUSTO POR RELOCAÇÃO E POR CONTRATO
+                </h3>
+              </div>
+              <span className="text-[11px] font-bold text-indigo-800 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-lg">
+                Valores, BDI, 1ª TA e 2ª TA
+              </span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <div className="block sm:hidden text-[10px] text-slate-400 font-medium px-4 py-1.5 bg-slate-50 border-b border-slate-200">
+                ↔ Deslize a tabela para o lado para ver todas as colunas
+              </div>
+              <table className="w-full text-left text-xs border-collapse min-w-[800px]">
+                <thead>
+                  <tr className="bg-slate-100/90 text-slate-700 font-bold border-b border-slate-200 uppercase tracking-wider text-[11px]">
+                    <th className="py-3 px-4 w-28">CONTRATO</th>
+                    <th className="py-3 px-4 min-w-[220px]">EMPRESA</th>
+                    <th className="py-3 px-4 text-right bg-slate-50/60">VALOR DE RELOCAÇÃO (CONTRATADO)</th>
+                    <th className="py-3 px-4 text-center">BDI</th>
+                    <th className="py-3 px-4 text-center">1ª TA</th>
+                    <th className="py-3 px-4 text-center">2ª TA</th>
+                    <th className="py-3 px-4 text-right bg-indigo-50/60 text-indigo-950">
+                      VALOR DE RELOCAÇÃO ATUAL
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-800">
+                  {(data.tabelaCustosRelocacao || []).map((row) => (
+                    <tr key={row.contrato} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-3.5 px-4 font-bold text-slate-900 align-middle">
+                        <span className="bg-slate-100 text-slate-800 border border-slate-200/90 px-2 py-1 rounded-md font-mono text-xs inline-block">
+                          {row.contrato}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 font-semibold text-slate-800 align-middle">
+                        {row.empresa}
+                      </td>
+                      <td className="py-3.5 px-4 text-right font-mono font-medium text-slate-700 bg-slate-50/30 align-middle">
+                        {row.valorContratado}
+                      </td>
+                      <td className="py-3.5 px-4 text-center font-mono font-medium text-slate-700 align-middle">
+                        {row.bdi}
+                      </td>
+                      <td className="py-3.5 px-4 text-center font-mono font-medium text-slate-700 align-middle">
+                        {row.primeiraTA}
+                      </td>
+                      <td className="py-3.5 px-4 text-center font-mono font-medium text-slate-700 align-middle">
+                        {row.segundaTA}
+                      </td>
+                      <td className="py-3.5 px-4 text-right font-mono font-bold text-indigo-900 bg-indigo-50/30 text-sm align-middle">
+                        {row.valorAtual}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+
         </div>
       )}
 

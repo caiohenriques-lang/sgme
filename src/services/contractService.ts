@@ -46,6 +46,16 @@ export interface CustoFaixaRow {
   valorAtualBDI: string;
 }
 
+export interface CustoRelocacaoRow {
+  contrato: string;
+  empresa: string;
+  valorContratado: string;
+  bdi: string;
+  primeiraTA: string;
+  segundaTA: string;
+  valorAtual: string;
+}
+
 export interface Contrato2020Row {
   contrato: string;
   empresa: string;
@@ -102,6 +112,7 @@ export interface ControleGeralCTsData {
   tabelaRelocacoes: RelocacaoRow[];
   tabelaContratos2020: Contrato2020Row[];
   tabelaCustos: CustoFaixaRow[];
+  tabelaCustosRelocacao: CustoRelocacaoRow[];
   tabelaComparativoCustos: ComparativoCustosRow[];
   matrizRecords: MatrizEquipmentRow[];
   totalFaixasContratadas: number;
@@ -308,6 +319,35 @@ export const INITIAL_CONTROLE_GERAL_DATA: ControleGeralCTsData = {
       primeiraTA: '4,75%',
       segundaTA: '4,75%',
       valorAtualBDI: 'R$ 261.787,70',
+    },
+  ],
+  tabelaCustosRelocacao: [
+    {
+      contrato: '2740/2024',
+      empresa: 'ELISEU KOPP & CIA LTDA.',
+      valorContratado: 'R$ 3.085,52',
+      bdi: '23,80%',
+      primeiraTA: '4,87%',
+      segundaTA: '4,46%',
+      valorAtual: 'R$ 3.380,10',
+    },
+    {
+      contrato: '2741/2024',
+      empresa: 'SPLICE INDÚSTRIA, COMÉRCIO E SERVIÇOS LTDA.',
+      valorContratado: '-',
+      bdi: '25,04%',
+      primeiraTA: '4,75%',
+      segundaTA: '-',
+      valorAtual: '-',
+    },
+    {
+      contrato: '2742/2024',
+      empresa: 'CONSÓRCIO TRÂNSITO SEGURO',
+      valorContratado: 'R$ 5.662,76',
+      bdi: '21,51%',
+      primeiraTA: '4,87%',
+      segundaTA: '4,46%',
+      valorAtual: 'R$ 6.203,40',
     },
   ],
   tabelaComparativoCustos: [
@@ -644,6 +684,7 @@ export function parseControleGeralRows(rows: string[][]): ControleGeralCTsData {
   let tabelaRelocacoes: RelocacaoRow[] = [];
   let tabelaContratos2020: Contrato2020Row[] = [];
   let tabelaCustos: CustoFaixaRow[] = [];
+  let tabelaCustosRelocacao: CustoRelocacaoRow[] = [];
   let tabelaComparativoCustos: ComparativoCustosRow[] = [];
   let vigencia = '19/07/2024 à 18/07/2029';
   let vigencia2020 = '19/10/2020 à 18/10/2025';
@@ -681,6 +722,16 @@ export function parseControleGeralRows(rows: string[][]): ControleGeralCTsData {
     valorAtualIdx: number;
   } | null = null;
 
+  let custosRelocHeaders: {
+    ctIdx: number;
+    empresaIdx: number;
+    valorContrIdx: number;
+    bdiIdx: number;
+    ta1Idx: number;
+    ta2Idx: number;
+    valorAtualIdx: number;
+  } | null = null;
+
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     const joined = row.join(' ').toUpperCase();
@@ -696,6 +747,10 @@ export function parseControleGeralRows(rows: string[][]): ControleGeralCTsData {
       continue;
     } else if (joined.includes('2585/2020') && currentSection !== 'COMPARATIVO_CUSTOS') {
       currentSection = 'CONTRATOS_2020';
+    } else if (joined.includes('CUSTO POR RELOCAÇÃO E POR CONTRATO') || (joined.includes('CUSTO POR RELOCA') && joined.includes('CONTRATO'))) {
+      currentSection = 'CUSTOS_RELOCACAO';
+      custosRelocHeaders = null;
+      continue;
     } else if (joined.includes('CUSTO POR FAIXA E POR CONTRATO')) {
       if (tabelaCustos.length === 0) {
         currentSection = 'CUSTOS_2024';
@@ -979,6 +1034,65 @@ export function parseControleGeralRows(rows: string[][]): ControleGeralCTsData {
       }
     }
 
+    // 4.1. CUSTOS POR RELOCAÇÃO
+    else if (currentSection === 'CUSTOS_RELOCACAO') {
+      const ctHeaderIdx = row.findIndex((c) => c.trim().toUpperCase() === 'CONTRATO');
+      if (ctHeaderIdx !== -1) {
+        const empresaIdx = row.findIndex((c) => c.trim().toUpperCase() === 'EMPRESA');
+        const valorContrIdx = row.findIndex(
+          (c) => c.toUpperCase().includes('VALOR') && (c.toUpperCase().includes('RELOCA') || c.toUpperCase().includes('CONTRATADO'))
+        );
+        const bdiIdx = row.findIndex((c) => c.trim().toUpperCase() === 'BDI');
+        const ta1Idx = row.findIndex((c) => c.toUpperCase().includes('1ª TA') || c.toUpperCase().includes('1° TA'));
+        const ta2Idx = row.findIndex((c) => c.toUpperCase().includes('2ª TA') || c.toUpperCase().includes('2° TA'));
+        const valorAtualIdx = row.findIndex((c) => c.toUpperCase().includes('ATUAL'));
+
+        custosRelocHeaders = {
+          ctIdx: ctHeaderIdx,
+          empresaIdx: empresaIdx !== -1 ? empresaIdx : ctHeaderIdx + 1,
+          valorContrIdx: valorContrIdx !== -1 ? valorContrIdx : ctHeaderIdx + 2,
+          bdiIdx: bdiIdx !== -1 ? bdiIdx : ctHeaderIdx + 3,
+          ta1Idx: ta1Idx !== -1 ? ta1Idx : ctHeaderIdx + 4,
+          ta2Idx: ta2Idx !== -1 ? ta2Idx : ctHeaderIdx + 5,
+          valorAtualIdx: valorAtualIdx !== -1 ? valorAtualIdx : ctHeaderIdx + 6,
+        };
+        continue;
+      }
+
+      const candidateCtIdx = custosRelocHeaders ? custosRelocHeaders.ctIdx : row.findIndex((c) => /274\d|\d{4}\/\d{4}/.test(c.trim()));
+      if (candidateCtIdx !== -1) {
+        const contrato = (row[candidateCtIdx] || '').trim();
+        if (contrato.startsWith('274') || /^\d{4}\/\d{4}$/.test(contrato)) {
+          const headers = custosRelocHeaders || {
+            ctIdx: candidateCtIdx,
+            empresaIdx: candidateCtIdx + 1,
+            valorContrIdx: candidateCtIdx + 2,
+            bdiIdx: candidateCtIdx + 3,
+            ta1Idx: candidateCtIdx + 4,
+            ta2Idx: candidateCtIdx + 5,
+            valorAtualIdx: candidateCtIdx + 6,
+          };
+
+          const empresa = (row[headers.empresaIdx] || '').trim();
+          const valorContratado = (row[headers.valorContrIdx] || '').trim();
+          const bdi = (row[headers.bdiIdx] || '').trim();
+          const primeiraTA = (row[headers.ta1Idx] || '').trim();
+          const segundaTA = (row[headers.ta2Idx] || '').trim();
+          const valorAtual = (row[headers.valorAtualIdx] || '').trim();
+
+          tabelaCustosRelocacao.push({
+            contrato,
+            empresa,
+            valorContratado: valorContratado || '-',
+            bdi: bdi || '-',
+            primeiraTA: primeiraTA || '-',
+            segundaTA: segundaTA || '-',
+            valorAtual: valorAtual || (valorContratado && valorContratado !== '-' ? valorContratado : '-'),
+          });
+        }
+      }
+    }
+
     // 5. COMPARATIVO CUSTOS
     else if (currentSection === 'COMPARATIVO_CUSTOS') {
       const candidateCtIdx = row.findIndex(
@@ -1017,6 +1131,7 @@ export function parseControleGeralRows(rows: string[][]): ControleGeralCTsData {
   if (tabelaRelocacoes.length === 0) tabelaRelocacoes = INITIAL_CONTROLE_GERAL_DATA.tabelaRelocacoes;
   if (tabelaContratos2020.length === 0) tabelaContratos2020 = INITIAL_CONTROLE_GERAL_DATA.tabelaContratos2020;
   if (tabelaCustos.length === 0) tabelaCustos = INITIAL_CONTROLE_GERAL_DATA.tabelaCustos;
+  if (tabelaCustosRelocacao.length === 0) tabelaCustosRelocacao = INITIAL_CONTROLE_GERAL_DATA.tabelaCustosRelocacao;
   if (tabelaComparativoCustos.length === 0) tabelaComparativoCustos = INITIAL_CONTROLE_GERAL_DATA.tabelaComparativoCustos;
 
   const totalFaixasContratadas = tabelaFaixasPorOS.reduce((acc, curr) => {
@@ -1030,6 +1145,7 @@ export function parseControleGeralRows(rows: string[][]): ControleGeralCTsData {
     tabelaRelocacoes,
     tabelaContratos2020,
     tabelaCustos,
+    tabelaCustosRelocacao,
     tabelaComparativoCustos,
     matrizRecords: [],
     totalFaixasContratadas: totalFaixasContratadas || 1363,

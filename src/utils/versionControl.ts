@@ -6,15 +6,25 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.5.2';
-export const BUILD_DATE = '27/08/2026';
+export const APP_VERSION = 'v3.5.3';
+export const BUILD_DATE = '28/08/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v3.5.3',
+    date: '28/08/2026',
+    tag: 'Inclusão da Tabela "Custo por Relocação e por Contrato" na Gestão Contratual',
+    isLatest: true,
+    changes: [
+      'Inserida nova tabela "CUSTO POR RELOCAÇÃO E POR CONTRATO" posicionada imediatamente após a tabela "Custo por Faixa e por Contrato" na aba Gestão Contratual.',
+      'Configurada a extração e sincronização em tempo real dos dados de custos de relocação a partir da planilha matriz de Controle Geral dos Contratos.',
+      'Exibição completa das colunas: Contrato, Empresa, Valor de Relocação (Contratado), BDI, 1ª TA, 2ª TA e Valor de Relocação Atual com tipografia monospace e formatação financeira.'
+    ]
+  },
   {
     version: 'v3.5.2',
     date: '27/08/2026',
     tag: 'Máscara Automática de Data (DD/MM/AAAA) nos Filtros de Início de Operação e Aceite',
-    isLatest: true,
     changes: [
       'Implementada máscara inteligente de data (DD/MM/AAAA) nos 4 campos de intervalo dos filtros "Início de Operação" e "Aceite" (Início e Fim).',
       'Adicionada inserção automática das barras "/" durante a digitação contínua (ex: "01012026" formata instantaneamente para "01/01/2026").',
