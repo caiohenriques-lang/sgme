@@ -6,15 +6,25 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.5.8';
+export const APP_VERSION = 'v3.5.9';
 export const BUILD_DATE = '28/08/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.5.9',
+    date: '28/08/2026',
+    tag: 'Hiperlinks de Reajuste (1º e 2º Reajustes) do CT 2743/24 na Gestão Contratual',
+    isLatest: true,
+    changes: [
+      'Configurado link direto para o PDF oficial do 1º Reajuste (4,75%) do CT 2743/24 (apostila01-ct2743_24.pdf).',
+      'Configurado link direto para o PDF oficial do 2º Reajuste (4,68%) do CT 2743/24 (apostila02-ct2743_24.pdf).',
+      'Aplicado nas tabelas "Custo por Faixa e por Contrato" e "Custo por Relocação e por Contrato" na aba Gestão Contratual.'
+    ]
+  },
+  {
     version: 'v3.5.8',
     date: '28/08/2026',
     tag: 'Hiperlink Direto do CT 2743/24 (PDF PBH) na Gestão Contratual',
-    isLatest: true,
     changes: [
       'Configurado link direto e interativo para o PDF oficial do Contrato 2743/2024 (2743/24) (ct2743_24.pdf) no Portal de Transparência da PBH.',
       'Aplicado na coluna CONTRATO de todas as tabelas e cards da aba Gestão Contratual.',

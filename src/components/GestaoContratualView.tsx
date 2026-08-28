@@ -60,6 +60,14 @@ export const getReajusteLink = (contratoStr: string, reajusteNum: 1 | 2): string
       return 'https://prefeitura.pbh.gov.br/sites/default/files/estrutura-de-governo/bhtrans/transparencia/2024/apostila02-ct2742_25.pdf';
     }
   }
+  if (clean.includes('2743')) {
+    if (reajusteNum === 1) {
+      return 'https://prefeitura.pbh.gov.br/sites/default/files/estrutura-de-governo/bhtrans/transparencia/2024/apostila01-ct2743_24.pdf';
+    }
+    if (reajusteNum === 2) {
+      return 'https://prefeitura.pbh.gov.br/sites/default/files/estrutura-de-governo/bhtrans/transparencia/2024/apostila02-ct2743_24.pdf';
+    }
+  }
   return null;
 };
 
