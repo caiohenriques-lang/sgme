@@ -6,15 +6,25 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.5.3';
+export const APP_VERSION = 'v3.5.4';
 export const BUILD_DATE = '28/08/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.5.4',
+    date: '28/08/2026',
+    tag: 'Atualização de Nomenclatura para 1º Reajuste e 2º Reajuste na Gestão Contratual',
+    isLatest: true,
+    changes: [
+      'Atualizada a nomenclatura das colunas nas tabelas "Custo por Faixa e por Contrato" e "Custo por Relocação e por Contrato" de "1ª TA / 2ª TA" para "1º REAJUSTE / 2º REAJUSTE".',
+      'Refatorado o parser de dados da planilha matriz de Controle Geral dos Contratos para reconhecer dinamicamente as variações de cabeçalho de reajuste.',
+      'Ajustados os crachás informativos das tabelas para "Valores, BDI, 1º Reajuste e 2º Reajuste".'
+    ]
+  },
+  {
     version: 'v3.5.3',
     date: '28/08/2026',
     tag: 'Inclusão da Tabela "Custo por Relocação e por Contrato" na Gestão Contratual',
-    isLatest: true,
     changes: [
       'Inserida nova tabela "CUSTO POR RELOCAÇÃO E POR CONTRATO" posicionada imediatamente após a tabela "Custo por Faixa e por Contrato" na aba Gestão Contratual.',
       'Configurada a extração e sincronização em tempo real dos dados de custos de relocação a partir da planilha matriz de Controle Geral dos Contratos.',

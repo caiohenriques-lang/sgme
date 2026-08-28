@@ -410,7 +410,7 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
 
           </div>
 
-          {/* TABELA 3: CUSTO POR FAIXA E POR CONTRATO (com 1ª TA e 2ª TA) */}
+          {/* TABELA 3: CUSTO POR FAIXA E POR CONTRATO (com 1º Reajuste e 2º Reajuste) */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
             
             <div className="p-4 sm:p-5 border-b border-slate-200 bg-slate-50/80 flex items-center justify-between gap-3">
@@ -421,7 +421,7 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
                 </h3>
               </div>
               <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg">
-                Valores, BDI, 1ª TA e 2ª TA
+                Valores, BDI, 1º Reajuste e 2º Reajuste
               </span>
             </div>
 
@@ -436,8 +436,8 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
                     <th className="py-3 px-4 min-w-[220px]">EMPRESA</th>
                     <th className="py-3 px-4 text-right bg-slate-50/60">VALOR DE FAIXA (CONTRATADO)</th>
                     <th className="py-3 px-4 text-center">BDI</th>
-                    <th className="py-3 px-4 text-center">1ª TA</th>
-                    <th className="py-3 px-4 text-center">2ª TA</th>
+                    <th className="py-3 px-4 text-center">1º REAJUSTE</th>
+                    <th className="py-3 px-4 text-center">2º REAJUSTE</th>
                     <th className="py-3 px-4 text-right bg-emerald-50/60 text-emerald-950">
                       VALOR DE FAIXA ATUAL + BDI
                     </th>
@@ -461,10 +461,10 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
                         {row.bdi}
                       </td>
                       <td className="py-3.5 px-4 text-center font-mono font-medium text-slate-700 align-middle">
-                        {row.primeiraTA}
+                        {row.primeiroReajuste || row.primeiraTA}
                       </td>
                       <td className="py-3.5 px-4 text-center font-mono font-medium text-slate-700 align-middle">
-                        {row.segundaTA}
+                        {row.segundoReajuste || row.segundaTA}
                       </td>
                       <td className="py-3.5 px-4 text-right font-mono font-bold text-emerald-800 bg-emerald-50/30 text-sm align-middle">
                         {row.valorAtualBDI}
@@ -488,7 +488,7 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
                 </h3>
               </div>
               <span className="text-[11px] font-bold text-indigo-800 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-lg">
-                Valores, BDI, 1ª TA e 2ª TA
+                Valores, BDI, 1º Reajuste e 2º Reajuste
               </span>
             </div>
 
@@ -503,8 +503,8 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
                     <th className="py-3 px-4 min-w-[220px]">EMPRESA</th>
                     <th className="py-3 px-4 text-right bg-slate-50/60">VALOR DE RELOCAÇÃO (CONTRATADO)</th>
                     <th className="py-3 px-4 text-center">BDI</th>
-                    <th className="py-3 px-4 text-center">1ª TA</th>
-                    <th className="py-3 px-4 text-center">2ª TA</th>
+                    <th className="py-3 px-4 text-center">1º REAJUSTE</th>
+                    <th className="py-3 px-4 text-center">2º REAJUSTE</th>
                     <th className="py-3 px-4 text-right bg-indigo-50/60 text-indigo-950">
                       VALOR DE RELOCAÇÃO ATUAL
                     </th>
@@ -528,10 +528,10 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
                         {row.bdi}
                       </td>
                       <td className="py-3.5 px-4 text-center font-mono font-medium text-slate-700 align-middle">
-                        {row.primeiraTA}
+                        {row.primeiroReajuste || row.primeiraTA}
                       </td>
                       <td className="py-3.5 px-4 text-center font-mono font-medium text-slate-700 align-middle">
-                        {row.segundaTA}
+                        {row.segundoReajuste || row.segundaTA}
                       </td>
                       <td className="py-3.5 px-4 text-right font-mono font-bold text-indigo-900 bg-indigo-50/30 text-sm align-middle">
                         {row.valorAtual}

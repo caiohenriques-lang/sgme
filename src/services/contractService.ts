@@ -43,6 +43,8 @@ export interface CustoFaixaRow {
   bdi: string;
   primeiraTA: string;
   segundaTA: string;
+  primeiroReajuste?: string;
+  segundoReajuste?: string;
   valorAtualBDI: string;
 }
 
@@ -53,6 +55,8 @@ export interface CustoRelocacaoRow {
   bdi: string;
   primeiraTA: string;
   segundaTA: string;
+  primeiroReajuste?: string;
+  segundoReajuste?: string;
   valorAtual: string;
 }
 
@@ -984,8 +988,34 @@ export function parseControleGeralRows(rows: string[][]): ControleGeralCTsData {
         const empresaIdx = row.findIndex((c) => c.trim().toUpperCase() === 'EMPRESA');
         const valorContrIdx = row.findIndex((c) => c.toUpperCase().includes('VALOR') && c.toUpperCase().includes('CONTRATADO'));
         const bdiIdx = row.findIndex((c) => c.trim().toUpperCase() === 'BDI');
-        const ta1Idx = row.findIndex((c) => c.toUpperCase().includes('1ª TA') || c.toUpperCase().includes('1° TA'));
-        const ta2Idx = row.findIndex((c) => c.toUpperCase().includes('2ª TA') || c.toUpperCase().includes('2° TA'));
+        
+        // Match 1º REAJUSTE / 1ª TA / 1º TA or columns with REAJUSTE / TA
+        let ta1Idx = row.findIndex(
+          (c) =>
+            c.toUpperCase().includes('1º REAJUSTE') ||
+            c.toUpperCase().includes('1ª REAJUSTE') ||
+            c.toUpperCase().includes('1° REAJUSTE') ||
+            c.toUpperCase().includes('1ª TA') ||
+            c.toUpperCase().includes('1° TA')
+        );
+        let ta2Idx = row.findIndex(
+          (c) =>
+            c.toUpperCase().includes('2º REAJUSTE') ||
+            c.toUpperCase().includes('2ª REAJUSTE') ||
+            c.toUpperCase().includes('2° REAJUSTE') ||
+            c.toUpperCase().includes('2ª TA') ||
+            c.toUpperCase().includes('2° TA')
+        );
+
+        // Fallback by relative position if header has repeated or generic names
+        if (ta1Idx === -1 && bdiIdx !== -1) {
+          const reajusteCols = row
+            .map((c, idx) => ({ c: c.toUpperCase(), idx }))
+            .filter((o) => o.idx > bdiIdx && (o.c.includes('REAJUSTE') || o.c.includes('TA')));
+          if (reajusteCols.length >= 1) ta1Idx = reajusteCols[0].idx;
+          if (reajusteCols.length >= 2) ta2Idx = reajusteCols[1].idx;
+        }
+
         const valorAtualIdx = row.findIndex((c) => c.toUpperCase().includes('ATUAL'));
 
         custosHeaders = {
@@ -993,8 +1023,8 @@ export function parseControleGeralRows(rows: string[][]): ControleGeralCTsData {
           empresaIdx: empresaIdx !== -1 ? empresaIdx : ctHeaderIdx + 1,
           valorContrIdx: valorContrIdx !== -1 ? valorContrIdx : ctHeaderIdx + 2,
           bdiIdx: bdiIdx !== -1 ? bdiIdx : ctHeaderIdx + 3,
-          ta1Idx: ta1Idx !== -1 ? ta1Idx : ctHeaderIdx + 4,
-          ta2Idx: ta2Idx !== -1 ? ta2Idx : ctHeaderIdx + 5,
+          ta1Idx: ta1Idx !== -1 ? ta1Idx : (bdiIdx !== -1 ? bdiIdx + 1 : ctHeaderIdx + 4),
+          ta2Idx: ta2Idx !== -1 ? ta2Idx : (ta1Idx !== -1 ? ta1Idx + 1 : ctHeaderIdx + 5),
           valorAtualIdx: valorAtualIdx !== -1 ? valorAtualIdx : ctHeaderIdx + 6,
         };
         continue;
@@ -1028,6 +1058,8 @@ export function parseControleGeralRows(rows: string[][]): ControleGeralCTsData {
             bdi: bdi || '-',
             primeiraTA: primeiraTA || '-',
             segundaTA: segundaTA || '-',
+            primeiroReajuste: primeiraTA || '-',
+            segundoReajuste: segundaTA || '-',
             valorAtualBDI: valorAtualBDI || valorContratado,
           });
         }
@@ -1043,8 +1075,32 @@ export function parseControleGeralRows(rows: string[][]): ControleGeralCTsData {
           (c) => c.toUpperCase().includes('VALOR') && (c.toUpperCase().includes('RELOCA') || c.toUpperCase().includes('CONTRATADO'))
         );
         const bdiIdx = row.findIndex((c) => c.trim().toUpperCase() === 'BDI');
-        const ta1Idx = row.findIndex((c) => c.toUpperCase().includes('1ª TA') || c.toUpperCase().includes('1° TA'));
-        const ta2Idx = row.findIndex((c) => c.toUpperCase().includes('2ª TA') || c.toUpperCase().includes('2° TA'));
+        
+        let ta1Idx = row.findIndex(
+          (c) =>
+            c.toUpperCase().includes('1º REAJUSTE') ||
+            c.toUpperCase().includes('1ª REAJUSTE') ||
+            c.toUpperCase().includes('1° REAJUSTE') ||
+            c.toUpperCase().includes('1ª TA') ||
+            c.toUpperCase().includes('1° TA')
+        );
+        let ta2Idx = row.findIndex(
+          (c) =>
+            c.toUpperCase().includes('2º REAJUSTE') ||
+            c.toUpperCase().includes('2ª REAJUSTE') ||
+            c.toUpperCase().includes('2° REAJUSTE') ||
+            c.toUpperCase().includes('2ª TA') ||
+            c.toUpperCase().includes('2° TA')
+        );
+
+        if (ta1Idx === -1 && bdiIdx !== -1) {
+          const reajusteCols = row
+            .map((c, idx) => ({ c: c.toUpperCase(), idx }))
+            .filter((o) => o.idx > bdiIdx && (o.c.includes('REAJUSTE') || o.c.includes('TA')));
+          if (reajusteCols.length >= 1) ta1Idx = reajusteCols[0].idx;
+          if (reajusteCols.length >= 2) ta2Idx = reajusteCols[1].idx;
+        }
+
         const valorAtualIdx = row.findIndex((c) => c.toUpperCase().includes('ATUAL'));
 
         custosRelocHeaders = {
@@ -1052,8 +1108,8 @@ export function parseControleGeralRows(rows: string[][]): ControleGeralCTsData {
           empresaIdx: empresaIdx !== -1 ? empresaIdx : ctHeaderIdx + 1,
           valorContrIdx: valorContrIdx !== -1 ? valorContrIdx : ctHeaderIdx + 2,
           bdiIdx: bdiIdx !== -1 ? bdiIdx : ctHeaderIdx + 3,
-          ta1Idx: ta1Idx !== -1 ? ta1Idx : ctHeaderIdx + 4,
-          ta2Idx: ta2Idx !== -1 ? ta2Idx : ctHeaderIdx + 5,
+          ta1Idx: ta1Idx !== -1 ? ta1Idx : (bdiIdx !== -1 ? bdiIdx + 1 : ctHeaderIdx + 4),
+          ta2Idx: ta2Idx !== -1 ? ta2Idx : (ta1Idx !== -1 ? ta1Idx + 1 : ctHeaderIdx + 5),
           valorAtualIdx: valorAtualIdx !== -1 ? valorAtualIdx : ctHeaderIdx + 6,
         };
         continue;
@@ -1087,6 +1143,8 @@ export function parseControleGeralRows(rows: string[][]): ControleGeralCTsData {
             bdi: bdi || '-',
             primeiraTA: primeiraTA || '-',
             segundaTA: segundaTA || '-',
+            primeiroReajuste: primeiraTA || '-',
+            segundoReajuste: segundaTA || '-',
             valorAtual: valorAtual || (valorContratado && valorContratado !== '-' ? valorContratado : '-'),
           });
         }
