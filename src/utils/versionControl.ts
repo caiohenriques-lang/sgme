@@ -6,15 +6,60 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.5.4';
+export const APP_VERSION = 'v3.5.8';
 export const BUILD_DATE = '28/08/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.5.8',
+    date: '28/08/2026',
+    tag: 'Hiperlink Direto do CT 2743/24 (PDF PBH) na Gestão Contratual',
+    isLatest: true,
+    changes: [
+      'Configurado link direto e interativo para o PDF oficial do Contrato 2743/2024 (2743/24) (ct2743_24.pdf) no Portal de Transparência da PBH.',
+      'Aplicado na coluna CONTRATO de todas as tabelas e cards da aba Gestão Contratual.',
+      'Abertura segura em nova aba com indicador visual de link externo.'
+    ]
+  },
+  {
+    version: 'v3.5.7',
+    date: '28/08/2026',
+    tag: 'Hiperlink do 1º Reajuste do CT 2741/24 na Gestão Contratual',
+    changes: [
+      'Configurado link direto e interativo para o PDF oficial de apostilamento no valor de 1º Reajuste (4,75%) do CT 2741/24 nas tabelas "Custo por Faixa e por Contrato" e "Custo por Relocação e por Contrato".',
+      'Contrato 2741/24 - 1º Reajuste (4,75%) vinculado a apostila01-ct2741_24.pdf.',
+      'Abertura direta do documento de apostilamento em nova aba com segurança.'
+    ]
+  },
+  {
+    version: 'v3.5.6',
+    date: '28/08/2026',
+    tag: 'Hiperlinks dos Documentos de Reajuste (1º e 2º Reajustes) na Gestão Contratual',
+    changes: [
+      'Configurados links diretos e interativos para os PDFs oficiais de Termos Aditivos e Apostilamentos nos valores de 1º e 2º Reajustes das tabelas "Custo por Faixa e por Contrato" e "Custo por Relocação e por Contrato".',
+      'Contrato 2740/24 - 1º Reajuste (4,87%) vinculado a 1ta-ct2740_24.pdf.',
+      'Contrato 2740/24 - 2º Reajuste (4,46%) vinculado a apostila01-ct2740_24.pdf.',
+      'Contrato 2742/24 - 1º Reajuste (4,87%) vinculado a apostila01-ct2742_24.pdf.',
+      'Contrato 2742/24 - 2º Reajuste (4,46%) vinculado a apostila02-ct2742_25.pdf.',
+      'Estilização dos valores clicáveis com destaque azul, sublinhado em hover e ícone discreto de documento externo.'
+    ]
+  },
+  {
+    version: 'v3.5.5',
+    date: '28/08/2026',
+    tag: 'Hiperlinks Diretos dos Contratos (PDF PBH) na Gestão Contratual',
+    changes: [
+      'Configurados links diretos e interativos para os PDFs oficiais do Portal de Transparência da PBH na coluna CONTRATO de todas as tabelas da aba Gestão Contratual.',
+      'Contrato 2740/2024 (2740/24) vinculado a ct2740_24.pdf.',
+      'Contrato 2741/2024 (2741/24) vinculado a ct2741_24.pdf.',
+      'Contrato 2742/2024 (2742/24) vinculado a ct2742_24.pdf.',
+      'Adicionado ícone indicador de link externo e abertura em nova aba com segurança.'
+    ]
+  },
+  {
     version: 'v3.5.4',
     date: '28/08/2026',
     tag: 'Atualização de Nomenclatura para 1º Reajuste e 2º Reajuste na Gestão Contratual',
-    isLatest: true,
     changes: [
       'Atualizada a nomenclatura das colunas nas tabelas "Custo por Faixa e por Contrato" e "Custo por Relocação e por Contrato" de "1ª TA / 2ª TA" para "1º REAJUSTE / 2º REAJUSTE".',
       'Refatorado o parser de dados da planilha matriz de Controle Geral dos Contratos para reconhecer dinamicamente as variações de cabeçalho de reajuste.',

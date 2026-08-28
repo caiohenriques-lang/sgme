@@ -15,7 +15,101 @@ import {
   History,
   Activity,
   Zap,
+  ExternalLink,
 } from 'lucide-react';
+
+export const getContractLink = (contratoStr: string): string | null => {
+  if (!contratoStr) return null;
+  const clean = contratoStr.trim();
+  if (clean.includes('2740')) {
+    return 'https://prefeitura.pbh.gov.br/sites/default/files/estrutura-de-governo/bhtrans/transparencia/2024/ct2740_24.pdf';
+  }
+  if (clean.includes('2741')) {
+    return 'https://prefeitura.pbh.gov.br/sites/default/files/estrutura-de-governo/bhtrans/transparencia/2024/ct2741_24.pdf';
+  }
+  if (clean.includes('2742')) {
+    return 'https://prefeitura.pbh.gov.br/sites/default/files/estrutura-de-governo/bhtrans/transparencia/2024/ct2742_24.pdf';
+  }
+  if (clean.includes('2743')) {
+    return 'https://prefeitura.pbh.gov.br/sites/default/files/estrutura-de-governo/bhtrans/transparencia/2024/ct2743_24.pdf';
+  }
+  return null;
+};
+
+export const getReajusteLink = (contratoStr: string, reajusteNum: 1 | 2): string | null => {
+  if (!contratoStr) return null;
+  const clean = contratoStr.trim();
+  if (clean.includes('2740')) {
+    if (reajusteNum === 1) {
+      return 'https://prefeitura.pbh.gov.br/sites/default/files/estrutura-de-governo/bhtrans/transparencia/2024/1ta-ct2740_24.pdf';
+    }
+    if (reajusteNum === 2) {
+      return 'https://prefeitura.pbh.gov.br/sites/default/files/estrutura-de-governo/bhtrans/transparencia/2024/apostila01-ct2740_24.pdf';
+    }
+  }
+  if (clean.includes('2741')) {
+    if (reajusteNum === 1) {
+      return 'https://prefeitura.pbh.gov.br/sites/default/files/estrutura-de-governo/bhtrans/transparencia/2024/apostila01-ct2741_24.pdf';
+    }
+  }
+  if (clean.includes('2742')) {
+    if (reajusteNum === 1) {
+      return 'https://prefeitura.pbh.gov.br/sites/default/files/estrutura-de-governo/bhtrans/transparencia/2024/apostila01-ct2742_24.pdf';
+    }
+    if (reajusteNum === 2) {
+      return 'https://prefeitura.pbh.gov.br/sites/default/files/estrutura-de-governo/bhtrans/transparencia/2024/apostila02-ct2742_25.pdf';
+    }
+  }
+  return null;
+};
+
+const renderContractBadge = (contrato: string, size: 'sm' | 'md' = 'md') => {
+  const link = getContractLink(contrato);
+  const paddingClass = size === 'sm' ? 'px-1.5 py-0.5 text-[11px]' : 'px-2 py-1 text-xs';
+
+  if (link) {
+    return (
+      <a
+        href={link}
+        target="_blank"
+        rel="noopener noreferrer"
+        title={`Abrir PDF do Contrato ${contrato} (Portal de Transparência PBH)`}
+        className={`group inline-flex items-center gap-1 bg-blue-50 hover:bg-blue-100 text-blue-800 hover:text-blue-900 border border-blue-200/90 hover:border-blue-300 ${paddingClass} rounded-md font-mono font-bold transition-all duration-150 shadow-2xs hover:shadow-xs`}
+      >
+        <span>{contrato}</span>
+        <ExternalLink className="w-3 h-3 text-blue-600 group-hover:text-blue-800 opacity-70 group-hover:opacity-100 transition-opacity shrink-0" />
+      </a>
+    );
+  }
+
+  return (
+    <span className={`bg-slate-100 text-slate-800 border border-slate-200/90 ${paddingClass} rounded-md font-mono font-bold inline-block`}>
+      {contrato}
+    </span>
+  );
+};
+
+const renderReajusteValue = (contrato: string, reajusteNum: 1 | 2, value: string) => {
+  const link = getReajusteLink(contrato, reajusteNum);
+  const displayVal = value || '-';
+
+  if (link && displayVal !== '-' && displayVal !== '') {
+    return (
+      <a
+        href={link}
+        target="_blank"
+        rel="noopener noreferrer"
+        title={`Abrir documento de ${reajusteNum}º Reajuste do CT ${contrato} (Portal PBH)`}
+        className="group inline-flex items-center justify-center gap-1 text-blue-600 hover:text-blue-800 font-bold hover:underline"
+      >
+        <span>{displayVal}</span>
+        <ExternalLink className="w-2.5 h-2.5 text-blue-500 group-hover:text-blue-700 opacity-70 group-hover:opacity-100 shrink-0" />
+      </a>
+    );
+  }
+
+  return <span>{displayVal}</span>;
+};
 
 interface GestaoContratualViewProps {
   records?: EquipmentRecord[];
@@ -230,9 +324,7 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
                       
                       {/* Contrato */}
                       <td className="py-3 px-3 font-bold text-slate-900 align-middle">
-                        <span className="bg-slate-100 text-slate-800 border border-slate-200/90 px-1.5 py-0.5 rounded font-mono text-[11px] inline-block whitespace-nowrap">
-                          {row.contrato}
-                        </span>
+                        {renderContractBadge(row.contrato, 'sm')}
                       </td>
 
                       {/* Empresa */}
@@ -346,9 +438,7 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
                   {data.tabelaRelocacoes.map((row) => (
                     <tr key={row.contrato} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-3.5 px-4 font-bold text-slate-900 align-middle">
-                        <span className="bg-slate-100 text-slate-800 border border-slate-200/90 px-2 py-1 rounded-md font-mono text-xs inline-block">
-                          {row.contrato}
-                        </span>
+                        {renderContractBadge(row.contrato)}
                       </td>
                       <td className="py-3.5 px-4 font-semibold text-slate-800 align-middle">
                         {row.empresa}
@@ -447,9 +537,7 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
                   {data.tabelaCustos.map((row) => (
                     <tr key={row.contrato} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-3.5 px-4 font-bold text-slate-900 align-middle">
-                        <span className="bg-slate-100 text-slate-800 border border-slate-200/90 px-2 py-1 rounded-md font-mono text-xs inline-block">
-                          {row.contrato}
-                        </span>
+                        {renderContractBadge(row.contrato)}
                       </td>
                       <td className="py-3.5 px-4 font-semibold text-slate-800 align-middle">
                         {row.empresa}
@@ -461,10 +549,10 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
                         {row.bdi}
                       </td>
                       <td className="py-3.5 px-4 text-center font-mono font-medium text-slate-700 align-middle">
-                        {row.primeiroReajuste || row.primeiraTA}
+                        {renderReajusteValue(row.contrato, 1, row.primeiroReajuste || row.primeiraTA)}
                       </td>
                       <td className="py-3.5 px-4 text-center font-mono font-medium text-slate-700 align-middle">
-                        {row.segundoReajuste || row.segundaTA}
+                        {renderReajusteValue(row.contrato, 2, row.segundoReajuste || row.segundaTA)}
                       </td>
                       <td className="py-3.5 px-4 text-right font-mono font-bold text-emerald-800 bg-emerald-50/30 text-sm align-middle">
                         {row.valorAtualBDI}
@@ -514,9 +602,7 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
                   {(data.tabelaCustosRelocacao || []).map((row) => (
                     <tr key={row.contrato} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-3.5 px-4 font-bold text-slate-900 align-middle">
-                        <span className="bg-slate-100 text-slate-800 border border-slate-200/90 px-2 py-1 rounded-md font-mono text-xs inline-block">
-                          {row.contrato}
-                        </span>
+                        {renderContractBadge(row.contrato)}
                       </td>
                       <td className="py-3.5 px-4 font-semibold text-slate-800 align-middle">
                         {row.empresa}
@@ -528,10 +614,10 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
                         {row.bdi}
                       </td>
                       <td className="py-3.5 px-4 text-center font-mono font-medium text-slate-700 align-middle">
-                        {row.primeiroReajuste || row.primeiraTA}
+                        {renderReajusteValue(row.contrato, 1, row.primeiroReajuste || row.primeiraTA)}
                       </td>
                       <td className="py-3.5 px-4 text-center font-mono font-medium text-slate-700 align-middle">
-                        {row.segundoReajuste || row.segundaTA}
+                        {renderReajusteValue(row.contrato, 2, row.segundoReajuste || row.segundaTA)}
                       </td>
                       <td className="py-3.5 px-4 text-right font-mono font-bold text-indigo-900 bg-indigo-50/30 text-sm align-middle">
                         {row.valorAtual}
@@ -573,7 +659,20 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
                       <div className="flex items-center gap-2">
                         <Zap className="w-5 h-5 text-blue-600" />
                         <div>
-                          <span className="font-bold text-sm text-slate-900 font-mono">CT {ct.contrato}</span>
+                          {getContractLink(ct.contrato) ? (
+                            <a
+                              href={getContractLink(ct.contrato)!}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title={`Abrir PDF do Contrato ${ct.contrato} (Portal de Transparência PBH)`}
+                              className="group inline-flex items-center gap-1 font-bold text-sm text-blue-700 hover:text-blue-900 font-mono hover:underline"
+                            >
+                              <span>CT {ct.contrato}</span>
+                              <ExternalLink className="w-3 h-3 text-blue-600 group-hover:text-blue-800 opacity-70 group-hover:opacity-100 transition-opacity" />
+                            </a>
+                          ) : (
+                            <span className="font-bold text-sm text-slate-900 font-mono">CT {ct.contrato}</span>
+                          )}
                           <span className="block text-[11px] font-semibold text-slate-500">{ct.empresa}</span>
                         </div>
                       </div>
