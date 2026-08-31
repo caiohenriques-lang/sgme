@@ -94,6 +94,10 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
     },
   ];
 
+  const isCEV = (record.TIPO || '').toUpperCase().trim() === 'CEV';
+  const cevLevantamentoUrl =
+    'https://prefeitura.pbh.gov.br/bhtrans/informacoes/transportes/veiculos/fiscalizacao-eletronica/controladores-eletronicos-de-velocidade/levantamentos-tecnicos';
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
       <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-3xl overflow-hidden my-8 max-h-[90vh] flex flex-col">
@@ -105,9 +109,23 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
               <SpeedRadarIcon className="w-7 h-7" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-bold text-lg text-white">
-                  Equipamento: {record.CÓDIGO || 'Sem Código'}
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-bold text-lg text-white flex items-center gap-1.5">
+                  <span>Equipamento:</span>
+                  {isCEV && record.CÓDIGO ? (
+                    <a
+                      href={cevLevantamentoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors"
+                      title="Consultar Levantamentos Técnicos de Controladores Eletrônicos de Velocidade (PBH / BHTRANS)"
+                    >
+                      <span>{record.CÓDIGO}</span>
+                      <ExternalLink className="w-4 h-4 text-blue-400 shrink-0" />
+                    </a>
+                  ) : (
+                    <span>{record.CÓDIGO || 'Sem Código'}</span>
+                  )}
                 </h3>
                 <span className="text-xs bg-blue-500/20 text-blue-300 font-semibold px-2.5 py-0.5 rounded-full border border-blue-400/30">
                   {record.TIPO || 'N/A'}
@@ -210,6 +228,9 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
                       const inmetroUrl = isRegObj && value ? `https://registro.inmetro.gov.br/consulta/detalhe.aspx?pag=1&NumeroRegistro=${encodeURIComponent(value.trim())}` : null;
 
                       const isCEV = (record.TIPO || '').toUpperCase().trim() === 'CEV';
+                      const isCodigo = header === 'CÓDIGO' || header === 'Código' || labelText === 'CÓDIGO';
+                      const cevCodigoUrl = isCEV && isCodigo && value && value !== '-' ? cevLevantamentoUrl : null;
+
                       const isNumSerie = header === 'Nº DE SÉRIE' || header === 'Nº de Série' || labelText === 'Nº DE SÉRIE';
                       const rbmlqUrl = isCEV && isNumSerie && value && value !== '-' ? 'https://servicos.rbmlq.gov.br/Instrumento' : null;
 
@@ -229,6 +250,17 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-1.5 font-medium text-blue-600 hover:text-blue-800 hover:underline bg-blue-50/80 hover:bg-blue-100/80 px-2.5 py-0.5 rounded-md border border-blue-200/80 transition-colors shadow-2xs"
                                 title={`Consultar registro ${value} no portal do Inmetro`}
+                              >
+                                <span>{value}</span>
+                                <ExternalLink className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                              </a>
+                            ) : cevCodigoUrl ? (
+                              <a
+                                href={cevCodigoUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 font-medium text-blue-600 hover:text-blue-800 hover:underline bg-blue-50/80 hover:bg-blue-100/80 px-2.5 py-0.5 rounded-md border border-blue-200/80 transition-colors shadow-2xs font-mono"
+                                title="Consultar Levantamentos Técnicos de Controladores Eletrônicos de Velocidade (PBH / BHTRANS)"
                               >
                                 <span>{value}</span>
                                 <ExternalLink className="w-3.5 h-3.5 text-blue-500 shrink-0" />

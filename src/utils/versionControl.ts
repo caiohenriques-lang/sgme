@@ -6,15 +6,24 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.6.2';
+export const APP_VERSION = 'v3.6.3';
 export const BUILD_DATE = '31/08/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.6.3',
+    date: '31/08/2026',
+    tag: 'Hiperlink de Levantamentos Técnicos nos Equipamentos CEV no Modal',
+    isLatest: true,
+    changes: [
+      'Adicionado hiperlink oficial de Levantamentos Técnicos da PBH/BHTRANS no código dos equipamentos do tipo CEV dentro do modal de detalhes (cabeçalho e campo CÓDIGO).',
+      'Configurado direcionamento direto para a página oficial da PBH de levantamentos técnicos de controladores eletrônicos de velocidade.'
+    ]
+  },
+  {
     version: 'v3.6.2',
     date: '31/08/2026',
     tag: 'Ajuste de Rótulo no Popup do Mapa (Data de Desligamento)',
-    isLatest: true,
     changes: [
       'Ajustado o rótulo exibido no popup interativo do mapa de "Data Desligamento" para "Data de Desligamento", padronizando com a nomenclatura oficial da planilha e dos modais.'
     ]
