@@ -9,6 +9,7 @@ import { TableView } from './components/TableView';
 import { GestaoContratualView } from './components/GestaoContratualView';
 import { InterrupcoesView } from './components/InterrupcoesView';
 import { BHDigitalView } from './components/BHDigitalView';
+import { OutrosView } from './components/OutrosView';
 import { EquipmentDetailModal } from './components/EquipmentDetailModal';
 import { ReportView } from './components/ReportView';
 import { FooterLegend } from './components/FooterLegend';
@@ -442,8 +443,8 @@ export default function App() {
         onOpenAI={showAIControls ? () => setIsAIAssistantOpen(true) : undefined}
       />
 
-      {/* Filter Bar - Hidden in Gestão Contratual, Interrupções, BHDIGITAL and Relatórios */}
-      {activeTab !== 'relatorios' && activeTab !== 'gestao_contratual' && activeTab !== 'interrupcoes' && activeTab !== 'bhdigital' && (
+      {/* Filter Bar - Hidden in Gestão Contratual, Interrupções, BHDIGITAL, Outros and Relatórios */}
+      {activeTab !== 'relatorios' && activeTab !== 'gestao_contratual' && activeTab !== 'interrupcoes' && activeTab !== 'bhdigital' && activeTab !== 'outros' && (
         <FilterBar
           activeTab={activeTab}
           filters={filters}
@@ -534,8 +535,13 @@ export default function App() {
             {activeTab === 'bhdigital' && (
               <BHDigitalView />
             )}
+
+            {/* Tab 7: OUTROS */}
+            {activeTab === 'outros' && (
+              <OutrosView />
+            )}
             
-            {/* Tab 7: Relatorios */}
+            {/* Tab 8: Relatorios */}
             {activeTab === 'relatorios' && (
               <ReportView records={records} />
             )}

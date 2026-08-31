@@ -26,6 +26,7 @@ export const ALL_SHEET_HEADERS = [
   'Data de aceite',
   'Data da Aferição',
   'Data de Vencimento da Aferição',
+  'Data de Desligamento',
   'CONDIÇÃO',
   'DIF Pareado',
   'Observações',
@@ -178,6 +179,8 @@ export async function fetchEquipmentData(): Promise<{
                 val = row['Data de Início  da Operação'] ?? row['Data de Início da Operação'] ?? row['Data início operação'] ?? '';
               } else if (header === 'Data de aceite') {
                 val = row['Data de Aceite'] ?? row['Data de aceite'] ?? '';
+              } else if (header === 'Data de Desligamento') {
+                val = row['Data de Desligamento'] ?? row['Data de desligamento'] ?? row['Data Desligamento'] ?? row['DATA DE DESLIGAMENTO'] ?? row['Data de Desligamento '] ?? '';
               } else if (header === 'REG. OBJ' || header === 'Registro do Objeto') {
                 val = regObjVal;
               } else {
@@ -219,6 +222,7 @@ export async function fetchEquipmentData(): Promise<{
               'Data de aceite': (row['Data de Aceite'] || row['Data de aceite'] || '').trim(),
               'Data da Aferição': (row['Data da Aferição'] || '').trim(),
               'Data de Vencimento da Aferição': (row['Data de Vencimento da Aferição'] || '').trim(),
+              'Data de Desligamento': (row['Data de Desligamento'] || row['Data de desligamento'] || row['Data Desligamento'] || row['DATA DE DESLIGAMENTO'] || row['Data de Desligamento '] || '').trim(),
               CONDIÇÃO: (row['CONDIÇÃO'] || '').trim(),
               'DIF Pareado': (row['DIF Pareado'] || '').trim(),
               Observações: (row['Observações'] || '').trim(),

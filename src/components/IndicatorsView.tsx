@@ -6,7 +6,6 @@ import {
   exportCompleteIndicatorsPDF,
 } from '../utils/pdfExport';
 import { SpeedLimit50Icon } from './SpeedLimit50Icon';
-import { ETransitoChartCard } from './ETransitoChartCard';
 import {
   BarChart,
   Bar,
@@ -1278,9 +1277,6 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
         </div>
       </div>
       </div>
-
-      {/* Gráfico Sistema eTransito - Número médio de registros/mês recebidos em 2026 */}
-      <ETransitoChartCard />
 
       {/* Table 1: Resumo Por Contrato */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">

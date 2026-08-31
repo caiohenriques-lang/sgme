@@ -21,6 +21,7 @@ export interface EquipmentRecord {
   'Data de aceite': string;
   'Data da Aferição': string;
   'Data de Vencimento da Aferição': string;
+  'Data de Desligamento'?: string;
   CONDIÇÃO: string;
   'DIF Pareado': string;
   Observações: string;
@@ -60,4 +61,4 @@ export interface FilterState {
   onlyWithCoords: boolean;
 }
 
-export type ActiveTab = 'mapa' | 'indicadores' | 'tabela' | 'gestao_contratual' | 'interrupcoes' | 'bhdigital' | 'relatorios';
+export type ActiveTab = 'mapa' | 'indicadores' | 'tabela' | 'gestao_contratual' | 'interrupcoes' | 'bhdigital' | 'relatorios' | 'outros';

@@ -88,6 +88,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
         'Data de aceite',
         'Data da Aferição',
         'Data de Vencimento da Aferição',
+        'Data de Desligamento',
         'Observações',
       ],
     },
@@ -202,6 +203,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
                       else if (header === 'Data de aceite') labelText = 'ACEITE';
                       else if (header === 'Data da Aferição') labelText = 'AFERIÇÃO';
                       else if (header === 'Data de Vencimento da Aferição') labelText = 'VENCIMENTO DA AFERIÇÃO';
+                      else if (header === 'Data de Desligamento') labelText = 'DATA DE DESLIGAMENTO';
                       else if (header === 'Observações') labelText = 'OBSERVAÇÕES';
 
                       const isRegObj = header === 'REG. OBJ' || header === 'Registro do Objeto' || labelText === 'REGISTRO DE OBJETO';

@@ -6,15 +6,45 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.5.9';
-export const BUILD_DATE = '28/08/2026';
+export const APP_VERSION = 'v3.6.2';
+export const BUILD_DATE = '31/08/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v3.6.2',
+    date: '31/08/2026',
+    tag: 'Ajuste de Rótulo no Popup do Mapa (Data de Desligamento)',
+    isLatest: true,
+    changes: [
+      'Ajustado o rótulo exibido no popup interativo do mapa de "Data Desligamento" para "Data de Desligamento", padronizando com a nomenclatura oficial da planilha e dos modais.'
+    ]
+  },
+  {
+    version: 'v3.6.1',
+    date: '31/08/2026',
+    tag: 'Suporte à Coluna Data de Desligamento na Planilha Matriz e Exportações',
+    changes: [
+      'Integrada a leitura da nova coluna "Data de Desligamento" da aba Lista Geral da planilha matriz mantendo a integridade de todos os dados pré-existentes.',
+      'Contemplada a exibição da "Data de Desligamento" na seção "Datas Importantes" do modal de detalhes do equipamento (ficha completa).',
+      'Adicionado aviso de Data de Desligamento no popup interativo ao clicar nos marcadores do mapa.',
+      'Incluída a "Data de Desligamento" nas exportações em PDF pertinentes (Ficha Individual do Equipamento e Relatório Customizado).'
+    ]
+  },
+  {
+    version: 'v3.6.0',
+    date: '28/08/2026',
+    tag: 'Nova Aba OUTROS (Verde Escuro) & Migração do Gráfico Sistema eTrânsito',
+    changes: [
+      'Criada a nova aba "OUTROS" no menu superior desktop e na barra inferior mobile, posicionada imediatamente à direita da aba BHDIGITAL.',
+      'Identidade visual configurada na cor verde escuro (Emerald/Green) com destaque ativo e estados de foco/hover integrados.',
+      'Transferido o gráfico "Sistema eTransito - Número médio de registros/mês recebidos em 2026" para a aba OUTROS.',
+      'Removido o gráfico eTrânsito da aba Indicadores, mantendo a visualização de indicadores focada nos equipamentos e contratos de fiscalização eletrônica.'
+    ]
+  },
   {
     version: 'v3.5.9',
     date: '28/08/2026',
     tag: 'Hiperlinks de Reajuste (1º e 2º Reajustes) do CT 2743/24 na Gestão Contratual',
-    isLatest: true,
     changes: [
       'Configurado link direto para o PDF oficial do 1º Reajuste (4,75%) do CT 2743/24 (apostila01-ct2743_24.pdf).',
       'Configurado link direto para o PDF oficial do 2º Reajuste (4,68%) do CT 2743/24 (apostila02-ct2743_24.pdf).',

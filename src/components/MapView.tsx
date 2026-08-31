@@ -239,9 +239,14 @@ export const MapView: React.FC<MapViewProps> = ({ records, filters, onSelectReco
           <div style="margin-bottom: 4px; color: #334155; font-weight: 600;">
             📍 ${record['ENDEREÇO COMPLETO'] || 'Sem endereço'}
           </div>
-          <div style="font-size: 11px; color: #64748b; margin-bottom: 8px;">
+          <div style="font-size: 11px; color: #64748b; margin-bottom: ${record['Data de Desligamento'] ? '4px' : '8px'};">
             Contrato: <strong>${record.CONTRATO || '-'}</strong> | Faixas: <strong>${record.FAIXAS}</strong> | Situação: <strong>${record.Situação || '-'}</strong>
           </div>
+          ${record['Data de Desligamento'] ? `
+            <div style="font-size: 11px; color: #dc2626; background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 4px; padding: 2px 6px; margin-bottom: 8px; font-weight: 500;">
+              Data de Desligamento: <strong>${record['Data de Desligamento']}</strong>
+            </div>
+          ` : ''}
           <button id="btn-detail-${record.id}" style="
             width: 100%;
             background-color: #2563eb;

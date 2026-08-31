@@ -340,6 +340,7 @@ export async function exportSingleRecordPDF(record: EquipmentRecord) {
         ['ACEITE', record['Data de aceite']],
         ['AFERIÇÃO', record['Data da Aferição']],
         ['VENCIMENTO DA AFERIÇÃO', record['Data de Vencimento da Aferição']],
+        ['DATA DE DESLIGAMENTO', record['Data de Desligamento']],
         ['OBSERVAÇÕES', record.Observações],
       ]
     }
@@ -900,6 +901,7 @@ export async function exportCustomReportPDF(records: EquipmentRecord[], filtersA
           ['ACEITE', formatDate(record['Data de aceite'] || record.rawFields?.['DATA DO ACEITE'] || record.rawFields?.['Data de aceite'])],
           ['AFERIÇÃO', formatDate(record['Data da Aferição'] || record.rawFields?.['DATA DA AFERIÇÃO'] || record.rawFields?.['Data da Aferição'])],
           ['VENCIMENTO DA AFERIÇÃO', formatDate(record['Data de Vencimento da Aferição'] || record.rawFields?.['DATA DO VENCIMENTO DA AFERIÇÃO'] || record.rawFields?.['Data de Vencimento da Aferição'])],
+          ['DATA DE DESLIGAMENTO', formatDate(record['Data de Desligamento'] || record.rawFields?.['DATA DE DESLIGAMENTO'] || record.rawFields?.['Data de Desligamento'])],
           ['OBSERVAÇÕES', record.Observações || record.rawFields?.['OBSERVAÇÃO'] || record.rawFields?.['Observações']],
         ]
       }

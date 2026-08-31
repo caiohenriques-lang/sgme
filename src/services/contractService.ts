@@ -104,6 +104,7 @@ export interface MatrizEquipmentRow {
   dataAceite: string;
   dataAfericao: string;
   dataVencimentoAfericao: string;
+  dataDesligamento?: string;
   condicao: string;
   difPareado: string;
   observacoes: string;
@@ -499,6 +500,7 @@ export function parseMatrizCSV(csvText: string): {
   const dtAceiteIdx = header.indexOf('Data de Aceite');
   const dtAfericaoIdx = header.indexOf('Data da Aferição');
   const dtVencIdx = header.indexOf('Data de Vencimento da Aferição');
+  const dtDesligamentoIdx = header.findIndex(h => h && h.trim().toLowerCase().includes('desligamento'));
   const condicaoIdx = header.indexOf('CONDIÇÃO');
   const difPareadoIdx = header.indexOf('DIF Pareado');
   const obsIdx = header.indexOf('Observações');
@@ -573,6 +575,7 @@ export function parseMatrizCSV(csvText: string): {
       dataAceite: (r[dtAceiteIdx] || '').trim(),
       dataAfericao: (r[dtAfericaoIdx] || '').trim(),
       dataVencimentoAfericao: (r[dtVencIdx] || '').trim(),
+      dataDesligamento: dtDesligamentoIdx !== -1 ? (r[dtDesligamentoIdx] || '').trim() : '',
       condicao: (r[condicaoIdx] || '').trim(),
       difPareado: (r[difPareadoIdx] || '').trim(),
       observacoes: (r[obsIdx] || '').trim(),

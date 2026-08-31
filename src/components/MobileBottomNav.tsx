@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActiveTab } from '../types';
-import { Map, BarChart3, Table, Printer, FileSignature, AlertTriangle, Layers } from 'lucide-react';
+import { Map, BarChart3, Table, Printer, FileSignature, AlertTriangle, Layers, LayoutGrid } from 'lucide-react';
 
 interface MobileBottomNavProps {
   activeTab: ActiveTab;
@@ -88,8 +88,8 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         onClick={() => setActiveTab('interrupcoes')}
         className={`flex-1 flex flex-col items-center justify-center py-1 px-0.5 rounded-lg transition-all duration-150 min-h-[44px] cursor-pointer ${
           activeTab === 'interrupcoes'
-            ? 'text-blue-700 font-bold bg-blue-100/90 border border-blue-300/80 shadow-2xs'
-            : 'text-slate-600 font-medium hover:text-blue-700 hover:bg-slate-100/80'
+            ? 'text-amber-700 font-bold bg-amber-100/90 border border-amber-300/80 shadow-2xs'
+            : 'text-slate-600 font-medium hover:text-amber-700 hover:bg-slate-100/80'
         }`}
       >
         <AlertTriangle className={`w-4 h-4 sm:w-5 sm:h-5 ${activeTab === 'interrupcoes' ? 'text-amber-700' : 'text-amber-600'}`} />
@@ -101,12 +101,25 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         onClick={() => setActiveTab('bhdigital')}
         className={`flex-1 flex flex-col items-center justify-center py-1 px-0.5 rounded-lg transition-all duration-150 min-h-[44px] cursor-pointer ${
           activeTab === 'bhdigital'
-            ? 'text-blue-700 font-bold bg-blue-100/90 border border-blue-300/80 shadow-2xs'
-            : 'text-slate-600 font-medium hover:text-blue-700 hover:bg-slate-100/80'
+            ? 'text-amber-700 font-bold bg-amber-100/90 border border-amber-300/80 shadow-2xs'
+            : 'text-slate-600 font-medium hover:text-amber-700 hover:bg-slate-100/80'
         }`}
       >
         <Layers className={`w-4 h-4 sm:w-5 sm:h-5 ${activeTab === 'bhdigital' ? 'text-amber-700' : 'text-amber-600'}`} />
         <span className="text-[9.5px] font-bold mt-0.5 tracking-tight truncate max-w-full">BHDigital</span>
+      </button>
+
+      {/* Tab 8: OUTROS */}
+      <button
+        onClick={() => setActiveTab('outros')}
+        className={`flex-1 flex flex-col items-center justify-center py-1 px-0.5 rounded-lg transition-all duration-150 min-h-[44px] cursor-pointer ${
+          activeTab === 'outros'
+            ? 'text-emerald-900 font-bold bg-emerald-100/90 border border-emerald-300/80 shadow-2xs'
+            : 'text-slate-600 font-medium hover:text-emerald-800 hover:bg-slate-100/80'
+        }`}
+      >
+        <LayoutGrid className={`w-4 h-4 sm:w-5 sm:h-5 ${activeTab === 'outros' ? 'text-emerald-900' : 'text-emerald-800'}`} />
+        <span className="text-[9.5px] font-bold mt-0.5 tracking-tight truncate max-w-full">Outros</span>
       </button>
     </nav>
   );

@@ -306,6 +306,7 @@ export async function sendChatMessage({
       condicao: r.CONDIÇÃO,
       dataInicio: r['Data início operação'],
       vencAfericao: r['Data de Vencimento da Aferição'],
+      dataDesligamento: r['Data de Desligamento'],
       lat: r.lat,
       lng: r.lng,
       empresa: r.CONTRATADA,
