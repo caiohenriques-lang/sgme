@@ -6,15 +6,107 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.6.3';
+export const APP_VERSION = 'v3.7.9';
 export const BUILD_DATE = '31/08/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.9',
+    date: '31/08/2026',
+    tag: 'Limpeza Visual e Simplificação dos Cabeçalhos das Seções de Legislação',
+    isLatest: true,
+    changes: [
+      'Removido o texto complementar "— Cinemômetros com aferição e aprovação metrológica compulsória" da seção do CEV.',
+      'Removidos os cards/badges descritivos "Medição de Velocidade" e "Detecção por Imagem & Vídeo" dos títulos das seções.'
+    ]
+  },
+  {
+    version: 'v3.7.8',
+    date: '31/08/2026',
+    tag: 'Remoção dos Contadores Numéricos na Aba Legislação',
+    changes: [
+      'Removida a contagem numérica de itens do botão de filtro "Todos".',
+      'Removidos os cards de contagem numérica de normativos dos cabeçalhos das seções Metrológico (CEV) e Não Metrológico (DIF / DAS / DCP / DTLP).'
+    ]
+  },
+  {
+    version: 'v3.7.7',
+    date: '31/08/2026',
+    tag: 'Ajuste Tipográfico no Cabeçalho de Legislação Vigente',
+    changes: [
+      'Ajustado o título principal para "Legislação Vigente".',
+      'Refinado o subtítulo para "Normas, resoluções e portarias."'
+    ]
+  },
+  {
+    version: 'v3.7.6',
+    date: '31/08/2026',
+    tag: 'Ajuste do Cabeçalho da Aba Legislação Vigente',
+    changes: [
+      'Atualizado o título principal para "Legislação vigente".',
+      'Removido o badge "Fiscalização Eletrônica de Trânsito" do cabeçalho.',
+      'Ajustado o subtítulo para "Normas, resoluções, e portarias."'
+    ]
+  },
+  {
+    version: 'v3.7.5',
+    date: '31/08/2026',
+    tag: 'Aba Legislação: Identidade Visual Wheat (#F5DEB3) e Botão de Ação "LINK"',
+    changes: [
+      'Atualizada a identidade visual da aba "Legislação" e seus componentes internos para o tom palha / trigo sofisticado (#F5DEB3).',
+      'Substituído o texto dos botões de ação de todos os cards de legislação de "Acessar Normativo" para "LINK".'
+    ]
+  },
+  {
+    version: 'v3.7.4',
+    date: '31/08/2026',
+    tag: 'Ajuste no Rótulo dos Cards de Legislação para DTLP',
+    changes: [
+      'Atualizado o rótulo descritivo do rodapé dos cards de legislação de restrição de tráfego de caminhões para exibir a sigla "DTLP" à esquerda do botão "Acessar Normativo".'
+    ]
+  },
+  {
+    version: 'v3.7.3',
+    date: '31/08/2026',
+    tag: 'Ajuste no Rótulo de Tipo de Equipamento nos Cards de Legislação (CEV)',
+    changes: [
+      'Atualizado o rótulo descritivo do rodapé dos cards de legislação metrológica para exibir a sigla "CEV" à esquerda do botão "Acessar Normativo".'
+    ]
+  },
+  {
+    version: 'v3.7.2',
+    date: '31/08/2026',
+    tag: 'Ajuste Textual dos Subtítulos da Aba Legislação',
+    changes: [
+      'Ajustado o subtítulo da seção de equipamentos Não Metrológicos para especificar "restrição de tráfego (caminhões)".',
+      'Refinado o cabeçalho da subseção DTLP para "DETECTOR DE TRÁFEGO EM LOCAL PROIBIDO (DTLP) — FISCALIZAÇÃO DE CAMINHÕES (BHTRANS / PBH)".'
+    ]
+  },
+  {
+    version: 'v3.7.1',
+    date: '31/08/2026',
+    tag: 'Ajustes na Aba Legislação: Tema Lilás, Filtro Unificado e Limpeza Visual',
+    changes: [
+      'Atualizada a identidade visual da aba "Legislação" para o tema lilás / roxo no menu superior, navegação mobile e componentes internos.',
+      'Unificados os submenus de Não Metrológico (DIF / DAS / DCP e DTLP Caminhão) em um único botão de filtro dinâmico "Não Metrológico (DIF / DAS / DCP / DTLP)".',
+      'Removidos os cards numéricos de contagem de documentos (Metrológicos e Não Metrológicos) no topo do cabeçalho da visão de legislação.'
+    ]
+  },
+  {
+    version: 'v3.7.0',
+    date: '31/08/2026',
+    tag: 'Nova Aba Legislação com Marco Regulatório Metrológico e Não Metrológico',
+    changes: [
+      'Criada a nova aba "Legislação" posicionada entre "BHDIGITAL" e "OUTROS".',
+      'Estruturada a seção METROLÓGICO dedicada ao Controlador Eletrônico de Velocidade (CEV) com Resoluções CONTRAN 798/2020 e 804/2020, Portaria INMETRO 158/2022 e Levantamentos Técnicos da PBH.',
+      'Estruturada a seção NÃO METROLÓGICO com duas subseções: DIF, DAS e DCP (Resolução CONTRAN 920/2022, Portarias DENATRAN 16/2004, 27/2005, 85/2014, 263/2007 e Portarias INMETRO 258/2020 e 492/2021) e DTLP Caminhão (Portarias BHTRANS DPR 138/2009, 139/2013, 077/2014 e 004/2019).',
+      'Implementada barra dinâmica de filtros rápidos e busca em tempo real com direcionamento direto para os atos oficiais publicados na íntegra.'
+    ]
+  },
+  {
     version: 'v3.6.3',
     date: '31/08/2026',
     tag: 'Hiperlink de Levantamentos Técnicos nos Equipamentos CEV no Modal',
-    isLatest: true,
     changes: [
       'Adicionado hiperlink oficial de Levantamentos Técnicos da PBH/BHTRANS no código dos equipamentos do tipo CEV dentro do modal de detalhes (cabeçalho e campo CÓDIGO).',
       'Configurado direcionamento direto para a página oficial da PBH de levantamentos técnicos de controladores eletrônicos de velocidade.'

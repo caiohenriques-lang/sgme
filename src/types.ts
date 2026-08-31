@@ -61,4 +61,4 @@ export interface FilterState {
   onlyWithCoords: boolean;
 }
 
-export type ActiveTab = 'mapa' | 'indicadores' | 'tabela' | 'gestao_contratual' | 'interrupcoes' | 'bhdigital' | 'relatorios' | 'outros';
+export type ActiveTab = 'mapa' | 'indicadores' | 'tabela' | 'gestao_contratual' | 'interrupcoes' | 'bhdigital' | 'legislacao' | 'outros' | 'relatorios';

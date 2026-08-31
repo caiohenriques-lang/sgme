@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActiveTab } from '../types';
-import { Map, BarChart3, Table, Printer, FileSignature, AlertTriangle, Layers, LayoutGrid, Bot, Sparkles } from 'lucide-react';
+import { Map, BarChart3, Table, Printer, FileSignature, AlertTriangle, Layers, LayoutGrid, Bot, Sparkles, Scale } from 'lucide-react';
 import { SpeedRadarIcon } from './SpeedRadarIcon';
 import { PWAInstallButton } from './PWAInstallButton';
 
@@ -77,9 +77,9 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Navigation Tabs Bar - Desktop Only (8 equal columns, 2 lines, centered, no scroll, 1px larger & bold) */}
+        {/* Navigation Tabs Bar - Desktop Only (9 equal columns, 2 lines, centered, no scroll, 1px larger & bold) */}
         <div className="mt-3 pt-2.5 border-t border-slate-100">
-          <nav className="hidden md:grid grid-cols-8 w-full gap-1.5 p-1.5 rounded-2xl bg-slate-100/90 border border-slate-200/90 shadow-2xs">
+          <nav className="hidden md:grid grid-cols-9 w-full gap-1.5 p-1.5 rounded-2xl bg-slate-100/90 border border-slate-200/90 shadow-2xs">
             
             {/* 1. Gestão Contratual - Vermelho-Escuro */}
             <button
@@ -190,7 +190,22 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </button>
 
-            {/* 8. OUTROS - Verde Escuro */}
+            {/* 8. Legislação - Tom #F5DEB3 (Wheat / Trigo) */}
+            <button
+              onClick={() => setActiveTab('legislacao')}
+              className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center group ${
+                activeTab === 'legislacao'
+                  ? 'bg-[#F5DEB3] border-[#DEB887] text-[#45270c] font-bold shadow-sm ring-2 ring-[#DEB887]/50'
+                  : 'bg-white/80 border-slate-200/80 text-slate-700 hover:bg-[#F5DEB3]/30 hover:border-[#DEB887] hover:text-[#45270c] shadow-2xs'
+              }`}
+            >
+              <Scale className={`w-4 h-4 shrink-0 mb-0.5 transition-colors ${activeTab === 'legislacao' ? 'text-[#45270c]' : 'text-[#8B5A2B] group-hover:text-[#45270c]'}`} />
+              <div className="flex flex-col items-center text-[12px] font-bold leading-tight">
+                <span>Legislação</span>
+              </div>
+            </button>
+
+            {/* 9. OUTROS - Verde Escuro */}
             <button
               onClick={() => setActiveTab('outros')}
               className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center group ${
