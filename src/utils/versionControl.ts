@@ -6,15 +6,31 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.9';
+export const APP_VERSION = 'v3.7.11';
 export const BUILD_DATE = '31/08/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.11',
+    date: '31/08/2026',
+    tag: 'Inclusão da Portaria DENATRAN Nº 1.113/2011 na Aba Legislação',
+    isLatest: true,
+    changes: [
+      'Adicionada a "PORTARIA DENATRAN Nº 1.113, DE 21 DE DEZEMBRO DE 2011" à lista de normativos de equipamentos não metrológicos (DIF • DAS • DCP), com link oficial do SENATRAN.'
+    ]
+  },
+  {
+    version: 'v3.7.10',
+    date: '31/08/2026',
+    tag: 'Padronização do Título da Portaria DENATRAN Nº 27/2005 na Aba Legislação',
+    changes: [
+      'Atualizado o título do normativo para "PORTARIA DENATRAN Nº 27, DE 30 DE JUNHO DE 2005", padronizando a identificação do órgão emissor na lista de não metrológicos.'
+    ]
+  },
+  {
     version: 'v3.7.9',
     date: '31/08/2026',
     tag: 'Limpeza Visual e Simplificação dos Cabeçalhos das Seções de Legislação',
-    isLatest: true,
     changes: [
       'Removido o texto complementar "— Cinemômetros com aferição e aprovação metrológica compulsória" da seção do CEV.',
       'Removidos os cards/badges descritivos "Medição de Velocidade" e "Detecção por Imagem & Vídeo" dos títulos das seções.'
