@@ -6,15 +6,25 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.11';
-export const BUILD_DATE = '31/08/2026';
+export const APP_VERSION = 'v3.7.12';
+export const BUILD_DATE = '01/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v3.7.12',
+    date: '01/09/2026',
+    tag: 'Correção do Ícone de Radar na Área de Trabalho do iOS (PWA/Safari)',
+    isLatest: true,
+    changes: [
+      'Corrigida a compatibilidade com o iOS Safari removendo a declaração SVG indevida em apple-touch-icon que impedia a exibição do ícone.',
+      'Gerados ícones PNG dedicados em alta resolução e fundo sólido (180x180, 167x167, 152x152, 120x120) com enquadramento otimizado para a máscara nativa do iOS (squircle).',
+      'Atualizado o Service Worker com cache v2 para propagação imediata dos novos ícones.'
+    ]
+  },
   {
     version: 'v3.7.11',
     date: '31/08/2026',
     tag: 'Inclusão da Portaria DENATRAN Nº 1.113/2011 na Aba Legislação',
-    isLatest: true,
     changes: [
       'Adicionada a "PORTARIA DENATRAN Nº 1.113, DE 21 DE DEZEMBRO DE 2011" à lista de normativos de equipamentos não metrológicos (DIF • DAS • DCP), com link oficial do SENATRAN.'
     ]

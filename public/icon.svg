@@ -1,112 +1,113 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <!-- Background Gradient (Dark Blue Maskable) -->
+    <!-- Background Gradient (Full Bleed for iOS Apple Touch Icon) -->
     <linearGradient id="bgGrad" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stopColor="#0F172A" />
-      <stop offset="100%" stopColor="#1E3A8A" />
+      <stop offset="0%" stop-color="#0b132b" />
+      <stop offset="50%" stop-color="#1c2541" />
+      <stop offset="100%" stop-color="#1e3a8a" />
     </linearGradient>
 
     <!-- Main Radar Body Gradient -->
-    <linearGradient id="radarBody" x1="120" y1="130" x2="380" y2="390" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stopColor="#3B82F6" />
-      <stop offset="100%" stopColor="#1D4ED8" />
+    <linearGradient id="radarBody" x1="130" y1="130" x2="370" y2="370" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#1d4ed8" />
     </linearGradient>
 
     <!-- Lens Outer Ring -->
-    <linearGradient id="lensRing" x1="190" y1="210" x2="320" y2="340" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stopColor="#090D16" />
-      <stop offset="100%" stopColor="#1E293B" />
+    <linearGradient id="lensRing" x1="190" y1="200" x2="310" y2="320" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#090d16" />
+      <stop offset="100%" stop-color="#1e293b" />
     </linearGradient>
 
     <!-- Lens Optical Glass -->
-    <linearGradient id="lensGlass" x1="210" y1="230" x2="300" y2="320" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stopColor="#38BDF8" />
-      <stop offset="50%" stopColor="#0284C7" />
-      <stop offset="100%" stopColor="#0369A1" />
+    <linearGradient id="lensGlass" x1="200" y1="210" x2="300" y2="310" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="50%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
     </linearGradient>
 
     <!-- Pole Gradient -->
-    <linearGradient id="poleGrad" x1="230" y1="360" x2="280" y2="470" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stopColor="#94A3B8" />
-      <stop offset="100%" stopColor="#475569" />
+    <linearGradient id="poleGrad" x1="230" y1="350" x2="280" y2="450" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#94a3b8" />
+      <stop offset="100%" stop-color="#475569" />
     </linearGradient>
   </defs>
 
-  <!-- Background for PWA App Icon -->
-  <rect width="512" height="512" rx="112" fill="url(#bgGrad)" />
+  <!-- Full bleed square background without rounded corners so iOS clips it naturally without black borders -->
+  <rect width="512" height="512" fill="url(#bgGrad)" />
 
   <!-- Outer Glow Halo -->
-  <circle cx="256" cy="270" r="180" fill="#2563EB" opacity="0.15" />
+  <circle cx="256" cy="256" r="170" fill="#2563eb" opacity="0.2" />
 
   <!-- Support Pole & Base Mount -->
-  <rect x="236" y="350" width="40" height="110" rx="12" fill="url(#poleGrad)" />
-  <rect x="196" y="445" width="120" height="22" rx="11" fill="#334155" />
+  <rect x="238" y="345" width="36" height="95" rx="10" fill="url(#poleGrad)" />
+  <rect x="200" y="428" width="112" height="20" rx="10" fill="#334155" />
 
   <!-- Main Radar Housing Body -->
   <rect
-    x="116"
-    y="115"
-    width="230"
-    height="245"
-    rx="60"
+    x="130"
+    y="120"
+    width="210"
+    height="230"
+    rx="52"
     fill="url(#radarBody)"
-    stroke="#93C5FD"
-    stroke-width="12"
+    stroke="#93c5fd"
+    stroke-width="10"
   />
 
   <!-- Top Housing Highlight -->
   <path
-    d="M170 130 H290"
-    stroke="#BFDBFE"
-    stroke-width="8"
+    d="M175 135 H295"
+    stroke="#bfdbfe"
+    stroke-width="7"
     stroke-linecap="round"
   />
 
   <!-- Status LED (Active Emerald Green) -->
-  <circle cx="170" cy="165" r="16" fill="#10B981" />
-  <circle cx="170" cy="165" r="7" fill="#D1FAE5" />
+  <circle cx="175" cy="168" r="15" fill="#10b981" />
+  <circle cx="175" cy="168" r="6" fill="#d1fae5" />
 
   <!-- Sensor / Flash Aperture (Gold/Amber) -->
-  <circle cx="290" cy="165" r="18" fill="#F59E0B" stroke="#FDE68A" stroke-width="6" />
-  <circle cx="290" cy="165" r="7" fill="#FFFBEB" />
+  <circle cx="285" cy="168" r="16" fill="#f59e0b" stroke="#fde68a" stroke-width="5" />
+  <circle cx="285" cy="168" r="6" fill="#fffbeb" />
 
   <!-- Big Optical Camera Lens -->
-  <circle cx="231" cy="265" r="70" fill="url(#lensRing)" stroke="#93C5FD" stroke-width="10" />
-  <circle cx="231" cy="265" r="50" fill="url(#lensGlass)" />
-  <circle cx="231" cy="265" r="26" fill="#0C4A6E" />
+  <circle cx="235" cy="262" r="65" fill="url(#lensRing)" stroke="#93c5fd" stroke-width="8" />
+  <circle cx="235" cy="262" r="46" fill="url(#lensGlass)" />
+  <circle cx="235" cy="262" r="24" fill="#0c4a6e" />
   <!-- Glass Sparkle / Light Reflection -->
-  <circle cx="215" cy="248" r="11" fill="#FFFFFF" opacity="0.9" />
-  <circle cx="242" cy="275" r="6" fill="#FFFFFF" opacity="0.6" />
+  <circle cx="220" cy="246" r="10" fill="#ffffff" opacity="0.9" />
+  <circle cx="245" cy="272" r="5" fill="#ffffff" opacity="0.6" />
 
-  <!-- Playful Speed Radar Signal Emission Waves -->
+  <!-- Radar Signal Emission Waves -->
   <!-- Wave 1 (Inner) -->
   <path
-    d="M375 185 C405 215 405 295 375 325"
-    stroke="#38BDF8"
-    stroke-width="16"
+    d="M365 185 C392 212 392 288 365 315"
+    stroke="#38bdf8"
+    stroke-width="14"
     stroke-linecap="round"
     fill="none"
   />
   <!-- Wave 2 (Middle) -->
   <path
-    d="M420 150 C465 195 465 315 420 360"
-    stroke="#60A5FA"
-    stroke-width="16"
+    d="M405 155 C445 195 445 305 405 345"
+    stroke="#60a5fa"
+    stroke-width="14"
     stroke-linecap="round"
     fill="none"
   />
   <!-- Wave 3 (Outer) -->
   <path
-    d="M465 115 C520 175 520 335 465 395"
-    stroke="#93C5FD"
-    stroke-width="16"
+    d="M445 125 C495 180 495 320 445 375"
+    stroke="#93c5fd"
+    stroke-width="14"
     stroke-linecap="round"
     fill="none"
   />
 
   <!-- Playful Flash Star Sparkle -->
   <path
-    d="M96 95 L106 70 L131 80 L106 90 L96 115 L86 90 L61 80 L86 70 Z"
-    fill="#FBBF24"
+    d="M105 105 L115 80 L140 90 L115 100 L105 125 L95 100 L70 90 L95 80 Z"
+    fill="#fbbf24"
   />
 </svg>

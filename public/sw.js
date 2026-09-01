@@ -1,5 +1,5 @@
 // Service Worker para GEAPI FE - PWA
-const CACHE_NAME = 'geapi-fe-cache-v1';
+const CACHE_NAME = 'geapi-fe-cache-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -8,6 +8,11 @@ const STATIC_ASSETS = [
   '/icon-192.png',
   '/icon-512.png',
   '/apple-touch-icon.png',
+  '/apple-touch-icon-180x180.png',
+  '/apple-touch-icon-167x167.png',
+  '/apple-touch-icon-152x152.png',
+  '/apple-touch-icon-120x120.png',
+  '/favicon.png',
   '/logo_pbh_bhtrans.png',
 ];
 
