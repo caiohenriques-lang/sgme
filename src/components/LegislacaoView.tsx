@@ -149,18 +149,6 @@ const LEGISLATION_DATA: LegislationItem[] = [
     url: 'https://www.gov.br/transportes/pt-br/assuntos/transito/arquivos-senatran/portarias/2007/portaria_denatran_263_07.pdf',
   },
   {
-    id: 'port-inmetro-258-2020',
-    category: 'nao_metrologico',
-    subCategory: 'dinamico',
-    categoryLabel: 'Não Metrológico',
-    equipmentType: 'DIF • DAS • DCP',
-    title: 'PORTARIA INMETRO Nº 258, DE 6 DE AGOSTO DE 2020',
-    organ: 'INMETRO',
-    date: '06/08/2020',
-    summary: 'Aprova o Regulamento de Avaliação da Conformidade para sistemas automáticos não metrológicos de fiscalização de trânsito.',
-    url: 'https://www.in.gov.br/en/web/dou/-/portaria-n-258-de-6-de-agosto-de-2020-270969318',
-  },
-  {
     id: 'port-inmetro-492-2021',
     category: 'nao_metrologico',
     subCategory: 'dinamico',
