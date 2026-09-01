@@ -24,6 +24,7 @@ import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 
 const initialFilters: FilterState = {
   contrato: 'PRESET_NOVOS',
+  contratos: ['2740/24', '2741/24', '2742/24'],
   regional: 'ALL',
   bairro: 'ALL',
   tipo: 'ALL',
@@ -44,6 +45,7 @@ const initialFilters: FilterState = {
 
 const emptyFilters: FilterState = {
   contrato: 'PRESET_NOVOS', // Mantém seleção dos contratos 2740/24, 2741/24 e 2742/24
+  contratos: ['2740/24', '2741/24', '2742/24'],
   regional: 'ALL',
   bairro: 'ALL',
   tipo: 'ALL',
@@ -118,7 +120,16 @@ export default function App() {
 
     // 1. Contrato
     if (excludeKey !== 'contrato') {
-      if (currentFilters.contrato === 'PRESET_NOVOS') {
+      if (currentFilters.contratos !== undefined) {
+        if (currentFilters.contratos.length === 0) {
+          return false;
+        }
+        const itemContrato = r.CONTRATO?.trim() || '';
+        const match = currentFilters.contratos.some(
+          (c) => itemContrato.includes(c) || c.includes(itemContrato)
+        );
+        if (!match) return false;
+      } else if (currentFilters.contrato === 'PRESET_NOVOS') {
         if (!novosContratos.some((c) => r.CONTRATO?.includes(c))) return false;
       } else if (currentFilters.contrato === 'PRESET_ANTIGOS') {
         if (!antigosContratos.some((c) => r.CONTRATO?.includes(c))) return false;

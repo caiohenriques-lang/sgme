@@ -43,6 +43,7 @@ export interface EquipmentRecord {
 
 export interface FilterState {
   contrato: string;
+  contratos?: string[];
   regional: string;
   bairro: string;
   tipo: string;

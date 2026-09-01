@@ -230,6 +230,268 @@ const MultiSelectCheckboxDropdown: React.FC<MultiSelectCheckboxDropdownProps> = 
   );
 };
 
+interface ContratoMultiSelectDropdownProps {
+  availableContratos: string[];
+  selectedContratos: string[];
+  onChange: (newSelected: string[]) => void;
+}
+
+const NOVOS_CONTRATOS_PRESET = ['2740/24', '2741/24', '2742/24'];
+const ANTIGOS_CONTRATOS_PRESET = ['2586/20', '2585/20', '2587/20'];
+
+const ContratoMultiSelectDropdown: React.FC<ContratoMultiSelectDropdownProps> = ({
+  availableContratos,
+  selectedContratos = [],
+  onChange,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  // Fechar popover ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const isNovosPreset = useMemo(() => {
+    if (selectedContratos.length !== 3) return false;
+    return NOVOS_CONTRATOS_PRESET.every((c) => selectedContratos.some((s) => s.includes(c)));
+  }, [selectedContratos]);
+
+  const isAntigosPreset = useMemo(() => {
+    if (selectedContratos.length !== 3) return false;
+    return ANTIGOS_CONTRATOS_PRESET.every((c) => selectedContratos.some((s) => s.includes(c)));
+  }, [selectedContratos]);
+
+  const isAllSelected = useMemo(() => {
+    return availableContratos.length > 0 && selectedContratos.length === availableContratos.length;
+  }, [availableContratos, selectedContratos]);
+
+  const filteredOptions = useMemo(() => {
+    if (!searchTerm.trim()) return availableContratos;
+    const q = searchTerm.toLowerCase();
+    return availableContratos.filter((opt) => opt.toLowerCase().includes(q));
+  }, [availableContratos, searchTerm]);
+
+  const handleToggle = (option: string) => {
+    const exists = selectedContratos.includes(option);
+    const nextSelected = exists
+      ? selectedContratos.filter((item) => item !== option)
+      : [...selectedContratos, option];
+    onChange(nextSelected);
+  };
+
+  const handleSelectPresetNovos = () => {
+    const matching = availableContratos.filter((c) =>
+      NOVOS_CONTRATOS_PRESET.some((nc) => c.includes(nc))
+    );
+    onChange(matching.length > 0 ? matching : [...NOVOS_CONTRATOS_PRESET]);
+  };
+
+  const handleSelectPresetAntigos = () => {
+    const matching = availableContratos.filter((c) =>
+      ANTIGOS_CONTRATOS_PRESET.some((ac) => c.includes(ac))
+    );
+    onChange(matching.length > 0 ? matching : [...ANTIGOS_CONTRATOS_PRESET]);
+  };
+
+  const handleSelectAll = () => {
+    onChange([...availableContratos]);
+  };
+
+  const handleClear = () => {
+    onChange([]);
+  };
+
+  const getButtonText = () => {
+    if (isNovosPreset) return '★ Contratos 2740, 2741 e 2742 (Padrão)';
+    if (isAntigosPreset) return 'Contratos 2586, 2585 e 2587 (3)';
+    if (isAllSelected) return `Todos os Contratos (${availableContratos.length})`;
+    if (selectedContratos.length === 0) return 'Nenhum contrato selecionado (0)';
+    if (selectedContratos.length === 1) return `Contrato ${selectedContratos[0]}`;
+    return `${selectedContratos.length} contratos selecionados`;
+  };
+
+  return (
+    <div className="relative" ref={popoverRef}>
+      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center justify-between">
+        <span className="flex items-center gap-1">
+          <FileText className="w-3 h-3 text-slate-400" />
+          CONTRATO
+        </span>
+        {isNovosPreset ? (
+          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded">
+            Padrão
+          </span>
+        ) : selectedContratos.length > 0 ? (
+          <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.2 rounded">
+            {selectedContratos.length} selec.
+          </span>
+        ) : null}
+      </label>
+
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full flex items-center justify-between text-xs border rounded-lg px-2.5 py-1.5 transition-all text-left cursor-pointer ${
+          isNovosPreset
+            ? 'bg-blue-50/90 border-blue-400 text-blue-950 font-semibold ring-1 ring-blue-400/30'
+            : selectedContratos.length > 0
+            ? 'bg-amber-50/80 border-amber-400 text-amber-950 font-semibold ring-1 ring-amber-400/30'
+            : 'bg-slate-50 border-slate-300 text-slate-800 hover:bg-slate-100'
+        }`}
+      >
+        <span className="truncate pr-2">{getButtonText()}</span>
+        <ChevronDown className={`w-3.5 h-3.5 text-slate-500 shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 sm:right-auto top-full mt-1.5 bg-white border border-slate-300 rounded-xl shadow-xl z-50 p-2.5 w-80 sm:w-96 max-w-[calc(100vw-2rem)]">
+          {/* Seção de Presets / Atalhos Rápidos */}
+          <div className="mb-2.5 space-y-1.5 pb-2 border-b border-slate-100">
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              Atalhos Rápidos
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              <button
+                type="button"
+                onClick={handleSelectPresetNovos}
+                className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-left text-xs font-semibold transition-colors border cursor-pointer ${
+                  isNovosPreset
+                    ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
+                    : 'bg-blue-50 hover:bg-blue-100 text-blue-900 border-blue-200'
+                }`}
+              >
+                <span className="truncate">★ Atuais (2740, 2741, 2742)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSelectPresetAntigos}
+                className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-left text-xs font-semibold transition-colors border cursor-pointer ${
+                  isAntigosPreset
+                    ? 'bg-slate-800 text-white border-slate-800 shadow-2xs'
+                    : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200'
+                }`}
+              >
+                <span className="truncate">Anteriores (2586, 2585, 2587)</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Campo de Busca Rápida */}
+          <div className="relative mb-2">
+            <input
+              type="text"
+              placeholder="Buscar contrato..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-7 pr-7 py-1 text-xs border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              autoFocus
+            />
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2 top-2" />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="absolute right-2 top-1.5 text-slate-400 hover:text-slate-600 text-xs"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          {/* Cabeçalho de Seleção */}
+          <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100 text-[11px]">
+            <span className="text-slate-500 font-medium">
+              {selectedContratos.length} de {availableContratos.length} selecionados
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleSelectAll}
+                className="text-blue-600 hover:text-blue-800 font-semibold hover:underline cursor-pointer"
+              >
+                Marcar Todos
+              </button>
+              <span className="text-slate-300">|</span>
+              <button
+                type="button"
+                onClick={handleClear}
+                className="text-rose-600 hover:text-rose-800 font-semibold hover:underline cursor-pointer"
+              >
+                Limpar
+              </button>
+            </div>
+          </div>
+
+          {/* Lista de Opções com Checkboxes */}
+          <div className="max-h-56 overflow-y-auto space-y-1 pr-1 text-xs">
+            {filteredOptions.length === 0 ? (
+              <div className="p-3 text-center text-slate-400 text-xs italic">
+                Nenhum contrato encontrado
+              </div>
+            ) : (
+              filteredOptions.map((opt) => {
+                const isSelected = selectedContratos.includes(opt);
+                const isCurrentContract = NOVOS_CONTRATOS_PRESET.some((nc) => opt.includes(nc));
+                return (
+                  <label
+                    key={opt}
+                    onClick={() => handleToggle(opt)}
+                    className={`flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg cursor-pointer transition-colors border ${
+                      isSelected
+                        ? 'bg-blue-50 border-blue-200 text-blue-950 font-semibold'
+                        : 'hover:bg-slate-50 border-transparent text-slate-700'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => {}}
+                        className="rounded text-blue-600 focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer shrink-0"
+                      />
+                      <span className="truncate font-mono">Contrato {opt}</span>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {isCurrentContract && (
+                        <span className="text-[9px] font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded border border-emerald-200">
+                          Vigente
+                        </span>
+                      )}
+                      {isSelected && <Check className="w-3.5 h-3.5 text-blue-600" />}
+                    </div>
+                  </label>
+                );
+              })
+            )}
+          </div>
+
+          {/* Rodapé do Popover */}
+          <div className="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between">
+            <span className="text-[10px] text-slate-400">
+              {isNovosPreset ? 'Filtro padrão ativo' : 'Filtro personalizado'}
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-3 py-1 rounded-lg transition-colors cursor-pointer"
+            >
+              Concluir ({selectedContratos.length})
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Função utilitária para aplicar máscara de data brasileira DD/MM/AAAA automaticamente
 const maskDateInput = (val: string): string => {
   const digits = val.replace(/\D/g, '').slice(0, 8);
@@ -276,8 +538,15 @@ export const FilterBar: React.FC<FilterBarProps> = ({
     }));
   };
 
+  const isDefaultContratos = useMemo(() => {
+    const selected = filters.contratos;
+    if (!selected || selected.length === 0) return filters.contrato === 'PRESET_NOVOS';
+    if (selected.length !== 3) return false;
+    return ['2740/24', '2741/24', '2742/24'].every((c) => selected.some((s) => s.includes(c)));
+  }, [filters.contratos, filters.contrato]);
+
   const hasActiveFilters =
-    filters.contrato !== 'PRESET_NOVOS' ||
+    !isDefaultContratos ||
     (filters.regionais && filters.regionais.length > 0) ||
     (filters.bairros && filters.bairros.length > 0) ||
     (filters.tipos && filters.tipos.length > 0) ||
@@ -589,29 +858,37 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             </div>
           </div>
 
-          {/* CONTRATO */}
+          {/* CONTRATO (Caixa de Seleção Múltipla com Checkboxes e Presets) */}
           <div className="lg:col-span-3">
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-              CONTRATO
-            </label>
-            <select
-              value={filters.contrato}
-              onChange={(e) => handleFilterChange('contrato', e.target.value)}
-              className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white font-medium"
-            >
-              <optgroup label="Seleções Especiais / Padrão">
-                <option value="PRESET_NOVOS">★ Contratos 2740/24, 2741/24 e 2742/24 (Padrão)</option>
-                <option value="PRESET_ANTIGOS">Contratos 2586/20, 2585/20 e 2587/20</option>
-                <option value="ALL">Todos os Contratos ({availableContratos.length})</option>
-              </optgroup>
-              <optgroup label="Contratos Individuais">
-                {availableContratos.map((c) => (
-                  <option key={c} value={c}>
-                    Contrato {c}
-                  </option>
-                ))}
-              </optgroup>
-            </select>
+            <ContratoMultiSelectDropdown
+              availableContratos={availableContratos}
+              selectedContratos={filters.contratos || []}
+              onChange={(newSelected) => {
+                handleFilterChange('contratos', newSelected);
+                // Atualiza também a propriedade de fallback contrato
+                if (
+                  newSelected.length === 3 &&
+                  ['2740/24', '2741/24', '2742/24'].every((c) =>
+                    newSelected.some((s) => s.includes(c))
+                  )
+                ) {
+                  handleFilterChange('contrato', 'PRESET_NOVOS');
+                } else if (
+                  newSelected.length === 3 &&
+                  ['2586/20', '2585/20', '2587/20'].every((c) =>
+                    newSelected.some((s) => s.includes(c))
+                  )
+                ) {
+                  handleFilterChange('contrato', 'PRESET_ANTIGOS');
+                } else if (newSelected.length === availableContratos.length) {
+                  handleFilterChange('contrato', 'ALL');
+                } else if (newSelected.length === 1) {
+                  handleFilterChange('contrato', newSelected[0]);
+                } else {
+                  handleFilterChange('contrato', 'CUSTOM');
+                }
+              }}
+            />
           </div>
 
           {/* REGIONAL (Caixa de Seleção Múltipla) */}
@@ -1028,15 +1305,15 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         </div>
 
         {/* Filter Summary Badges */}
-        {(filters.contrato === 'PRESET_NOVOS' || (hasActiveFilters && filters.contrato !== 'PRESET_NOVOS')) && (
+        {(isDefaultContratos || hasActiveFilters) && (
           <div className="flex items-center justify-between text-xs text-slate-500 pt-1 flex-wrap gap-2">
             <div className="flex items-center gap-2 flex-wrap">
-              {filters.contrato === 'PRESET_NOVOS' && (
+              {isDefaultContratos && (
                 <span className="bg-blue-100 text-blue-800 border border-blue-200 px-2 py-0.5 rounded-full text-[11px] font-semibold">
                   Filtro Padrão Ativo: Contratos 2740/24, 2741/24 e 2742/24
                 </span>
               )}
-              {hasActiveFilters && filters.contrato !== 'PRESET_NOVOS' && (
+              {hasActiveFilters && !isDefaultContratos && (
                 <span className="bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full text-[11px] font-semibold">
                   Filtros Personalizados
                 </span>

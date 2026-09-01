@@ -1762,7 +1762,13 @@ export async function exportMapWithFiltersPdf(
 
   // Build filter label texts
   let contratoLabel = 'Todos os Contratos';
-  if (filters.contrato === 'PRESET_NOVOS') contratoLabel = 'Novos Contratos (2740/24, 2741/24, 2742/24)';
+  if (filters.contratos && filters.contratos.length > 0) {
+    const isNovos = filters.contratos.length === 3 && ['2740/24', '2741/24', '2742/24'].every((c) => filters.contratos?.some((s) => s.includes(c)));
+    const isAntigos = filters.contratos.length === 3 && ['2586/20', '2585/20', '2587/20'].every((c) => filters.contratos?.some((s) => s.includes(c)));
+    if (isNovos) contratoLabel = 'Contratos Atuais (2740/24, 2741/24, 2742/24)';
+    else if (isAntigos) contratoLabel = 'Contratos Anteriores (2586/20, 2585/20, 2587/20)';
+    else contratoLabel = `${filters.contratos.length} contrato(s) (${filters.contratos.join(', ')})`;
+  } else if (filters.contrato === 'PRESET_NOVOS') contratoLabel = 'Novos Contratos (2740/24, 2741/24, 2742/24)';
   else if (filters.contrato === 'PRESET_ANTIGOS') contratoLabel = 'Antigos Contratos (2586/20, 2585/20, 2587/20)';
   else if (filters.contrato && filters.contrato !== 'ALL') contratoLabel = filters.contrato;
 

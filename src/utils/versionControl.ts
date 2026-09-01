@@ -6,15 +6,43 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.12';
+export const APP_VERSION = 'v3.7.15';
 export const BUILD_DATE = '01/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.15',
+    date: '01/09/2026',
+    tag: 'Exibição e Otimização do Rodapé Mobile (Versão, Atualizar e Desenvolvedor)',
+    isLatest: true,
+    changes: [
+      'Ajustada a exibição no rodapé abaixo da caixa de legenda no mobile, organizando em destaque o botão de Versão (com modal de histórico), botão Atualizar dados e créditos do desenvolvedor (Caio Henriques de O. L. Cordeiro).',
+      'Adicionado espaçamento inferior seguro (pb-20) no mobile para garantir visibilidade total e impedir sobreposição pela barra de navegação inferior fixa.'
+    ]
+  },
+  {
+    version: 'v3.7.14',
+    date: '01/09/2026',
+    tag: 'Remoção do Botão "Instalar WebApp" do Cabeçalho',
+    changes: [
+      'Removido o botão de atalho "Instalar WebApp" do cabeçalho superior do portal, preservando toda a infraestrutura e recursos de PWA.'
+    ]
+  },
+  {
+    version: 'v3.7.13',
+    date: '01/09/2026',
+    tag: 'Filtro de Contrato com Seleção Múltipla por Checkbox e Presets Rápidos',
+    changes: [
+      'Transformado o campo de filtro CONTRATO em seleção múltipla com caixas de marcação (checkboxes) nas abas Monitoramento Espacial, Indicadores e Lista de Equipamentos.',
+      'Preservado o filtro padrão ativo com os novos contratos vigentes (2740/24, 2741/24 e 2742/24) pré-selecionados ao carregar e ao limpar filtros.',
+      'Adicionados atalhos rápidos destacados no dropdown: "★ Atuais (2740, 2741, 2742)", "Anteriores (2586, 2585, 2587)", "Marcar Todos", "Limpar" e campo de busca rápida.',
+      'Compatibilidade total implementada na exportação de relatórios PDF com os contratos selecionados.'
+    ]
+  },
+  {
     version: 'v3.7.12',
     date: '01/09/2026',
     tag: 'Correção do Ícone de Radar na Área de Trabalho do iOS (PWA/Safari)',
-    isLatest: true,
     changes: [
       'Corrigida a compatibilidade com o iOS Safari removendo a declaração SVG indevida em apple-touch-icon que impedia a exibição do ícone.',
       'Gerados ícones PNG dedicados em alta resolução e fundo sólido (180x180, 167x167, 152x152, 120x120) com enquadramento otimizado para a máscara nativa do iOS (squircle).',

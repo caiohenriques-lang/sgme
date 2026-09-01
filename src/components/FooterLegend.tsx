@@ -19,7 +19,7 @@ export const FooterLegend: React.FC<FooterLegendProps> = ({
   const versionHistory = getAllVersions();
 
   return (
-    <footer className="bg-slate-900 text-slate-300 border-t border-slate-800 py-3 mt-6 text-xs">
+    <footer className="bg-slate-900 text-slate-300 border-t border-slate-800 py-3 pb-20 sm:pb-3 mt-6 text-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-2.5">
         
         {/* Required Legend Box */}
@@ -43,46 +43,50 @@ export const FooterLegend: React.FC<FooterLegendProps> = ({
           </div>
         </div>
 
-        {/* Compact Footer Brand & Credits */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-slate-400 text-[11px]">
-          <div className="flex items-center gap-2">
+        {/* Footer Brand, Actions (Versão, Atualizar) & Developer Info */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-400 text-[11px] pt-1">
+          <div className="flex items-center justify-center sm:justify-start gap-2 text-center sm:text-left">
             <SpeedLimit50Icon className="w-3.5 h-3.5 shrink-0" />
             <span>
               <strong>GEAPI</strong> — Gerência de Análise e Processamento de Infrações | Prefeitura de Belo Horizonte
             </span>
           </div>
 
-          <div className="flex items-center gap-2.5 flex-wrap justify-center sm:justify-end">
-            {/* Version Control Badge / Button directly to the left of Atualizar */}
-            <button
-              onClick={() => setIsChangelogOpen(true)}
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-medium text-slate-300 hover:text-white bg-slate-800/90 hover:bg-slate-800 border border-slate-700/80 hover:border-slate-600 rounded-md transition-colors cursor-pointer active:scale-95 shadow-2xs group"
-              title={`Controle de Versões: ${currentVersion.version} (${currentVersion.date}) - Clique para ver o histórico de atualizações`}
-            >
-              <GitBranch className="w-3 h-3 text-blue-400 group-hover:text-blue-300 transition-colors" />
-              <span className="font-mono font-semibold text-white">{currentVersion.version}</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" title="Versão mais recente instalada" />
-            </button>
-
-            {/* Global Refresh Button Styled for Footer */}
-            {onRefresh && (
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 w-full sm:w-auto">
+            {/* Version & Refresh Buttons Row */}
+            <div className="flex items-center justify-center gap-2">
+              {/* Version Control Badge / Button */}
               <button
-                onClick={onRefresh}
-                disabled={loading}
-                className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-medium text-slate-300 hover:text-white bg-slate-800/90 hover:bg-slate-800 border border-slate-700/80 hover:border-slate-600 rounded-md transition-colors cursor-pointer active:scale-95 disabled:opacity-60 shadow-2xs group"
-                title="Atualizar dados de todas as planilhas e abas"
+                onClick={() => setIsChangelogOpen(true)}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 sm:py-0.5 text-[11px] font-medium text-slate-200 hover:text-white bg-slate-800/90 hover:bg-slate-800 border border-slate-700 hover:border-slate-600 rounded-md transition-colors cursor-pointer active:scale-95 shadow-2xs group"
+                title={`Controle de Versões: ${currentVersion.version} (${currentVersion.date}) - Clique para ver o histórico de atualizações`}
               >
-                <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin text-blue-400' : 'text-slate-400 group-hover:text-blue-400 transition-colors'}`} />
-                <span>Atualizar</span>
-                {lastUpdated && (
-                  <span className="text-[10px] text-slate-400 font-mono">
-                    ({lastUpdated.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })})
-                  </span>
-                )}
+                <GitBranch className="w-3 h-3 text-blue-400 group-hover:text-blue-300 transition-colors" />
+                <span className="font-mono font-bold text-white">{currentVersion.version}</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" title="Versão mais recente instalada" />
               </button>
-            )}
 
-            <div>
+              {/* Global Refresh Button */}
+              {onRefresh && (
+                <button
+                  onClick={onRefresh}
+                  disabled={loading}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 sm:py-0.5 text-[11px] font-medium text-slate-200 hover:text-white bg-slate-800/90 hover:bg-slate-800 border border-slate-700 hover:border-slate-600 rounded-md transition-colors cursor-pointer active:scale-95 disabled:opacity-60 shadow-2xs group"
+                  title="Atualizar dados de todas as planilhas e abas"
+                >
+                  <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin text-blue-400' : 'text-slate-400 group-hover:text-blue-400 transition-colors'}`} />
+                  <span>Atualizar</span>
+                  {lastUpdated && (
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      ({lastUpdated.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })})
+                    </span>
+                  )}
+                </button>
+              )}
+            </div>
+
+            {/* Developer Credits */}
+            <div className="text-center sm:text-right text-slate-400 text-[11px]">
               Desenvolvido por <span className="text-white font-bold tracking-wide">Caio Henriques de O. L. Cordeiro</span>
             </div>
           </div>
