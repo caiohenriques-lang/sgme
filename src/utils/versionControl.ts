@@ -6,15 +6,25 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.30';
+export const APP_VERSION = 'v3.7.31';
 export const BUILD_DATE = '02/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.31',
+    date: '02/09/2026',
+    tag: 'Otimização de Velocidade do Assistente IA (Resposta Instantânea com Timeout & Fallback Dinâmico)',
+    isLatest: true,
+    changes: [
+      'Configurado timeout de resposta máxima de 6 segundos com AbortController no cliente de IA, impedindo travamentos ou espera prolongada.',
+      'Aprimorado o motor analítico local embutido para responder em milissegundos a perguntas sobre ativação diária ("quantas faixas entraram em operação hoje"), contratos, tipos, status e equipamentos com alta precisão e ações interativas.',
+      'Eliminada qualquer lentidão no fluxo do assistente virtual, garantindo resposta imediata aos usuários.'
+    ]
+  },
+  {
     version: 'v3.7.30',
     date: '02/09/2026',
     tag: 'Tratamento de Contingência e Motor Analítico Local do Assistente IA',
-    isLatest: true,
     changes: [
       'Adicionado motor analítico e semântico local de contingência para o Assistente GEAPI, garantindo respostas instantâneas, precisas e estruturadas (com botões de ação e navegação) mesmo se a chave do Gemini estiver temporariamente ausente no ambiente.',
       'Corrigido tratamento de erros e exceções de rede no fluxo do chatbot de inteligência artificial.'

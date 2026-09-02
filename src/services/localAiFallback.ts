@@ -103,7 +103,68 @@ export function generateLocalFallbackResponse(
     }
   }
 
-  // 2. Pergunta sobre operação
+  // 2. Pergunta sobre datas de início de operação (ex: "hoje", "recentemente", "últimos dias")
+  if (lower.includes('hoje') || lower.includes('recente') || lower.includes('entraram em operação') || lower.includes('entrou em operação') || lower.includes('início operação') || lower.includes('inicio operacao')) {
+    // Busca registros que tenham data de início de operação preenchida
+    const withDate = baseRecords.filter(r => r['Data início operação'] && r['Data início operação'].trim().length > 0);
+    
+    // Normaliza hoje no formato DD/MM/AAAA
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = String(now.getFullYear());
+    const todayStr = `${day}/${month}/${year}`;
+    
+    const todayOperated = withDate.filter(r => (r['Data início operação'] || '').includes(todayStr));
+    
+    // Ordena os mais recentes se houver datas
+    const recentOperated = [...withDate].sort((a, b) => {
+      const parseDate = (dStr: string) => {
+        const parts = dStr.split(/[\/\-]/);
+        if (parts.length === 3) {
+          const d = parseInt(parts[0], 10);
+          const m = parseInt(parts[1], 10) - 1;
+          const y = parts[2].length === 2 ? 2000 + parseInt(parts[2], 10) : parseInt(parts[2], 10);
+          return new Date(y, m, d).getTime();
+        }
+        return 0;
+      };
+      return parseDate(b['Data início operação']) - parseDate(a['Data início operação']);
+    }).slice(0, 5);
+
+    if (todayOperated.length > 0) {
+      const faixasHoje = todayOperated.reduce((acc, curr) => acc + (typeof curr.FAIXAS === 'number' ? curr.FAIXAS : 1), 0);
+      const listToday = todayOperated.map(r => `• **${r.CÓDIGO}** (${r.TIPO}): ${r['ENDEREÇO COMPLETO'] || r['ENDEREÇOS DOS EQUIPAMENTOS']} — ${r.FAIXAS} faixa(s)`).join('\n');
+      return {
+        text: `📅 **Entrada em Operação Hoje (${todayStr}):**\n\n` +
+          `• **Total de Faixas Ativadas Hoje:** **${faixasHoje} faixa(s)** em **${todayOperated.length} equipamento(s)**.\n\n` +
+          `${listToday}`,
+        actions: [
+          { type: 'NAVIGATE_TAB', label: 'Ver na Tabela', payload: { tab: 'tabela' } },
+          { type: 'NAVIGATE_TAB', label: 'Ver no Mapa', payload: { tab: 'mapa' } },
+        ],
+      };
+    } else {
+      const listRecent = recentOperated.length > 0
+        ? recentOperated.map(r => `• **${r.CÓDIGO}** (${r.TIPO}): ${r['Data início operação']} — ${r['ENDEREÇO COMPLETO'] || r['ENDEREÇOS DOS EQUIPAMENTOS']} (${r.FAIXAS} faixas)`).join('\n')
+        : 'Nenhum equipamento registrado com data recente no momento.';
+
+      return {
+        text: `📅 **Entrada em Operação na Data Atual (${todayStr}):**\n\n` +
+          `• **Hoje (${todayStr}):** Nenhuma nova faixa ou equipamento teve ativação/início de operação registrada na base de dados oficial até o momento.\n` +
+          `• **Total Atual em Operação Plena:** **${opFaixas.toLocaleString('pt-BR')} faixas** (${opEquip.toLocaleString('pt-BR')} equipamentos).\n\n` +
+          `🕒 **Últimos Equipamentos Ativados Registrados na Base:**\n` +
+          `${listRecent}`,
+        actions: [
+          { type: 'NAVIGATE_TAB', label: 'Ver Tabela Geral', payload: { tab: 'tabela' } },
+          { type: 'QUICK_PROMPT', label: 'Ver Total em Operação', payload: { prompt: 'Quantas faixas estão em operação?' } },
+          { type: 'QUICK_PROMPT', label: 'Ver Faixas em Implantação', payload: { prompt: 'Quantas faixas estão em implantação?' } },
+        ],
+      };
+    }
+  }
+
+  // 3. Pergunta sobre operação geral
   if (lower.includes('operação') || lower.includes('operacao') || lower.includes('ativo') || lower.includes('funcionando')) {
     return {
       text: `📍 **Faixas e Equipamentos em Operação:**\n\n` +

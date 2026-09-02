@@ -315,12 +315,17 @@ export async function sendChatMessage({
   };
 
   let response: Response;
+  const controller = new AbortController();
+  // Limite estrito de 6 segundos para a API do Gemini responder; se demorar, aciona o motor local instantaneamente (<10ms)
+  const timeoutId = setTimeout(() => controller.abort(), 6000);
+
   try {
     response = await fetch('/api/gemini/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
+      signal: controller.signal,
       body: JSON.stringify({
         message,
         history,
@@ -328,18 +333,21 @@ export async function sendChatMessage({
       }),
     });
   } catch (networkErr: any) {
-    console.warn('Falha de rede ao conectar com backend de IA, acionando motor analítico offline:', networkErr);
+    clearTimeout(timeoutId);
+    console.warn('Backend de IA indisponível ou demorado, acionando motor analítico ultrarrápido:', networkErr);
     const { generateLocalFallbackResponse } = await import('./localAiFallback');
     return generateLocalFallbackResponse(message, records, filters);
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     const errString = (errorData.error || '').toString();
     
-    // Se a chave Gemini não estiver configurada no ambiente, responde de forma inteligente e precisa com o motor local embutido
-    if (errString.includes('GEMINI_API_KEY') || response.status === 500) {
-      console.warn('GEMINI_API_KEY não configurada no servidor ou erro de quota. Utilizando motor analítico local GEAPI.');
+    // Se a chave Gemini não estiver configurada no ambiente ou houver erro 500/timeout, responde imediatamente com o motor local embutido
+    if (errString.includes('GEMINI_API_KEY') || response.status === 500 || response.status === 504) {
+      console.warn('GEMINI_API_KEY não configurada ou instabilidade no servidor. Utilizando motor analítico local GEAPI.');
       const { generateLocalFallbackResponse } = await import('./localAiFallback');
       return generateLocalFallbackResponse(message, records, filters);
     }
