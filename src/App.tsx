@@ -85,8 +85,8 @@ export default function App() {
   const [selectedRecord, setSelectedRecord] = useState<EquipmentRecord | null>(null);
   const [isVercelGuideOpen, setIsVercelGuideOpen] = useState<boolean>(false);
   const [isAIAssistantOpen, setIsAIAssistantOpen] = useState<boolean>(false);
-  // Controle de visibilidade dos botões da IA (temporariamente oculto conforme solicitado)
-  const showAIControls = false;
+  // Controle de visibilidade dos botões da IA reativado
+  const showAIControls = true;
 
   // Load data from published Google Sheet CSV
   const loadData = useCallback(async () => {

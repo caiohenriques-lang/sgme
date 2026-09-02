@@ -6,15 +6,24 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.28';
+export const APP_VERSION = 'v3.7.29';
 export const BUILD_DATE = '02/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.29',
+    date: '02/09/2026',
+    tag: 'Reativação do Assistente de Inteligência Artificial GEAPI',
+    isLatest: true,
+    changes: [
+      'Reativado o Assistente Inteligente GEAPI (alimentado por Gemini) tanto pelo botão de acesso rápido no cabeçalho superior quanto pelo botão flutuante no canto inferior da tela.',
+      'Janela modal do assistente IA totalmente integrada com a base de dados oficial, permitindo consultas instantâneas de radares, coordenadas geográficas, contratos, situações operacionais, prazos de aferição e geração de relatórios.'
+    ]
+  },
+  {
     version: 'v3.7.28',
     date: '02/09/2026',
     tag: 'Limpeza Visual dos Cabeçalhos dos Gráficos de Contrato e Tipo na Aba Indicadores',
-    isLatest: true,
     changes: [
       'Removidos os badges duplicados ao lado do título dos gráficos "Consolidação por Contrato" e "Consolidação por Tipo de Equipamento", mantendo a identificação das séries na legenda interativa inferior do Recharts.',
       'Aprimorada a clareza e elegância visual dos cabeçalhos dos cards de gráficos no dashboard.'
