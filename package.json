@@ -1,7 +1,7 @@
 {
   "name": "react-example",
   "private": true,
-  "version": "3.7.16",
+  "version": "3.7.24",
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
@@ -20,6 +20,7 @@
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "html2canvas": "^1.4.1",
+    "html2canvas-pro": "^2.4.1",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "leaflet": "^1.9.4",

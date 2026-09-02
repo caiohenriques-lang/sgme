@@ -1041,40 +1041,62 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
 
       </div>
 
-      {/* Charts Row 1: 3 Gráficos em Grid 3x1 */}
-      <div id="indicators-charts-contrato" className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6 bg-white p-1.5 sm:p-2 rounded-2xl">
-
-        {/* Chart 1: Faixas por Contrato */}
-        <div id="chart-card-contrato-faixas" className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between">
+      {/* Chart Row 1: Gráfico Único Consolidado por Contrato (Faixas, Equipamentos e Locais) */}
+      <div id="indicators-charts-contrato" className="w-full bg-white p-1.5 sm:p-2 rounded-2xl">
+        <div id="chart-card-contrato-consolidado" className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-1.5 sm:mb-2 pb-2 sm:pb-3 border-b border-slate-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2 pb-3 border-b border-slate-100">
               <div>
                 <h3 className="font-bold text-xs sm:text-sm text-slate-900 flex items-center gap-2">
                   <BarChart2 className="w-4 h-4 text-blue-600 shrink-0" />
-                  <span>Faixas por Contrato</span>
+                  <span>Consolidação por Contrato (Faixas, Equipamentos e Locais)</span>
                 </h3>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Comparativo direto de volume de faixas fiscalizadas, total de equipamentos e locais únicos por contrato. Clique nas barras para filtrar.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 text-[11px] font-medium flex-wrap">
+                <span className="inline-flex items-center gap-1.5 text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200/60 shadow-2xs">
+                  <span className="w-2.5 h-2.5 rounded-sm bg-blue-600 inline-block" />
+                  Faixas
+                </span>
+                <span className="inline-flex items-center gap-1.5 text-purple-700 bg-purple-50 px-2.5 py-1 rounded-lg border border-purple-200/60 shadow-2xs">
+                  <span className="w-2.5 h-2.5 rounded-sm bg-purple-600 inline-block" />
+                  Equipamentos
+                </span>
+                <span className="inline-flex items-center gap-1.5 text-orange-700 bg-orange-50 px-2.5 py-1 rounded-lg border border-orange-200/60 shadow-2xs">
+                  <span className="w-2.5 h-2.5 rounded-sm bg-orange-500 inline-block" />
+                  Locais
+                </span>
               </div>
             </div>
           </div>
-          <div className="h-44 sm:h-64 w-full my-auto">
+          <div className="h-64 sm:h-72 w-full my-auto">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={contratoData} layout="vertical" margin={{ top: 8, right: 32, left: 10, bottom: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                <XAxis type="number" tick={{ fontSize: 10, fill: '#64748b' }} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: '#64748b' }} width={80} />
+              <BarChart data={contratoData} margin={{ top: 20, right: 24, left: -10, bottom: 8 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#334155', fontWeight: 600 }} />
+                <YAxis type="number" tick={{ fontSize: 10, fill: '#64748b' }} />
                 <Tooltip
-                  formatter={(value: number) => [`${value} faixas`, 'Faixas']}
+                  formatter={(value: number, name: string) => [
+                    `${value.toLocaleString('pt-BR')} ${name === 'Faixas' ? 'faixas' : name === 'Equipamentos' ? 'equipamentos' : 'locais'}`,
+                    name,
+                  ]}
                   contentStyle={{ borderRadius: '12px', borderColor: '#e2e8f0', fontSize: '12px' }}
+                />
+                <Legend
+                  wrapperStyle={{ paddingTop: '10px', fontSize: '12px' }}
                 />
                 <Bar
                   dataKey="SomaFaixas"
                   fill="#3b82f6"
-                  radius={[0, 6, 6, 0]}
+                  radius={[4, 4, 0, 0]}
                   name="Faixas"
+                  isAnimationActive={false}
                   onClick={(entry: any) => entry && entry.name && handleContratoClick(String(entry.name))}
                   className="cursor-pointer hover:opacity-80 transition-opacity"
                 >
-                  <LabelList dataKey="SomaFaixas" position="right" fill="#0f172a" fontSize={11} fontWeight={700} />
+                  <LabelList dataKey="SomaFaixas" position="top" fill="#1e3a8a" fontSize={11} fontWeight={700} />
                   {contratoData.map((entry, index) => (
                     <Cell
                       key={`cell-contrato-faixas-${index}`}
@@ -1084,42 +1106,16 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                     />
                   ))}
                 </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Chart 2: Equipamentos por Contrato */}
-        <div id="chart-card-contrato-equip" className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-1.5 sm:mb-2 pb-2 sm:pb-3 border-b border-slate-100">
-              <div>
-                <h3 className="font-bold text-xs sm:text-sm text-slate-900 flex items-center gap-2">
-                  <BarChart2 className="w-4 h-4 text-purple-600 shrink-0" />
-                  <span>Equipamentos por Contrato</span>
-                </h3>
-              </div>
-            </div>
-          </div>
-          <div className="h-44 sm:h-64 w-full my-auto">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={contratoData} layout="vertical" margin={{ top: 8, right: 32, left: 10, bottom: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                <XAxis type="number" tick={{ fontSize: 10, fill: '#64748b' }} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: '#64748b' }} width={80} />
-                <Tooltip
-                  formatter={(value: number) => [`${value} equipamentos`, 'Equipamentos']}
-                  contentStyle={{ borderRadius: '12px', borderColor: '#e2e8f0', fontSize: '12px' }}
-                />
                 <Bar
                   dataKey="Equipamentos"
                   fill="#8b5cf6"
-                  radius={[0, 6, 6, 0]}
+                  radius={[4, 4, 0, 0]}
                   name="Equipamentos"
+                  isAnimationActive={false}
                   onClick={(entry: any) => entry && entry.name && handleContratoClick(String(entry.name))}
                   className="cursor-pointer hover:opacity-80 transition-opacity"
                 >
-                  <LabelList dataKey="Equipamentos" position="right" fill="#0f172a" fontSize={11} fontWeight={700} />
+                  <LabelList dataKey="Equipamentos" position="top" fill="#4c1d95" fontSize={11} fontWeight={700} />
                   {contratoData.map((entry, index) => (
                     <Cell
                       key={`cell-contrato-equip-${index}`}
@@ -1129,42 +1125,16 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                     />
                   ))}
                 </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Chart 3: Locais Fiscalizados por Contrato */}
-        <div id="chart-card-contrato-locais" className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-1.5 sm:mb-2 pb-2 sm:pb-3 border-b border-slate-100">
-              <div>
-                <h3 className="font-bold text-xs sm:text-sm text-slate-900 flex items-center gap-2">
-                  <BarChart2 className="w-4 h-4 text-orange-500 shrink-0" />
-                  <span>Locais por Contrato</span>
-                </h3>
-              </div>
-            </div>
-          </div>
-          <div className="h-44 sm:h-64 w-full my-auto">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={contratoData} layout="vertical" margin={{ top: 8, right: 32, left: 10, bottom: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                <XAxis type="number" tick={{ fontSize: 10, fill: '#64748b' }} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: '#64748b' }} width={80} />
-                <Tooltip
-                  formatter={(value: number) => [`${value} locais`, 'Locais Únicos']}
-                  contentStyle={{ borderRadius: '12px', borderColor: '#e2e8f0', fontSize: '12px' }}
-                />
                 <Bar
                   dataKey="LocaisUnicos"
                   fill="#f97316"
-                  radius={[0, 6, 6, 0]}
-                  name="Locais Únicos"
+                  radius={[4, 4, 0, 0]}
+                  name="Locais"
+                  isAnimationActive={false}
                   onClick={(entry: any) => entry && entry.name && handleContratoClick(String(entry.name))}
                   className="cursor-pointer hover:opacity-80 transition-opacity"
                 >
-                  <LabelList dataKey="LocaisUnicos" position="right" fill="#0f172a" fontSize={11} fontWeight={700} />
+                  <LabelList dataKey="LocaisUnicos" position="top" fill="#7c2d12" fontSize={11} fontWeight={700} />
                   {contratoData.map((entry, index) => (
                     <Cell
                       key={`cell-contrato-locais-${index}`}
@@ -1178,7 +1148,6 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
             </ResponsiveContainer>
           </div>
         </div>
-
       </div>
 
       {/* Chart Row 2: Gráficos por Tipo em Grid 2x1 */}
@@ -1212,6 +1181,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                     fill="#059669"
                     radius={[6, 6, 0, 0]}
                     name="Soma de Faixas"
+                    isAnimationActive={false}
                     onClick={(entry: any) => entry && entry.name && handleTipoClick(String(entry.name))}
                     className="cursor-pointer hover:opacity-80 transition-opacity"
                   >
@@ -1260,6 +1230,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                   fill="#7c3aed"
                   radius={[6, 6, 0, 0]}
                   name="Locais Únicos"
+                  isAnimationActive={false}
                   onClick={(entry: any) => entry && entry.name && handleTipoClick(String(entry.name))}
                   className="cursor-pointer hover:opacity-80 transition-opacity"
                 >
@@ -2075,7 +2046,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
           ↔ Deslize para os lados para ver todas as colunas
         </div>
         <div className="w-full overflow-x-auto min-h-[300px]">
-          <table className="w-full min-w-[850px] lg:min-w-0 lg:table-fixed text-[11px] sm:text-xs text-left">
+          <table className="w-full min-w-[850px] lg:min-w-0 lg:table-fixed text-[11px] sm:text-xs text-center">
             <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200 text-[10px] sm:text-[11px]">
               <tr>
                 <th
@@ -2098,9 +2069,9 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                 </th>
                 <th
                   onClick={() => handleSort('TIPO')}
-                  className="w-[9%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-left"
+                  className="w-[9%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
                 >
-                  <div className="flex items-center gap-0.5">
+                  <div className="flex items-center justify-center gap-0.5">
                     <span>Tipo</span>
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                   </div>
@@ -2115,19 +2086,10 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                   </div>
                 </th>
                 <th
-                  onClick={() => handleSort('Situação')}
-                  className="w-[9%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-left"
-                >
-                  <div className="flex items-center gap-0.5">
-                    <span>Situação</span>
-                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                  </div>
-                </th>
-                <th
                   onClick={() => handleSort('ENDEREÇO COMPLETO')}
-                  className="w-[43%] py-2.5 px-1.5 cursor-pointer hover:bg-slate-200 transition-colors text-left"
+                  className="w-[43%] py-2.5 px-1.5 cursor-pointer hover:bg-slate-200 transition-colors text-center"
                 >
-                  <div className="flex items-center gap-0.5">
+                  <div className="flex items-center justify-center gap-0.5">
                     <span>Endereço Completo</span>
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                   </div>
@@ -2138,6 +2100,15 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                 >
                   <div className="flex items-center justify-center gap-0.5">
                     <span>Bairro</span>
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                  </div>
+                </th>
+                <th
+                  onClick={() => handleSort('Situação')}
+                  className="w-[10%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
+                >
+                  <div className="flex items-center justify-center gap-0.5">
+                    <span>Situação</span>
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                   </div>
                 </th>
@@ -2164,7 +2135,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                     <td className="py-2 px-1 font-medium text-slate-700 text-center truncate">
                       {r.CONTRATO || '-'}
                     </td>
-                    <td className="py-2 px-1 truncate">
+                    <td className="py-2 px-1 text-center truncate">
                       <span className="inline-block bg-slate-100 text-slate-800 font-semibold px-1.5 py-0.5 rounded text-[10px] border border-slate-200 truncate max-w-full">
                         {r.TIPO || '-'}
                       </span>
@@ -2172,7 +2143,13 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                     <td className="py-2 px-1 text-center font-bold text-blue-700">
                       {r.FAIXAS}
                     </td>
-                    <td className="py-2 px-1 text-[10px] truncate">
+                    <td className="py-2 px-1.5 text-center font-normal text-slate-800 break-words whitespace-normal leading-snug">
+                      {r['ENDEREÇO COMPLETO'] || '-'}
+                    </td>
+                    <td className="py-2 px-1 text-slate-600 text-center break-words whitespace-normal leading-snug">
+                      {r.BAIRRO || '-'}
+                    </td>
+                    <td className="py-2 px-1 text-center text-[10px] truncate">
                       <span
                         className={`inline-block px-1.5 py-0.5 rounded-full font-medium truncate max-w-full ${
                           r.Situação?.includes('Em operação')
@@ -2184,12 +2161,6 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                       >
                         {r.Situação?.replace('\n', ' ') || '-'}
                       </span>
-                    </td>
-                    <td className="py-2 px-1.5 font-normal text-slate-800 break-words whitespace-normal leading-snug">
-                      {r['ENDEREÇO COMPLETO'] || '-'}
-                    </td>
-                    <td className="py-2 px-1 text-slate-600 text-center break-words whitespace-normal leading-snug">
-                      {r.BAIRRO || '-'}
                     </td>
                     <td className="py-2 px-1 text-center" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-center gap-0.5">

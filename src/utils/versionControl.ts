@@ -6,15 +6,91 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.16';
-export const BUILD_DATE = '01/09/2026';
+export const APP_VERSION = 'v3.7.24';
+export const BUILD_DATE = '02/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v3.7.24',
+    date: '02/09/2026',
+    tag: 'Suporte Nativo a Cores Modernas (OKLCH) na Captura dos Gráficos para PDF',
+    isLatest: true,
+    changes: [
+      'Substituído o motor de renderização gráfica por html2canvas-pro com suporte total a funções de cor modernas (oklch, oklab, color spaces e variáveis CSS do Tailwind v4).',
+      'Resolvido o erro "Attempting to parse an unsupported color function oklch" durante a captura dos cards de gráficos dos Indicadores.',
+      'Garantida a exportação completa, nítida e sem falhas dos 3 gráficos no PDF gerado da aba Indicadores.'
+    ]
+  },
+  {
+    version: 'v3.7.23',
+    date: '02/09/2026',
+    tag: 'Correção Definitiva de Renderização e Escala dos Gráficos no PDF',
+    changes: [
+      'Eliminada a distorção e corte no Gráfico 1 (Consolidação por Contrato) através da captura completa do card com html2canvas sanitizado para cores Tailwind.',
+      'Implementado cálculo dinâmico da proporção natural (aspect ratio via doc.getImageProperties) para todos os gráficos no PDF, impedindo qualquer achatamento ou esticamento visual.',
+      'Preservados cabeçalho, badges, eixos, barras coloridas, rótulos de valores e legendas exatamente como aparecem na interface web.'
+    ]
+  },
+  {
+    version: 'v3.7.22',
+    date: '02/09/2026',
+    tag: 'Correção de Renderização Integral do Gráfico Consolidado por Contrato no PDF',
+    changes: [
+      'Corrigida a proporção e preservação de coordenadas (viewBox e width/height) na extração SVG dos gráficos para o relatório PDF, solucionando o corte/zoom de barras.',
+      'Desativadas as animações transitórias (isAnimationActive={false}) nos gráficos de barras da aba Indicadores para garantir geometria estática imediata e fiel durante a captura.',
+      'Expandidos os clip-paths e ajustado o dimensionamento do card consolidado no PDF para visualização nítida e completa de todas as séries (Faixas, Equipamentos e Locais).'
+    ]
+  },
+  {
+    version: 'v3.7.21',
+    date: '02/09/2026',
+    tag: 'Correção na Captura e Inclusão dos 3 Gráficos no PDF do Painel Executivo',
+    changes: [
+      'Reformulada a rotina de captura de gráficos do Painel Executivo para renderização direta via SVG/XMLSerializer e Canvas 2D de alta definição, eliminando falhas de compatibilidade com CSS moderno.',
+      'Garantida a inclusão completa dos 3 gráficos no PDF exportado da aba Indicadores: 1) Consolidação por Contrato (Faixas, Equipamentos e Locais), 2) Faixas por Tipo de Equipamento, e 3) Locais Fiscalizados por Tipo.'
+    ]
+  },
+  {
+    version: 'v3.7.20',
+    date: '02/09/2026',
+    tag: 'Ajustes no Gráfico Consolidado, Tabela de Indicadores e Exportação PDF',
+    changes: [
+      'Renomeado o badge e o rótulo do gráfico consolidado de "Locais Únicos" para "Locais" na aba Indicadores.',
+      'Reordenada a coluna "Situação" para ser exibida após a coluna "Bairro" na tabela Lista de Equipamentos da aba Indicadores.',
+      'Aprimorada a captura e renderização do gráfico "Consolidação por Contrato (Faixas, Equipamentos e Locais)" garantindo sua perfeita inclusão no PDF exportado.'
+    ]
+  },
+  {
+    version: 'v3.7.19',
+    date: '02/09/2026',
+    tag: 'Unificação dos Gráficos por Contrato em Gráfico Consolidado Único',
+    changes: [
+      'Unificados os três gráficos de Contrato (Faixas, Equipamentos e Locais Únicos) em um único gráfico consolidado comparativo na aba Indicadores.',
+      'Configuradas barras agrupadas com cores temáticas (Azul para Faixas, Roxo para Equipamentos e Laranja para Locais Únicos), legendas interativas, tooltips completos e filtragem dinâmica ao clicar nas barras.',
+      'Atualizada a exportação de relatórios PDF de Indicadores para incluir a captura em largura total do novo gráfico consolidado por contrato.'
+    ]
+  },
+  {
+    version: 'v3.7.18',
+    date: '02/09/2026',
+    tag: 'Centralização dos Dados da Tabela Lista de Equipamentos na Aba Indicadores',
+    changes: [
+      'Centralizados todos os cabeçalhos, colunas e células de dados (Código, Contrato, Tipo, Faixas, Situação, Endereço Completo, Bairro e Ações) na tabela Lista de Equipamentos da aba Indicadores.'
+    ]
+  },
+  {
+    version: 'v3.7.17',
+    date: '02/09/2026',
+    tag: 'Padronização de Relatórios PDF: Centralização de Dados e Ajuste de Fonte na Coluna Condição',
+    changes: [
+      'Centralizados todos os dados e cabeçalhos de todas as tabelas exportadas em relatórios PDF no portal (exceto na Ficha Individual do Equipamento, que mantém o alinhamento de propriedades).',
+      'Configurado tamanho de fonte ligeiramente reduzido para a coluna "CONDIÇÃO" em todas as tabelas exportadas em PDF (Tabela Geral de Equipamentos, Relação Sintética em Indicadores e Relação Nominal do Mapa).'
+    ]
+  },
   {
     version: 'v3.7.16',
     date: '01/09/2026',
     tag: 'Atualização do Acervo Legal: Remoção da Portaria INMETRO Nº 258/2020',
-    isLatest: true,
     changes: [
       'Removido o card e todas as referências à Portaria INMETRO Nº 258/2020 na aba Legislação (seção Não Metrológico: DIF, DAS e DCP).'
     ]

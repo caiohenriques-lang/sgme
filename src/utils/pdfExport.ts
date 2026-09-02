@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import html2canvas from 'html2canvas';
+import html2canvas from 'html2canvas-pro';
 import { EquipmentRecord, FilterState } from '../types';
 import { captureMap } from './mapExport';
 
@@ -14,117 +14,12 @@ async function captureChartCard(elementId: string): Promise<string | null> {
   }
 
   try {
-    const origSvg = el.querySelector('svg.recharts-surface') || el.querySelector('svg');
-    const titleEl = el.querySelector('h3');
-    const title = titleEl ? titleEl.textContent?.trim() || '' : '';
-
-    if (origSvg) {
-      const rect = origSvg.getBoundingClientRect();
-      const svgWidth = origSvg.clientWidth || rect.width || 360;
-      const svgHeight = origSvg.clientHeight || rect.height || 260;
-
-      const clonedSvg = origSvg.cloneNode(true) as SVGSVGElement;
-      clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-      clonedSvg.setAttribute('width', String(svgWidth));
-      clonedSvg.setAttribute('height', String(svgHeight));
-
-      // Inject standard typography style for texts in standalone SVG
-      const styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style');
-      styleEl.textContent = `
-        text {
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
-        }
-      `;
-      clonedSvg.insertBefore(styleEl, clonedSvg.firstChild);
-
-      const svgXml = new XMLSerializer().serializeToString(clonedSvg);
-      const svgBlob = new Blob([svgXml], { type: 'image/svg+xml;charset=utf-8' });
-      const url = URL.createObjectURL(svgBlob);
-
-      return new Promise<string | null>((resolve) => {
-        const img = new Image();
-
-        img.onload = () => {
-          try {
-            const scale = 2;
-            const cardWidth = Math.max(svgWidth + 32, el.offsetWidth || 400);
-            const cardHeight = Math.max(svgHeight + 60, el.offsetHeight || 320);
-
-            const canvas = document.createElement('canvas');
-            canvas.width = cardWidth * scale;
-            canvas.height = cardHeight * scale;
-
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-              URL.revokeObjectURL(url);
-              resolve(null);
-              return;
-            }
-
-            // White Card Background
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Card Border
-            ctx.strokeStyle = '#e2e8f0';
-            ctx.lineWidth = 1 * scale;
-            ctx.strokeRect(0, 0, canvas.width, canvas.height);
-
-            // Header Title
-            if (title) {
-              ctx.fillStyle = '#0f172a';
-              ctx.font = `bold ${13 * scale}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`;
-              ctx.fillText(title, 16 * scale, 24 * scale);
-
-              // Title Divider Line
-              ctx.strokeStyle = '#f1f5f9';
-              ctx.lineWidth = 1 * scale;
-              ctx.beginPath();
-              ctx.moveTo(16 * scale, 34 * scale);
-              ctx.lineTo((cardWidth - 16) * scale, 34 * scale);
-              ctx.stroke();
-            }
-
-            // Draw SVG Chart Centered
-            const drawX = Math.max(8 * scale, ((cardWidth - svgWidth) / 2) * scale);
-            const drawY = title ? 40 * scale : 12 * scale;
-            ctx.drawImage(img, drawX, drawY, svgWidth * scale, svgHeight * scale);
-
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
-            URL.revokeObjectURL(url);
-            resolve(dataUrl);
-          } catch (e) {
-            console.error(`Erro ao renderizar canvas para #${elementId}:`, e);
-            URL.revokeObjectURL(url);
-            resolve(null);
-          }
-        };
-
-        img.onerror = (e) => {
-          console.error(`Erro ao carregar imagem SVG para #${elementId}:`, e);
-          URL.revokeObjectURL(url);
-          resolve(null);
-        };
-
-        img.src = url;
-      });
-    }
-
-    // Fallback: sanitized html2canvas if no SVG exists
     const canvas = await html2canvas(el, {
       scale: 2,
       useCORS: true,
-      allowTaint: false,
+      allowTaint: true,
       backgroundColor: '#ffffff',
       logging: false,
-      onclone: (clonedDoc) => {
-        const styleTags = clonedDoc.querySelectorAll('style');
-        styleTags.forEach((style) => {
-          if (style.textContent && style.textContent.includes('oklch')) {
-            style.textContent = style.textContent.replace(/oklch\([^)]+\)/g, '#64748b');
-          }
-        });
-      },
     });
 
     return canvas.toDataURL('image/jpeg', 0.95);
@@ -135,6 +30,7 @@ async function captureChartCard(elementId: string): Promise<string | null> {
 }
 
 export async function captureIndicatorsCharts(): Promise<{
+  cardContratoConsolidado: string | null;
   cardContratoFaixas: string | null;
   cardContratoEquip: string | null;
   cardContratoLocais: string | null;
@@ -146,12 +42,14 @@ export async function captureIndicatorsCharts(): Promise<{
     await new Promise((resolve) => setTimeout(resolve, 300));
 
     const [
+      cardContratoConsolidado,
       cardContratoFaixas,
       cardContratoEquip,
       cardContratoLocais,
       cardTipoFaixas,
       cardTipoLocais,
     ] = await Promise.all([
+      captureChartCard('chart-card-contrato-consolidado'),
       captureChartCard('chart-card-contrato-faixas'),
       captureChartCard('chart-card-contrato-equip'),
       captureChartCard('chart-card-contrato-locais'),
@@ -160,6 +58,7 @@ export async function captureIndicatorsCharts(): Promise<{
     ]);
 
     return {
+      cardContratoConsolidado,
       cardContratoFaixas,
       cardContratoEquip,
       cardContratoLocais,
@@ -169,6 +68,7 @@ export async function captureIndicatorsCharts(): Promise<{
   } catch (err) {
     console.error('Falha geral ao capturar gráficos dos indicadores:', err);
     return {
+      cardContratoConsolidado: null,
       cardContratoFaixas: null,
       cardContratoEquip: null,
       cardContratoLocais: null,
@@ -490,11 +390,13 @@ export async function exportFilteredRecordsPDF(records: EquipmentRecord[], filte
       textColor: 255,
       fontSize: 7.5,
       fontStyle: 'bold',
+      halign: 'center',
       cellPadding: 2
     },
     bodyStyles: {
       fontSize: 7,
       textColor: 51,
+      halign: 'center',
       cellPadding: 1.5
     },
     alternateRowStyles: {
@@ -503,14 +405,14 @@ export async function exportFilteredRecordsPDF(records: EquipmentRecord[], filte
     columnStyles: {
       0: { halign: 'center', cellWidth: 18 }, // Contrato
       1: { halign: 'center', fontStyle: 'bold', cellWidth: 18 }, // Código
-      2: { halign: 'left' }, // Endereço Completo (auto wrap)
+      2: { halign: 'center' }, // Endereço Completo (auto wrap, centralizado)
       3: { halign: 'center', cellWidth: 26 }, // Bairro
       4: { halign: 'center', cellWidth: 20 }, // Regional
       5: { halign: 'center', cellWidth: 16 }, // Tipo
       6: { halign: 'center', fontStyle: 'bold', textColor: [37, 99, 235], cellWidth: 14 }, // Faixas
       7: { halign: 'center', cellWidth: 22 }, // Início de Operação
       8: { halign: 'center', cellWidth: 16 }, // OS
-      9: { halign: 'center', cellWidth: 20 }, // Condição
+      9: { halign: 'center', fontSize: 5.8, cellWidth: 20 }, // Condição (fonte ligeiramente menor)
       10: { halign: 'center', cellWidth: 22 }, // Situação
     },
     didDrawPage: (data) => {
@@ -1119,22 +1021,35 @@ export async function exportCompleteIndicatorsPDF(data: IndicatorsReportData) {
   // Captura e Inserção dos Gráficos Exatamente como Exibidos no Portal
   const charts = await captureIndicatorsCharts();
 
-  // 1. Gráficos de Contrato (3 cards lado a lado)
-  const hasContratoCharts = !!(charts.cardContratoFaixas || charts.cardContratoEquip || charts.cardContratoLocais);
-  if (hasContratoCharts) {
+  // 1. Gráfico Consolidado por Contrato
+  if (charts.cardContratoConsolidado) {
+    currentY = sectionHeader('Gráfico Consolidado por Contrato (Faixas, Equipamentos e Locais)', currentY);
+    const cardWidth = pageWidth - 20; // 190mm
+    let cardHeight = 65; // altura padrão
+    try {
+      const imgProps = doc.getImageProperties(charts.cardContratoConsolidado);
+      if (imgProps.width > 0 && imgProps.height > 0) {
+        cardHeight = (cardWidth * imgProps.height) / imgProps.width;
+      }
+    } catch (e) {
+      console.warn('Erro ao obter proporções do gráfico consolidado:', e);
+    }
+    doc.addImage(charts.cardContratoConsolidado, 'JPEG', 10, currentY, cardWidth, cardHeight, undefined, 'FAST');
+    currentY += cardHeight + 6;
+  } else if (charts.cardContratoFaixas || charts.cardContratoEquip || charts.cardContratoLocais) {
     currentY = sectionHeader('Gráficos Consolidados por Contrato (Faixas, Equipamentos e Locais)', currentY);
     const cardWidth = 60; // 60mm cada card
     const cardHeight = 45; // 45mm de altura
     const gap = 5; // 5mm entre cards
 
     if (charts.cardContratoFaixas) {
-      doc.addImage(charts.cardContratoFaixas, 'JPEG', 10, currentY, cardWidth, cardHeight);
+      doc.addImage(charts.cardContratoFaixas, 'JPEG', 10, currentY, cardWidth, cardHeight, undefined, 'FAST');
     }
     if (charts.cardContratoEquip) {
-      doc.addImage(charts.cardContratoEquip, 'JPEG', 10 + cardWidth + gap, currentY, cardWidth, cardHeight);
+      doc.addImage(charts.cardContratoEquip, 'JPEG', 10 + cardWidth + gap, currentY, cardWidth, cardHeight, undefined, 'FAST');
     }
     if (charts.cardContratoLocais) {
-      doc.addImage(charts.cardContratoLocais, 'JPEG', 10 + (cardWidth * 2) + (gap * 2), currentY, cardWidth, cardHeight);
+      doc.addImage(charts.cardContratoLocais, 'JPEG', 10 + (cardWidth * 2) + (gap * 2), currentY, cardWidth, cardHeight, undefined, 'FAST');
     }
     currentY += cardHeight + 6;
   }
@@ -1142,7 +1057,7 @@ export async function exportCompleteIndicatorsPDF(data: IndicatorsReportData) {
   // 2. Gráficos por Tipo de Equipamento (2 cards lado a lado)
   const hasTipoCharts = !!(charts.cardTipoFaixas || charts.cardTipoLocais);
   if (hasTipoCharts) {
-    if (currentY > pageHeight - 65) {
+    if (currentY > pageHeight - 75) {
       doc.addPage();
       renderHeader('Fiscalização Eletrônica — Relatório Completo de Indicadores');
       currentY = 32;
@@ -1150,16 +1065,36 @@ export async function exportCompleteIndicatorsPDF(data: IndicatorsReportData) {
 
     currentY = sectionHeader('Gráficos por Tipo de Equipamento (Faixas e Locais Fiscalizados)', currentY);
     const cardWidth = 92.5; // 92.5mm cada card
-    const cardHeight = 46; // 46mm de altura
     const gap = 5;
+    let maxHeight = 50;
 
     if (charts.cardTipoFaixas) {
-      doc.addImage(charts.cardTipoFaixas, 'JPEG', 10, currentY, cardWidth, cardHeight);
+      let h1 = 50;
+      try {
+        const imgProps = doc.getImageProperties(charts.cardTipoFaixas);
+        if (imgProps.width > 0 && imgProps.height > 0) {
+          h1 = (cardWidth * imgProps.height) / imgProps.width;
+        }
+      } catch (e) {
+        console.warn(e);
+      }
+      maxHeight = Math.max(maxHeight, h1);
+      doc.addImage(charts.cardTipoFaixas, 'JPEG', 10, currentY, cardWidth, h1, undefined, 'FAST');
     }
     if (charts.cardTipoLocais) {
-      doc.addImage(charts.cardTipoLocais, 'JPEG', 10 + cardWidth + gap, currentY, cardWidth, cardHeight);
+      let h2 = 50;
+      try {
+        const imgProps = doc.getImageProperties(charts.cardTipoLocais);
+        if (imgProps.width > 0 && imgProps.height > 0) {
+          h2 = (cardWidth * imgProps.height) / imgProps.width;
+        }
+      } catch (e) {
+        console.warn(e);
+      }
+      maxHeight = Math.max(maxHeight, h2);
+      doc.addImage(charts.cardTipoLocais, 'JPEG', 10 + cardWidth + gap, currentY, cardWidth, h2, undefined, 'FAST');
     }
-    currentY += cardHeight + 6;
+    currentY += maxHeight + 6;
   }
 
   // Se o espaço restante for insuficiente para a Tabela 1, avança para nova página
@@ -1220,8 +1155,8 @@ export async function exportCompleteIndicatorsPDF(data: IndicatorsReportData) {
       halign: 'center',
     },
     columnStyles: {
-      0: { halign: 'left', fontStyle: 'bold' },
-      2: { textColor: [37, 99, 235], fontStyle: 'bold' },
+      0: { halign: 'center', fontStyle: 'bold' },
+      2: { halign: 'center', textColor: [37, 99, 235], fontStyle: 'bold' },
     },
     didParseCell: (hookData) => {
       if (hookData.section === 'body' && hookData.row.index === contratoBody.length - 1) {
@@ -1291,8 +1226,8 @@ export async function exportCompleteIndicatorsPDF(data: IndicatorsReportData) {
       halign: 'center',
     },
     columnStyles: {
-      0: { halign: 'left', fontStyle: 'bold' },
-      2: { textColor: [5, 150, 105], fontStyle: 'bold' },
+      0: { halign: 'center', fontStyle: 'bold' },
+      2: { halign: 'center', textColor: [5, 150, 105], fontStyle: 'bold' },
     },
     didParseCell: (hookData) => {
       if (hookData.section === 'body' && hookData.row.index === tipoBody.length - 1) {
@@ -1489,10 +1424,10 @@ export async function exportCompleteIndicatorsPDF(data: IndicatorsReportData) {
     },
     columnStyles: {
       0: { halign: 'center', fontStyle: 'bold', cellWidth: 12 },
-      1: { halign: 'left', fontStyle: 'bold' },
+      1: { halign: 'center', fontStyle: 'bold' },
       2: { halign: 'center', cellWidth: 24 },
       3: { halign: 'center', textColor: [217, 119, 6], fontStyle: 'bold', cellWidth: 20 },
-      4: { halign: 'left' },
+      4: { halign: 'center' },
     },
   });
 
@@ -1539,6 +1474,7 @@ export async function exportCompleteIndicatorsPDF(data: IndicatorsReportData) {
       bodyStyles: {
         fontSize: 6,
         textColor: 51,
+        halign: 'center',
         cellPadding: 1.2,
       },
       alternateRowStyles: {
@@ -1547,14 +1483,14 @@ export async function exportCompleteIndicatorsPDF(data: IndicatorsReportData) {
       columnStyles: {
         0: { halign: 'center', cellWidth: 14 },
         1: { halign: 'center', fontStyle: 'bold', cellWidth: 14 },
-        2: { halign: 'left' }, // Endereço takes remaining width with auto-wrap
+        2: { halign: 'center' }, // Endereço takes remaining width with auto-wrap, centralizado
         3: { halign: 'center', cellWidth: 18 },
         4: { halign: 'center', cellWidth: 15 },
         5: { halign: 'center', cellWidth: 14 },
         6: { halign: 'center', fontStyle: 'bold', textColor: [37, 99, 235], cellWidth: 11 },
         7: { halign: 'center', cellWidth: 16 },
         8: { halign: 'center', cellWidth: 12 },
-        9: { halign: 'center', cellWidth: 15 },
+        9: { halign: 'center', fontSize: 5.1, cellWidth: 15 }, // Condição (fonte ligeiramente menor)
         10: { halign: 'center', cellWidth: 16 },
       },
     });
@@ -1863,13 +1799,14 @@ export async function exportMapWithFiltersPdf(
     bodyStyles: {
       fontSize: 6.2,
       textColor: 51,
+      halign: 'center',
       cellPadding: 0.8,
     },
     alternateRowStyles: {
       fillColor: [248, 250, 252],
     },
     columnStyles: {
-      0: { halign: 'left', fontStyle: 'bold' },
+      0: { halign: 'center', fontStyle: 'bold' },
       1: { halign: 'center', fontStyle: 'bold', textColor: [37, 99, 235] },
       2: { halign: 'center', fontStyle: 'bold', textColor: [5, 150, 105] },
       3: { halign: 'center' },
@@ -1915,6 +1852,7 @@ export async function exportMapWithFiltersPdf(
       bodyStyles: {
         fontSize: 6,
         textColor: 51,
+        halign: 'center',
         cellPadding: 1.2,
       },
       alternateRowStyles: {
@@ -1923,14 +1861,14 @@ export async function exportMapWithFiltersPdf(
       columnStyles: {
         0: { halign: 'center', fontStyle: 'bold', cellWidth: 14 },
         1: { halign: 'center', cellWidth: 15 },
-        2: { halign: 'left' },
+        2: { halign: 'center' }, // Endereço Completo centralizado
         3: { halign: 'center', cellWidth: 18 },
         4: { halign: 'center', cellWidth: 16 },
         5: { halign: 'center', fontStyle: 'bold', textColor: [37, 99, 235], cellWidth: 11 },
         6: { halign: 'center', cellWidth: 14 },
         7: { halign: 'center', cellWidth: 13 },
         8: { halign: 'center', cellWidth: 16 },
-        9: { halign: 'center', cellWidth: 15 },
+        9: { halign: 'center', fontSize: 5.1, cellWidth: 15 }, // Condição (fonte ligeiramente menor)
       },
       margin: { left: 10, right: 10, top: 30, bottom: 18 },
     });

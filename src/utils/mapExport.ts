@@ -1,5 +1,5 @@
 import L from 'leaflet';
-import html2canvas from 'html2canvas';
+import html2canvas from 'html2canvas-pro';
 import { parseCoordinates } from '../services/dataService';
 
 export interface TipoColorInfo {
