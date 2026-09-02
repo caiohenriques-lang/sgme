@@ -77,10 +77,13 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
   resetSignal,
   onClearAllFilters,
 }) => {
-  // Interactive Chart Filter States
+  // Interactive Chart & Table Filter States
   const [selectedChartContrato, setSelectedChartContrato] = useState<string | null>(null);
   const [selectedChartTipo, setSelectedChartTipo] = useState<string | null>(null);
+  const [selectedChartAno, setSelectedChartAno] = useState<string | null>(null);
+  const [selectedChartMes, setSelectedChartMes] = useState<string | null>(null);
   const [selectedChartCorredor, setSelectedChartCorredor] = useState<string | null>(null);
+  const [selectedChartSituacao, setSelectedChartSituacao] = useState<string | null>(null);
 
   // Mirror Table States
   const [mirrorSearch, setMirrorSearch] = useState('');
@@ -108,37 +111,93 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   const [includeEquipmentListInPDF, setIncludeEquipmentListInPDF] = useState(false);
 
-  // Reset chart filters when global reset signal changes
+  // Reset chart & table filters when global reset signal changes
   useEffect(() => {
     if (resetSignal !== undefined && resetSignal > 0) {
       setSelectedChartContrato(null);
       setSelectedChartTipo(null);
+      setSelectedChartAno(null);
+      setSelectedChartMes(null);
       setSelectedChartCorredor(null);
+      setSelectedChartSituacao(null);
       setMirrorSearch('');
       setCurrentPage(1);
     }
   }, [resetSignal]);
 
-  // Filter records based on interactive chart selections
-  const filteredByChartRecords = useMemo(() => {
-    return records.filter((r) => {
-      if (selectedChartContrato && r.CONTRATO !== selectedChartContrato) {
-        return false;
-      }
-      if (selectedChartTipo && r.TIPO !== selectedChartTipo) {
-        return false;
-      }
-      if (selectedChartCorredor) {
-        const corredorRaw = (r.CORREDOR || '').trim() || 'Sem Corredor / Não Informado';
-        if (corredorRaw !== selectedChartCorredor) {
-          return false;
+  // Helper function to match interactive filters (supporting own-dimension exclusion for responsive cross-filtering)
+  const recordMatchesIndicatorsFilters = (
+    r: EquipmentRecord,
+    excludeKey?: 'contrato' | 'tipo' | 'ano' | 'mes' | 'corredor' | 'situacao'
+  ) => {
+    if (excludeKey !== 'contrato' && selectedChartContrato) {
+      if (r.CONTRATO !== selectedChartContrato) return false;
+    }
+    if (excludeKey !== 'tipo' && selectedChartTipo) {
+      if (r.TIPO !== selectedChartTipo) return false;
+    }
+    if (excludeKey !== 'ano' && selectedChartAno) {
+      const rawAno = (r.ANO || '').toString().trim();
+      const anoKey = rawAno && rawAno.toLowerCase() !== 'não informado' ? rawAno : 'Em implantação';
+      if (anoKey !== selectedChartAno) return false;
+    }
+    if (excludeKey !== 'mes' && selectedChartMes) {
+      const rawDate = (r['Data início operação'] || '').trim();
+      let mesKey = 'Em implantação';
+      if (rawDate && rawDate.toLowerCase() !== 'em implantação' && rawDate.toLowerCase() !== 'não informado') {
+        const parts = rawDate.split('/');
+        if (parts.length === 3) {
+          const month = parseInt(parts[1], 10);
+          const year = parseInt(parts[2], 10);
+          if (!isNaN(month) && !isNaN(year) && month >= 1 && month <= 12 && year >= 1900) {
+            mesKey = `${month.toString().padStart(2, '0')}/${year}`;
+          }
+        } else if (parts.length === 2) {
+          const month = parseInt(parts[0], 10);
+          const year = parseInt(parts[1], 10);
+          if (!isNaN(month) && !isNaN(year) && month >= 1 && month <= 12 && year >= 1900) {
+            mesKey = `${month.toString().padStart(2, '0')}/${year}`;
+          }
         }
       }
-      return true;
-    });
-  }, [records, selectedChartContrato, selectedChartTipo, selectedChartCorredor]);
+      if (mesKey !== selectedChartMes) return false;
+    }
+    if (excludeKey !== 'corredor' && selectedChartCorredor) {
+      const corredorRaw = (r.CORREDOR || '').trim() || 'Sem Corredor / Não Informado';
+      if (corredorRaw !== selectedChartCorredor) return false;
+    }
+    if (excludeKey !== 'situacao' && selectedChartSituacao) {
+      const sit = (r.Situação || '').trim().toUpperCase();
+      if (selectedChartSituacao === 'OPERAÇÃO' && !(sit.includes('OPERAÇÃO') || sit.includes('OPERACAO'))) {
+        return false;
+      }
+      if (selectedChartSituacao === 'RELOCAÇÃO' && !(sit.includes('RELOCAÇÃO') || sit.includes('RELOCACAO'))) {
+        return false;
+      }
+      if (
+        selectedChartSituacao === 'IMPLANTAÇÃO' &&
+        (sit.includes('OPERAÇÃO') || sit.includes('OPERACAO') || sit.includes('RELOCAÇÃO') || sit.includes('RELOCACAO'))
+      ) {
+        return false;
+      }
+    }
+    return true;
+  };
 
-  // Handler toggles
+  // Filter records based on ALL active interactive selections (used for KPIs, mirror table and final exports)
+  const filteredByChartRecords = useMemo(() => {
+    return records.filter((r) => recordMatchesIndicatorsFilters(r));
+  }, [
+    records,
+    selectedChartContrato,
+    selectedChartTipo,
+    selectedChartAno,
+    selectedChartMes,
+    selectedChartCorredor,
+    selectedChartSituacao,
+  ]);
+
+  // Handler toggles (Bi-directional click interactions)
   const handleContratoClick = (contratoName: string) => {
     setSelectedChartContrato((prev) => (prev === contratoName ? null : contratoName));
     setCurrentPage(1);
@@ -149,17 +208,91 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
     setCurrentPage(1);
   };
 
+  const handleAnoClick = (anoName: string) => {
+    setSelectedChartAno((prev) => (prev === anoName ? null : anoName));
+    setCurrentPage(1);
+  };
+
+  const handleMesClick = (mesName: string) => {
+    setSelectedChartMes((prev) => (prev === mesName ? null : mesName));
+    setCurrentPage(1);
+  };
+
   const handleCorredorClick = (corredorName: string) => {
     setSelectedChartCorredor((prev) => (prev === corredorName ? null : corredorName));
+    setCurrentPage(1);
+  };
+
+  const handleSituacaoClick = (situacaoName: string) => {
+    setSelectedChartSituacao((prev) => (prev === situacaoName ? null : situacaoName));
     setCurrentPage(1);
   };
 
   const handleResetChartFilters = () => {
     setSelectedChartContrato(null);
     setSelectedChartTipo(null);
+    setSelectedChartAno(null);
+    setSelectedChartMes(null);
     setSelectedChartCorredor(null);
+    setSelectedChartSituacao(null);
     setCurrentPage(1);
   };
+
+  // Records subsets with cross-filtering (allows switching within the same dimension while respecting other dimensions)
+  const contratoRecords = useMemo(() => {
+    return records.filter((r) => recordMatchesIndicatorsFilters(r, 'contrato'));
+  }, [
+    records,
+    selectedChartTipo,
+    selectedChartAno,
+    selectedChartMes,
+    selectedChartCorredor,
+    selectedChartSituacao,
+  ]);
+
+  const tipoRecords = useMemo(() => {
+    return records.filter((r) => recordMatchesIndicatorsFilters(r, 'tipo'));
+  }, [
+    records,
+    selectedChartContrato,
+    selectedChartAno,
+    selectedChartMes,
+    selectedChartCorredor,
+    selectedChartSituacao,
+  ]);
+
+  const anoRecords = useMemo(() => {
+    return records.filter((r) => recordMatchesIndicatorsFilters(r, 'ano'));
+  }, [
+    records,
+    selectedChartContrato,
+    selectedChartTipo,
+    selectedChartMes,
+    selectedChartCorredor,
+    selectedChartSituacao,
+  ]);
+
+  const mesRecords = useMemo(() => {
+    return records.filter((r) => recordMatchesIndicatorsFilters(r, 'mes'));
+  }, [
+    records,
+    selectedChartContrato,
+    selectedChartTipo,
+    selectedChartAno,
+    selectedChartCorredor,
+    selectedChartSituacao,
+  ]);
+
+  const corredorRecords = useMemo(() => {
+    return records.filter((r) => recordMatchesIndicatorsFilters(r, 'corredor'));
+  }, [
+    records,
+    selectedChartContrato,
+    selectedChartTipo,
+    selectedChartAno,
+    selectedChartMes,
+    selectedChartSituacao,
+  ]);
 
   // Metrics Summary
   const metrics = useMemo(() => {
@@ -221,7 +354,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
     };
   }, [filteredByChartRecords]);
 
-  // Breakdown 1: CONTRATO Data (PIE CHART for SomaFaixas, BAR CHART for LocaisUnicos)
+  // Breakdown 1: CONTRATO Data (BAR CHART for SomaFaixas, Equipamentos e LocaisUnicos)
   const contratoData = useMemo(() => {
     const map = new Map<
       string,
@@ -230,7 +363,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
 
     const globalSeenAddresses = new Set<string>();
 
-    filteredByChartRecords.forEach((r) => {
+    contratoRecords.forEach((r) => {
       const key = r.CONTRATO || 'Não Informado';
       if (!map.has(key)) {
         map.set(key, { contrato: key, faixas: 0, addresses: new Set(), count: 0 });
@@ -254,7 +387,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
         Equipamentos: i.count,
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [filteredByChartRecords]);
+  }, [contratoRecords]);
 
   // Breakdown 2: TIPO Data (BAR CHART for SomaFaixas & LocaisUnicos)
   const tipoData = useMemo(() => {
@@ -263,7 +396,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
       { tipo: string; faixas: number; addresses: Set<string>; count: number }
     >();
 
-    filteredByChartRecords.forEach((r) => {
+    tipoRecords.forEach((r) => {
       const key = r.TIPO || 'Outros';
       if (!map.has(key)) {
         map.set(key, { tipo: key, faixas: 0, addresses: new Set(), count: 0 });
@@ -283,12 +416,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
         Equipamentos: i.count,
       }))
       .sort((a, b) => b.SomaFaixas - a.SomaFaixas);
-  }, [filteredByChartRecords]);
-
-  // Sorted descending by LocaisUnicos for Chart 3
-  const tipoLocaisData = useMemo(() => {
-    return [...tipoData].sort((a, b) => b.LocaisUnicos - a.LocaisUnicos);
-  }, [tipoData]);
+  }, [tipoRecords]);
 
   // Mirror List filtering + sorting + pagination
   const mirrorFilteredRecords = useMemo(() => {
@@ -354,11 +482,12 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
   };
 
   // --- Summary Tables Calculations ---
-  const tableTotals = useMemo(() => {
-    const totalEquipments = filteredByChartRecords.length;
-    const totalFaixas = filteredByChartRecords.reduce((acc, r) => acc + (r.FAIXAS || 0), 0);
+  // 1. Group by CONTRATO
+  const contratoTableTotals = useMemo(() => {
+    const totalEquipments = contratoRecords.length;
+    const totalFaixas = contratoRecords.reduce((acc, r) => acc + (r.FAIXAS || 0), 0);
     const uniqueAddressSet = new Set<string>();
-    filteredByChartRecords.forEach((r) => {
+    contratoRecords.forEach((r) => {
       const addr = (r['ENDEREÇO COMPLETO'] || '').trim().toLowerCase();
       if (addr) uniqueAddressSet.add(addr);
     });
@@ -368,16 +497,15 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
       faixas: totalFaixas,
       addresses: uniqueAddressSet.size,
     };
-  }, [filteredByChartRecords]);
+  }, [contratoRecords]);
 
-  // 1. Group by CONTRATO
   const contratoTableSummary = useMemo(() => {
     const map = new Map<
       string,
       { contrato: string; faixas: number; addresses: Set<string>; count: number }
     >();
 
-    filteredByChartRecords.forEach((r) => {
+    contratoRecords.forEach((r) => {
       const key = (r.CONTRATO || '').trim() || 'Não Informado';
       if (!map.has(key)) {
         map.set(key, { contrato: key, faixas: 0, addresses: new Set(), count: 0 });
@@ -424,16 +552,32 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
         ? String(valA).localeCompare(String(valB))
         : String(valB).localeCompare(String(valA));
     });
-  }, [filteredByChartRecords, contratoSortField, contratoSortOrder]);
+  }, [contratoRecords, contratoSortField, contratoSortOrder]);
 
   // 2. Group by TIPO
+  const tipoTableTotals = useMemo(() => {
+    const totalEquipments = tipoRecords.length;
+    const totalFaixas = tipoRecords.reduce((acc, r) => acc + (r.FAIXAS || 0), 0);
+    const uniqueAddressSet = new Set<string>();
+    tipoRecords.forEach((r) => {
+      const addr = (r['ENDEREÇO COMPLETO'] || '').trim().toLowerCase();
+      if (addr) uniqueAddressSet.add(addr);
+    });
+
+    return {
+      equipments: totalEquipments,
+      faixas: totalFaixas,
+      addresses: uniqueAddressSet.size,
+    };
+  }, [tipoRecords]);
+
   const tipoTableSummary = useMemo(() => {
     const map = new Map<
       string,
       { tipo: string; faixas: number; addresses: Set<string>; count: number }
     >();
 
-    filteredByChartRecords.forEach((r) => {
+    tipoRecords.forEach((r) => {
       const key = (r.TIPO || '').trim() || 'Não Informado';
       if (!map.has(key)) {
         map.set(key, { tipo: key, faixas: 0, addresses: new Set(), count: 0 });
@@ -480,24 +624,24 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
         ? String(valA).localeCompare(String(valB))
         : String(valB).localeCompare(String(valA));
     });
-  }, [filteredByChartRecords, tipoTableSortField, tipoTableSortOrder]);
+  }, [tipoRecords, tipoTableSortField, tipoTableSortOrder]);
 
+  // 3. Group by ANO (Implantações por Ano)
   const anoTotals = useMemo(() => {
-    const totalEquip = filteredByChartRecords.length;
-    const totalFaixas = filteredByChartRecords.reduce((acc, r) => acc + (r.FAIXAS || 0), 0);
+    const totalEquip = anoRecords.length;
+    const totalFaixas = anoRecords.reduce((acc, r) => acc + (r.FAIXAS || 0), 0);
     const uniqueAddressSet = new Set<string>();
-    filteredByChartRecords.forEach((r) => {
+    anoRecords.forEach((r) => {
       const addr = (r['ENDEREÇO COMPLETO'] || '').trim().toLowerCase();
       if (addr) uniqueAddressSet.add(addr);
     });
     return { totalEquip, totalFaixas, totalAddresses: uniqueAddressSet.size };
-  }, [filteredByChartRecords]);
+  }, [anoRecords]);
 
-  // 3. Group by ANO (Implantações por Ano - Todos os Equipamentos do Filtro Ativo)
   const anoSummary = useMemo(() => {
     const map = new Map<string, { ano: string; faixas: number; count: number; addresses: Set<string> }>();
 
-    filteredByChartRecords.forEach((r) => {
+    anoRecords.forEach((r) => {
       const rawAno = (r.ANO || '').toString().trim();
       const key = (rawAno && rawAno.toLowerCase() !== 'não informado') ? rawAno : 'Em implantação';
       if (!map.has(key)) {
@@ -558,16 +702,27 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
         ? String(valA).localeCompare(String(valB), undefined, { numeric: true })
         : String(valB).localeCompare(String(valA), undefined, { numeric: true });
     });
-  }, [filteredByChartRecords, anoSortField, anoSortOrder]);
+  }, [anoRecords, anoSortField, anoSortOrder]);
 
-  // Group by MÊS/ANO (Implantações por Mês - Todos os Equipamentos do Filtro Ativo)
+  // 4. Group by MÊS/ANO (Implantações por Mês)
+  const mesTotals = useMemo(() => {
+    const totalEquip = mesRecords.length;
+    const totalFaixas = mesRecords.reduce((acc, r) => acc + (r.FAIXAS || 0), 0);
+    const uniqueAddressSet = new Set<string>();
+    mesRecords.forEach((r) => {
+      const addr = (r['ENDEREÇO COMPLETO'] || '').trim().toLowerCase();
+      if (addr) uniqueAddressSet.add(addr);
+    });
+    return { totalEquip, totalFaixas, totalAddresses: uniqueAddressSet.size };
+  }, [mesRecords]);
+
   const mesSummary = useMemo(() => {
     const map = new Map<
       string,
       { mes: string; sortKey: number; faixas: number; count: number; addresses: Set<string> }
     >();
 
-    filteredByChartRecords.forEach((r) => {
+    mesRecords.forEach((r) => {
       const rawDate = (r['Data início operação'] || '').trim();
       let key = 'Em implantação';
       let sortKey = 999999;
@@ -639,16 +794,16 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
         ? String(valA).localeCompare(String(valB), undefined, { numeric: true })
         : String(valB).localeCompare(String(valA), undefined, { numeric: true });
     });
-  }, [filteredByChartRecords, mesSortField, mesSortOrder]);
+  }, [mesRecords, mesSortField, mesSortOrder]);
 
-  // 4. Group by CORREDOR (Ranking TOP 20)
+  // 5. Group by CORREDOR (Ranking TOP 20)
   const corredorSummary = useMemo(() => {
     const map = new Map<
       string,
       { corredor: string; count: number; faixas: number; tiposMap: Map<string, number> }
     >();
 
-    filteredByChartRecords.forEach((r) => {
+    corredorRecords.forEach((r) => {
       const corredorRaw = (r.CORREDOR || '').trim();
       const key = corredorRaw ? corredorRaw : 'Sem Corredor / Não Informado';
 
@@ -708,7 +863,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
     });
 
     return list.slice(0, 20); // Top 20
-  }, [filteredByChartRecords, corredorSortField, corredorSortOrder]);
+  }, [corredorRecords, corredorSortField, corredorSortOrder]);
 
   const handleContratoTableSort = (field: SummarySortField) => {
     if (contratoSortField === field) {
@@ -764,9 +919,9 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
         count: c.count,
         faixas: c.faixas,
         addresses: c.addresses.size,
-        pctEquip: tableTotals.equipments > 0 ? (c.count / tableTotals.equipments) * 100 : 0,
-        pctFaixas: tableTotals.faixas > 0 ? (c.faixas / tableTotals.faixas) * 100 : 0,
-        pctLocais: tableTotals.addresses > 0 ? (c.addresses.size / tableTotals.addresses) * 100 : 0,
+        pctEquip: contratoTableTotals.equipments > 0 ? (c.count / contratoTableTotals.equipments) * 100 : 0,
+        pctFaixas: contratoTableTotals.faixas > 0 ? (c.faixas / contratoTableTotals.faixas) * 100 : 0,
+        pctLocais: contratoTableTotals.addresses > 0 ? (c.addresses.size / contratoTableTotals.addresses) * 100 : 0,
       }));
 
       const tipoSummaryData = tipoTableSummary.map((t) => ({
@@ -774,9 +929,9 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
         count: t.count,
         faixas: t.faixas,
         addresses: t.addresses.size,
-        pctEquip: tableTotals.equipments > 0 ? (t.count / tableTotals.equipments) * 100 : 0,
-        pctFaixas: tableTotals.faixas > 0 ? (t.faixas / tableTotals.faixas) * 100 : 0,
-        pctLocais: tableTotals.addresses > 0 ? (t.addresses.size / tableTotals.addresses) * 100 : 0,
+        pctEquip: tipoTableTotals.equipments > 0 ? (t.count / tipoTableTotals.equipments) * 100 : 0,
+        pctFaixas: tipoTableTotals.faixas > 0 ? (t.faixas / tipoTableTotals.faixas) * 100 : 0,
+        pctLocais: tipoTableTotals.addresses > 0 ? (t.addresses.size / tipoTableTotals.addresses) * 100 : 0,
       }));
 
       const anoSummaryData = anoSummary.map((a) => ({
@@ -826,7 +981,10 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
   const hasActiveChartFilter =
     selectedChartContrato !== null ||
     selectedChartTipo !== null ||
-    selectedChartCorredor !== null;
+    selectedChartAno !== null ||
+    selectedChartMes !== null ||
+    selectedChartCorredor !== null ||
+    selectedChartSituacao !== null;
 
   if (records.length === 0) {
     return (
@@ -896,7 +1054,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-bold text-blue-900 flex items-center gap-1.5">
               <Filter className="w-4 h-4 text-blue-600" />
-              Filtro Interativo dos Gráficos Ativo:
+              Filtro Interativo Ativo:
             </span>
             {selectedChartContrato && (
               <span className="inline-flex items-center gap-1 bg-blue-600 text-white font-medium px-2.5 py-1 rounded-full text-xs shadow-xs">
@@ -922,6 +1080,30 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                 </button>
               </span>
             )}
+            {selectedChartAno && (
+              <span className="inline-flex items-center gap-1 bg-purple-600 text-white font-medium px-2.5 py-1 rounded-full text-xs shadow-xs">
+                Ano: {selectedChartAno}
+                <button
+                  onClick={() => setSelectedChartAno(null)}
+                  className="hover:bg-purple-700 p-0.5 rounded-full ml-1"
+                  title="Remover filtro de ano"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+            {selectedChartMes && (
+              <span className="inline-flex items-center gap-1 bg-indigo-600 text-white font-medium px-2.5 py-1 rounded-full text-xs shadow-xs">
+                Mês: {selectedChartMes}
+                <button
+                  onClick={() => setSelectedChartMes(null)}
+                  className="hover:bg-indigo-700 p-0.5 rounded-full ml-1"
+                  title="Remover filtro de mês"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
             {selectedChartCorredor && (
               <span className="inline-flex items-center gap-1 bg-amber-600 text-white font-medium px-2.5 py-1 rounded-full text-xs shadow-xs">
                 Corredor: {selectedChartCorredor}
@@ -934,19 +1116,31 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                 </button>
               </span>
             )}
+            {selectedChartSituacao && (
+              <span className="inline-flex items-center gap-1 bg-slate-800 text-white font-medium px-2.5 py-1 rounded-full text-xs shadow-xs">
+                Situação: {selectedChartSituacao}
+                <button
+                  onClick={() => setSelectedChartSituacao(null)}
+                  className="hover:bg-slate-700 p-0.5 rounded-full ml-1"
+                  title="Remover filtro de situação"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
           </div>
 
           <button
             onClick={handleResetChartFilters}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-rose-700 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-3 py-1.5 rounded-lg transition-colors shrink-0"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-rose-700 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-3 py-1.5 rounded-lg transition-colors shrink-0 cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>Restaurar Gráficos</span>
+            <span>Restaurar Filtros</span>
           </button>
         </div>
       )}
 
-      {/* Metrics Summary Cards (3 Cards - Divididos por Em Operação e Em Implantação) */}
+      {/* Metrics Summary Cards (3 Cards - Interativos com Clique na Situação) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         
         {/* Card 1: Total Faixas */}
@@ -961,21 +1155,39 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
             </div>
           </div>
           <div className="mt-4 pt-3 border-t border-blue-400/30 flex flex-wrap items-center justify-between gap-1 text-[11px] sm:text-xs font-medium z-10">
-            <div className="flex items-center gap-1">
+            <button
+              onClick={() => handleSituacaoClick('OPERAÇÃO')}
+              className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md transition-colors cursor-pointer ${
+                selectedChartSituacao === 'OPERAÇÃO' ? 'bg-white/25 ring-1 ring-white font-bold' : 'hover:bg-white/10'
+              }`}
+              title="Filtrar por Em Operação"
+            >
               <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block shrink-0" />
               <span className="text-blue-100">Operação:</span>
               <strong className="text-white font-bold">{metrics.faixasOperacao.toLocaleString('pt-BR')}</strong>
-            </div>
-            <div className="flex items-center gap-1">
+            </button>
+            <button
+              onClick={() => handleSituacaoClick('IMPLANTAÇÃO')}
+              className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md transition-colors cursor-pointer ${
+                selectedChartSituacao === 'IMPLANTAÇÃO' ? 'bg-white/25 ring-1 ring-white font-bold' : 'hover:bg-white/10'
+              }`}
+              title="Filtrar por Em Implantação"
+            >
               <span className="w-2 h-2 rounded-full bg-amber-300 inline-block shrink-0" />
               <span className="text-blue-100">Implantação:</span>
               <strong className="text-white font-bold">{metrics.faixasImplantacao.toLocaleString('pt-BR')}</strong>
-            </div>
-            <div className="flex items-center gap-1">
+            </button>
+            <button
+              onClick={() => handleSituacaoClick('RELOCAÇÃO')}
+              className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md transition-colors cursor-pointer ${
+                selectedChartSituacao === 'RELOCAÇÃO' ? 'bg-white/25 ring-1 ring-white font-bold' : 'hover:bg-white/10'
+              }`}
+              title="Filtrar por Em Relocação"
+            >
               <span className="w-2 h-2 rounded-full bg-purple-300 inline-block shrink-0" />
               <span className="text-blue-100">Relocação:</span>
               <strong className="text-white font-bold">{metrics.faixasRelocacao.toLocaleString('pt-BR')}</strong>
-            </div>
+            </button>
           </div>
         </div>
 
@@ -991,21 +1203,39 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
             </div>
           </div>
           <div className="mt-4 pt-3 border-t border-emerald-400/30 flex flex-wrap items-center justify-between gap-1 text-[11px] sm:text-xs font-medium z-10">
-            <div className="flex items-center gap-1">
+            <button
+              onClick={() => handleSituacaoClick('OPERAÇÃO')}
+              className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md transition-colors cursor-pointer ${
+                selectedChartSituacao === 'OPERAÇÃO' ? 'bg-white/25 ring-1 ring-white font-bold' : 'hover:bg-white/10'
+              }`}
+              title="Filtrar por Em Operação"
+            >
               <span className="w-2 h-2 rounded-full bg-emerald-300 inline-block shrink-0" />
               <span className="text-emerald-100">Operação:</span>
               <strong className="text-white font-bold">{metrics.uniqueLocationsOperacao.toLocaleString('pt-BR')}</strong>
-            </div>
-            <div className="flex items-center gap-1">
+            </button>
+            <button
+              onClick={() => handleSituacaoClick('IMPLANTAÇÃO')}
+              className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md transition-colors cursor-pointer ${
+                selectedChartSituacao === 'IMPLANTAÇÃO' ? 'bg-white/25 ring-1 ring-white font-bold' : 'hover:bg-white/10'
+              }`}
+              title="Filtrar por Em Implantação"
+            >
               <span className="w-2 h-2 rounded-full bg-amber-300 inline-block shrink-0" />
               <span className="text-emerald-100">Implantação:</span>
               <strong className="text-white font-bold">{metrics.uniqueLocationsImplantacao.toLocaleString('pt-BR')}</strong>
-            </div>
-            <div className="flex items-center gap-1">
+            </button>
+            <button
+              onClick={() => handleSituacaoClick('RELOCAÇÃO')}
+              className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md transition-colors cursor-pointer ${
+                selectedChartSituacao === 'RELOCAÇÃO' ? 'bg-white/25 ring-1 ring-white font-bold' : 'hover:bg-white/10'
+              }`}
+              title="Filtrar por Em Relocação"
+            >
               <span className="w-2 h-2 rounded-full bg-purple-300 inline-block shrink-0" />
               <span className="text-emerald-100">Relocação:</span>
               <strong className="text-white font-bold">{metrics.uniqueLocationsRelocacao.toLocaleString('pt-BR')}</strong>
-            </div>
+            </button>
           </div>
         </div>
 
@@ -1021,177 +1251,131 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
             </div>
           </div>
           <div className="mt-4 pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-1 text-[11px] sm:text-xs font-medium z-10">
-            <div className="flex items-center gap-1">
+            <button
+              onClick={() => handleSituacaoClick('OPERAÇÃO')}
+              className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md transition-colors cursor-pointer ${
+                selectedChartSituacao === 'OPERAÇÃO' ? 'bg-slate-800 ring-1 ring-emerald-400 font-bold' : 'hover:bg-slate-800/80'
+              }`}
+              title="Filtrar por Em Operação"
+            >
               <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block shrink-0" />
               <span className="text-slate-300">Operação:</span>
               <strong className="text-white font-bold">{metrics.equipmentsOperacao.toLocaleString('pt-BR')}</strong>
-            </div>
-            <div className="flex items-center gap-1">
+            </button>
+            <button
+              onClick={() => handleSituacaoClick('IMPLANTAÇÃO')}
+              className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md transition-colors cursor-pointer ${
+                selectedChartSituacao === 'IMPLANTAÇÃO' ? 'bg-slate-800 ring-1 ring-amber-400 font-bold' : 'hover:bg-slate-800/80'
+              }`}
+              title="Filtrar por Em Implantação"
+            >
               <span className="w-2 h-2 rounded-full bg-amber-400 inline-block shrink-0" />
               <span className="text-slate-300">Implantação:</span>
               <strong className="text-white font-bold">{metrics.equipmentsImplantacao.toLocaleString('pt-BR')}</strong>
-            </div>
-            <div className="flex items-center gap-1">
+            </button>
+            <button
+              onClick={() => handleSituacaoClick('RELOCAÇÃO')}
+              className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md transition-colors cursor-pointer ${
+                selectedChartSituacao === 'RELOCAÇÃO' ? 'bg-slate-800 ring-1 ring-purple-400 font-bold' : 'hover:bg-slate-800/80'
+              }`}
+              title="Filtrar por Em Relocação"
+            >
               <span className="w-2 h-2 rounded-full bg-purple-400 inline-block shrink-0" />
               <span className="text-slate-300">Relocação:</span>
               <strong className="text-white font-bold">{metrics.equipmentsRelocacao.toLocaleString('pt-BR')}</strong>
-            </div>
+            </button>
           </div>
         </div>
 
       </div>
 
-      {/* Chart Row 1: Gráfico Único Consolidado por Contrato (Faixas, Equipamentos e Locais) */}
-      <div id="indicators-charts-contrato" className="w-full bg-white p-1.5 sm:p-2 rounded-2xl">
-        <div id="chart-card-contrato-consolidado" className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between">
-          <div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2 pb-3 border-b border-slate-100">
-              <div>
+      {/* Charts Grid: Contrato e Tipo de Equipamento Lado a Lado no Desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+        
+        {/* Chart 1: Gráfico Único Consolidado por Contrato (Faixas, Equipamentos e Locais) */}
+        <div id="indicators-charts-contrato" className="w-full bg-white p-1.5 sm:p-2 rounded-2xl flex flex-col">
+          <div id="chart-card-contrato-consolidado" className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between h-full">
+            <div>
+              <div className="mb-2 pb-3 border-b border-slate-100">
                 <h3 className="font-bold text-xs sm:text-sm text-slate-900 flex items-center gap-2">
                   <BarChart2 className="w-4 h-4 text-blue-600 shrink-0" />
-                  <span>Consolidação por Contrato (Faixas, Equipamentos e Locais)</span>
+                  <span>Consolidação por Contrato</span>
                 </h3>
                 <p className="text-[11px] text-slate-500 mt-0.5">
-                  Comparativo direto de volume de faixas fiscalizadas, total de equipamentos e locais únicos por contrato. Clique nas barras para filtrar.
+                  Faixas, equipamentos e locais por contrato. Clique para filtrar.
                 </p>
               </div>
-              <div className="flex items-center gap-2 text-[11px] font-medium flex-wrap">
-                <span className="inline-flex items-center gap-1.5 text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200/60 shadow-2xs">
-                  <span className="w-2.5 h-2.5 rounded-sm bg-blue-600 inline-block" />
-                  Faixas
-                </span>
-                <span className="inline-flex items-center gap-1.5 text-purple-700 bg-purple-50 px-2.5 py-1 rounded-lg border border-purple-200/60 shadow-2xs">
-                  <span className="w-2.5 h-2.5 rounded-sm bg-purple-600 inline-block" />
-                  Equipamentos
-                </span>
-                <span className="inline-flex items-center gap-1.5 text-orange-700 bg-orange-50 px-2.5 py-1 rounded-lg border border-orange-200/60 shadow-2xs">
-                  <span className="w-2.5 h-2.5 rounded-sm bg-orange-500 inline-block" />
-                  Locais
-                </span>
-              </div>
             </div>
-          </div>
-          <div className="h-64 sm:h-72 w-full my-auto">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={contratoData} margin={{ top: 20, right: 24, left: -10, bottom: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#334155', fontWeight: 600 }} />
-                <YAxis type="number" tick={{ fontSize: 10, fill: '#64748b' }} />
-                <Tooltip
-                  formatter={(value: number, name: string) => [
-                    `${value.toLocaleString('pt-BR')} ${name === 'Faixas' ? 'faixas' : name === 'Equipamentos' ? 'equipamentos' : 'locais'}`,
-                    name,
-                  ]}
-                  contentStyle={{ borderRadius: '12px', borderColor: '#e2e8f0', fontSize: '12px' }}
-                />
-                <Legend
-                  wrapperStyle={{ paddingTop: '10px', fontSize: '12px' }}
-                />
-                <Bar
-                  dataKey="SomaFaixas"
-                  fill="#3b82f6"
-                  radius={[4, 4, 0, 0]}
-                  name="Faixas"
-                  isAnimationActive={false}
-                  onClick={(entry: any) => entry && entry.name && handleContratoClick(String(entry.name))}
-                  className="cursor-pointer hover:opacity-80 transition-opacity"
-                >
-                  <LabelList dataKey="SomaFaixas" position="top" fill="#1e3a8a" fontSize={11} fontWeight={700} />
-                  {contratoData.map((entry, index) => (
-                    <Cell
-                      key={`cell-contrato-faixas-${index}`}
-                      fill={selectedChartContrato === entry.name ? '#1d4ed8' : '#3b82f6'}
-                      stroke={selectedChartContrato === entry.name ? '#000' : 'none'}
-                      strokeWidth={selectedChartContrato === entry.name ? 2 : 0}
-                    />
-                  ))}
-                </Bar>
-                <Bar
-                  dataKey="Equipamentos"
-                  fill="#8b5cf6"
-                  radius={[4, 4, 0, 0]}
-                  name="Equipamentos"
-                  isAnimationActive={false}
-                  onClick={(entry: any) => entry && entry.name && handleContratoClick(String(entry.name))}
-                  className="cursor-pointer hover:opacity-80 transition-opacity"
-                >
-                  <LabelList dataKey="Equipamentos" position="top" fill="#4c1d95" fontSize={11} fontWeight={700} />
-                  {contratoData.map((entry, index) => (
-                    <Cell
-                      key={`cell-contrato-equip-${index}`}
-                      fill={selectedChartContrato === entry.name ? '#6d28d9' : '#8b5cf6'}
-                      stroke={selectedChartContrato === entry.name ? '#000' : 'none'}
-                      strokeWidth={selectedChartContrato === entry.name ? 2 : 0}
-                    />
-                  ))}
-                </Bar>
-                <Bar
-                  dataKey="LocaisUnicos"
-                  fill="#f97316"
-                  radius={[4, 4, 0, 0]}
-                  name="Locais"
-                  isAnimationActive={false}
-                  onClick={(entry: any) => entry && entry.name && handleContratoClick(String(entry.name))}
-                  className="cursor-pointer hover:opacity-80 transition-opacity"
-                >
-                  <LabelList dataKey="LocaisUnicos" position="top" fill="#7c2d12" fontSize={11} fontWeight={700} />
-                  {contratoData.map((entry, index) => (
-                    <Cell
-                      key={`cell-contrato-locais-${index}`}
-                      fill={selectedChartContrato === entry.name ? '#c2410c' : '#f97316'}
-                      stroke={selectedChartContrato === entry.name ? '#000' : 'none'}
-                      strokeWidth={selectedChartContrato === entry.name ? 2 : 0}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-
-      {/* Chart Row 2: Gráficos por Tipo em Grid 2x1 */}
-      <div id="indicators-charts-tipo" className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6 bg-white p-2 rounded-2xl">
-        {/* Chart 4: Faixas por Tipo de Equipamento (BAR CHART COM RÓTULO) */}
-        <div id="chart-card-tipo-faixas" className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-2 pb-3 border-b border-slate-100">
-              <div>
-                <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
-                  <BarChart2 className="w-4 h-4 text-emerald-600" />
-                  Faixas por Tipo de Equipamento
-                </h3>
-              </div>
-            </div>
-          </div>
-
-          <div className="w-full overflow-x-auto my-auto pb-1">
-            <div className="h-72 w-full min-w-[480px] sm:min-w-0">
+            <div className="h-72 sm:h-80 w-full my-auto">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={tipoData} margin={{ top: 25, right: 20, left: -10, bottom: 45 }}>
+                <BarChart data={contratoData} margin={{ top: 20, right: 16, left: -15, bottom: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#64748b' }} interval={0} angle={-20} textAnchor="end" height={45} />
-                  <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
+                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#334155', fontWeight: 600 }} />
+                  <YAxis type="number" tick={{ fontSize: 10, fill: '#64748b' }} />
                   <Tooltip
-                    formatter={(value: number) => [`${value} faixas`, 'Soma de Faixas']}
+                    formatter={(value: number, name: string) => [
+                      `${value.toLocaleString('pt-BR')} ${name === 'Faixas' ? 'faixas' : name === 'Equipamentos' ? 'equipamentos' : 'locais'}`,
+                      name,
+                    ]}
                     contentStyle={{ borderRadius: '12px', borderColor: '#e2e8f0', fontSize: '12px' }}
+                  />
+                  <Legend
+                    wrapperStyle={{ paddingTop: '8px', fontSize: '11px' }}
                   />
                   <Bar
                     dataKey="SomaFaixas"
-                    fill="#059669"
-                    radius={[6, 6, 0, 0]}
-                    name="Soma de Faixas"
+                    fill="#3b82f6"
+                    radius={[4, 4, 0, 0]}
+                    name="Faixas"
                     isAnimationActive={false}
-                    onClick={(entry: any) => entry && entry.name && handleTipoClick(String(entry.name))}
+                    onClick={(entry: any) => entry && entry.name && handleContratoClick(String(entry.name))}
                     className="cursor-pointer hover:opacity-80 transition-opacity"
                   >
-                    <LabelList dataKey="SomaFaixas" position="top" fill="#0f172a" fontSize={11} fontWeight={700} />
-                    {tipoData.map((entry, index) => (
+                    <LabelList dataKey="SomaFaixas" position="top" fill="#1e3a8a" fontSize={10} fontWeight={700} />
+                    {contratoData.map((entry, index) => (
                       <Cell
-                        key={`cell-tipo-${index}`}
-                        fill={selectedChartTipo === entry.name ? '#047857' : COLORS[index % COLORS.length]}
-                        stroke={selectedChartTipo === entry.name ? '#000' : 'none'}
-                        strokeWidth={selectedChartTipo === entry.name ? 2 : 0}
+                        key={`cell-contrato-faixas-${index}`}
+                        fill={selectedChartContrato === entry.name ? '#1d4ed8' : '#3b82f6'}
+                        stroke={selectedChartContrato === entry.name ? '#000' : 'none'}
+                        strokeWidth={selectedChartContrato === entry.name ? 2 : 0}
+                      />
+                    ))}
+                  </Bar>
+                  <Bar
+                    dataKey="Equipamentos"
+                    fill="#8b5cf6"
+                    radius={[4, 4, 0, 0]}
+                    name="Equipamentos"
+                    isAnimationActive={false}
+                    onClick={(entry: any) => entry && entry.name && handleContratoClick(String(entry.name))}
+                    className="cursor-pointer hover:opacity-80 transition-opacity"
+                  >
+                    <LabelList dataKey="Equipamentos" position="top" fill="#4c1d95" fontSize={10} fontWeight={700} />
+                    {contratoData.map((entry, index) => (
+                      <Cell
+                        key={`cell-contrato-equip-${index}`}
+                        fill={selectedChartContrato === entry.name ? '#6d28d9' : '#8b5cf6'}
+                        stroke={selectedChartContrato === entry.name ? '#000' : 'none'}
+                        strokeWidth={selectedChartContrato === entry.name ? 2 : 0}
+                      />
+                    ))}
+                  </Bar>
+                  <Bar
+                    dataKey="LocaisUnicos"
+                    fill="#f97316"
+                    radius={[4, 4, 0, 0]}
+                    name="Locais"
+                    isAnimationActive={false}
+                    onClick={(entry: any) => entry && entry.name && handleContratoClick(String(entry.name))}
+                    className="cursor-pointer hover:opacity-80 transition-opacity"
+                  >
+                    <LabelList dataKey="LocaisUnicos" position="top" fill="#7c2d12" fontSize={10} fontWeight={700} />
+                    {contratoData.map((entry, index) => (
+                      <Cell
+                        key={`cell-contrato-locais-${index}`}
+                        fill={selectedChartContrato === entry.name ? '#c2410c' : '#f97316'}
+                        stroke={selectedChartContrato === entry.name ? '#000' : 'none'}
+                        strokeWidth={selectedChartContrato === entry.name ? 2 : 0}
                       />
                     ))}
                   </Bar>
@@ -1201,52 +1385,81 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
           </div>
         </div>
 
-      {/* Chart Row 2: Locais Fiscalizados por Tipo */}
-      <div id="chart-card-tipo-locais" className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
-        <div>
-          <div className="flex items-center justify-between mb-2 pb-3 border-b border-slate-100">
+        {/* Chart 2: Gráfico Único Consolidado por Tipo de Equipamento (Faixas e Locais Fiscalizados) */}
+        <div id="indicators-charts-tipo" className="w-full bg-white p-1.5 sm:p-2 rounded-2xl flex flex-col">
+          <div id="chart-card-tipo-consolidado" className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between h-full">
             <div>
-              <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-purple-600" />
-                Locais Fiscalizados por Tipo
-              </h3>
+              <div className="mb-2 pb-3 border-b border-slate-100">
+                <h3 className="font-bold text-xs sm:text-sm text-slate-900 flex items-center gap-2">
+                  <BarChart2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Consolidação por Tipo de Equipamento</span>
+                </h3>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Faixas monitoradas e locais por tecnologia. Clique para filtrar.
+                </p>
+              </div>
+            </div>
+
+            <div className="w-full overflow-x-auto my-auto pb-1">
+              <div className="h-72 sm:h-80 w-full min-w-[380px] sm:min-w-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={tipoData} margin={{ top: 20, right: 16, left: -15, bottom: 45 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis dataKey="name" tick={{ fontSize: 9.5, fill: '#64748b' }} interval={0} angle={-22} textAnchor="end" height={48} />
+                    <YAxis type="number" tick={{ fontSize: 10, fill: '#64748b' }} />
+                    <Tooltip
+                      formatter={(value: number, name: string) => [
+                        `${value.toLocaleString('pt-BR')} ${name === 'Faixas' ? 'faixas' : 'locais'}`,
+                        name,
+                      ]}
+                      contentStyle={{ borderRadius: '12px', borderColor: '#e2e8f0', fontSize: '12px' }}
+                    />
+                    <Legend wrapperStyle={{ paddingTop: '8px', fontSize: '11px' }} />
+                    <Bar
+                      dataKey="SomaFaixas"
+                      fill="#059669"
+                      radius={[4, 4, 0, 0]}
+                      name="Faixas"
+                      isAnimationActive={false}
+                      onClick={(entry: any) => entry && entry.name && handleTipoClick(String(entry.name))}
+                      className="cursor-pointer hover:opacity-80 transition-opacity"
+                    >
+                      <LabelList dataKey="SomaFaixas" position="top" fill="#047857" fontSize={10} fontWeight={700} />
+                      {tipoData.map((entry, index) => (
+                        <Cell
+                          key={`cell-tipo-faixas-${index}`}
+                          fill={selectedChartTipo === entry.name ? '#047857' : '#059669'}
+                          stroke={selectedChartTipo === entry.name ? '#000' : 'none'}
+                          strokeWidth={selectedChartTipo === entry.name ? 2 : 0}
+                        />
+                      ))}
+                    </Bar>
+                    <Bar
+                      dataKey="LocaisUnicos"
+                      fill="#7c3aed"
+                      radius={[4, 4, 0, 0]}
+                      name="Locais"
+                      isAnimationActive={false}
+                      onClick={(entry: any) => entry && entry.name && handleTipoClick(String(entry.name))}
+                      className="cursor-pointer hover:opacity-80 transition-opacity"
+                    >
+                      <LabelList dataKey="LocaisUnicos" position="top" fill="#6d28d9" fontSize={10} fontWeight={700} />
+                      {tipoData.map((entry, index) => (
+                        <Cell
+                          key={`cell-tipo-locais-${index}`}
+                          fill={selectedChartTipo === entry.name ? '#6d28d9' : '#8b5cf6'}
+                          stroke={selectedChartTipo === entry.name ? '#000' : 'none'}
+                          strokeWidth={selectedChartTipo === entry.name ? 2 : 0}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="w-full overflow-x-auto my-auto pb-1">
-          <div className="h-72 w-full min-w-[480px] sm:min-w-0">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={tipoLocaisData} margin={{ top: 25, right: 20, left: -10, bottom: 45 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#64748b' }} interval={0} angle={-20} textAnchor="end" height={45} />
-                <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
-                <Tooltip
-                  formatter={(value: number) => [`${value} locais únicos`, 'Locais Únicos']}
-                  contentStyle={{ borderRadius: '12px', borderColor: '#e2e8f0', fontSize: '12px' }}
-                />
-                <Bar
-                  dataKey="LocaisUnicos"
-                  fill="#7c3aed"
-                  radius={[6, 6, 0, 0]}
-                  name="Locais Únicos"
-                  isAnimationActive={false}
-                  onClick={(entry: any) => entry && entry.name && handleTipoClick(String(entry.name))}
-                  className="cursor-pointer hover:opacity-80 transition-opacity"
-                >
-                  <LabelList dataKey="LocaisUnicos" position="top" fill="#0f172a" fontSize={11} fontWeight={700} />
-                  {tipoLocaisData.map((entry, index) => (
-                    <Cell
-                      key={`cell-locais-${index}`}
-                      fill={selectedChartTipo === entry.name ? '#6d28d9' : '#8b5cf6'}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
       </div>
 
       {/* Table 1: Resumo Por Contrato */}
@@ -1355,14 +1568,29 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                 </tr>
               ) : (
                 contratoTableSummary.map((item, idx) => {
-                  const pctEquip = tableTotals.equipments > 0 ? (item.count / tableTotals.equipments) * 100 : 0;
-                  const pctFaixas = tableTotals.faixas > 0 ? (item.faixas / tableTotals.faixas) * 100 : 0;
-                  const pctLocais = tableTotals.addresses > 0 ? (item.addresses.size / tableTotals.addresses) * 100 : 0;
+                  const pctEquip = contratoTableTotals.equipments > 0 ? (item.count / contratoTableTotals.equipments) * 100 : 0;
+                  const pctFaixas = contratoTableTotals.faixas > 0 ? (item.faixas / contratoTableTotals.faixas) * 100 : 0;
+                  const pctLocais = contratoTableTotals.addresses > 0 ? (item.addresses.size / contratoTableTotals.addresses) * 100 : 0;
+                  const isSelected = selectedChartContrato === item.contrato;
 
                   return (
-                    <tr key={item.contrato} className={idx % 2 === 0 ? 'bg-white hover:bg-slate-50/80' : 'bg-slate-50/40 hover:bg-slate-50/90'}>
+                    <tr
+                      key={item.contrato}
+                      onClick={() => handleContratoClick(item.contrato)}
+                      className={`cursor-pointer transition-colors ${
+                        isSelected
+                          ? 'bg-blue-100 font-bold shadow-xs'
+                          : idx % 2 === 0
+                          ? 'bg-white hover:bg-blue-50/60'
+                          : 'bg-slate-50/40 hover:bg-blue-50/60'
+                      }`}
+                      title={`Clique para ${isSelected ? 'remover filtro de' : 'filtrar por'} Contrato ${item.contrato}`}
+                    >
                       <td className="px-4 py-3 font-semibold text-slate-900 text-center">
-                        {item.contrato}
+                        <div className="flex items-center justify-center gap-1.5">
+                          {isSelected && <span className="w-2 h-2 rounded-full bg-blue-600 inline-block shrink-0" />}
+                          <span>{item.contrato}</span>
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-center font-mono font-medium text-slate-800">
                         {item.count.toLocaleString('pt-BR')}
@@ -1391,9 +1619,9 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
               <tfoot className="bg-slate-100 font-bold text-slate-900 border-t-2 border-slate-300 text-xs">
                 <tr>
                   <td className="px-4 py-3 uppercase text-center">Total Geral</td>
-                  <td className="px-4 py-3 text-center font-mono">{tableTotals.equipments.toLocaleString('pt-BR')}</td>
-                  <td className="px-4 py-3 text-center font-mono text-blue-800">{tableTotals.faixas.toLocaleString('pt-BR')}</td>
-                  <td className="px-4 py-3 text-center font-mono">{tableTotals.addresses.toLocaleString('pt-BR')}</td>
+                  <td className="px-4 py-3 text-center font-mono">{contratoTableTotals.equipments.toLocaleString('pt-BR')}</td>
+                  <td className="px-4 py-3 text-center font-mono text-blue-800">{contratoTableTotals.faixas.toLocaleString('pt-BR')}</td>
+                  <td className="px-4 py-3 text-center font-mono">{contratoTableTotals.addresses.toLocaleString('pt-BR')}</td>
                   <td className="px-4 py-3 text-center font-mono">100.0%</td>
                   <td className="px-4 py-3 text-center font-mono">100.0%</td>
                   <td className="px-4 py-3 text-center font-mono">100.0%</td>
@@ -1510,14 +1738,29 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                 </tr>
               ) : (
                 tipoTableSummary.map((item, idx) => {
-                  const pctEquip = tableTotals.equipments > 0 ? (item.count / tableTotals.equipments) * 100 : 0;
-                  const pctFaixas = tableTotals.faixas > 0 ? (item.faixas / tableTotals.faixas) * 100 : 0;
-                  const pctLocais = tableTotals.addresses > 0 ? (item.addresses.size / tableTotals.addresses) * 100 : 0;
+                  const pctEquip = tipoTableTotals.equipments > 0 ? (item.count / tipoTableTotals.equipments) * 100 : 0;
+                  const pctFaixas = tipoTableTotals.faixas > 0 ? (item.faixas / tipoTableTotals.faixas) * 100 : 0;
+                  const pctLocais = tipoTableTotals.addresses > 0 ? (item.addresses.size / tipoTableTotals.addresses) * 100 : 0;
+                  const isSelected = selectedChartTipo === item.tipo;
 
                   return (
-                    <tr key={item.tipo} className={idx % 2 === 0 ? 'bg-white hover:bg-slate-50/80' : 'bg-slate-50/40 hover:bg-slate-50/90'}>
+                    <tr
+                      key={item.tipo}
+                      onClick={() => handleTipoClick(item.tipo)}
+                      className={`cursor-pointer transition-colors ${
+                        isSelected
+                          ? 'bg-emerald-100 font-bold shadow-xs'
+                          : idx % 2 === 0
+                          ? 'bg-white hover:bg-emerald-50/60'
+                          : 'bg-slate-50/40 hover:bg-emerald-50/60'
+                      }`}
+                      title={`Clique para ${isSelected ? 'remover filtro de' : 'filtrar por'} Tipo ${item.tipo}`}
+                    >
                       <td className="px-4 py-3 font-semibold text-slate-900 text-center">
-                        {item.tipo}
+                        <div className="flex items-center justify-center gap-1.5">
+                          {isSelected && <span className="w-2 h-2 rounded-full bg-emerald-600 inline-block shrink-0" />}
+                          <span>{item.tipo}</span>
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-center font-mono font-medium text-slate-800">
                         {item.count.toLocaleString('pt-BR')}
@@ -1546,9 +1789,9 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
               <tfoot className="bg-slate-100 font-bold text-slate-900 border-t-2 border-slate-300 text-xs">
                 <tr>
                   <td className="px-4 py-3 uppercase text-center">Total Geral</td>
-                  <td className="px-4 py-3 text-center font-mono">{tableTotals.equipments.toLocaleString('pt-BR')}</td>
-                  <td className="px-4 py-3 text-center font-mono text-emerald-800">{tableTotals.faixas.toLocaleString('pt-BR')}</td>
-                  <td className="px-4 py-3 text-center font-mono">{tableTotals.addresses.toLocaleString('pt-BR')}</td>
+                  <td className="px-4 py-3 text-center font-mono">{tipoTableTotals.equipments.toLocaleString('pt-BR')}</td>
+                  <td className="px-4 py-3 text-center font-mono text-emerald-800">{tipoTableTotals.faixas.toLocaleString('pt-BR')}</td>
+                  <td className="px-4 py-3 text-center font-mono">{tipoTableTotals.addresses.toLocaleString('pt-BR')}</td>
                   <td className="px-4 py-3 text-center font-mono">100.0%</td>
                   <td className="px-4 py-3 text-center font-mono">100.0%</td>
                   <td className="px-4 py-3 text-center font-mono">100.0%</td>
@@ -1666,11 +1909,26 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                   const pctFaixas = anoTotals.totalFaixas > 0 ? (item.faixas / anoTotals.totalFaixas) * 100 : 0;
                   const pctEquip = anoTotals.totalEquip > 0 ? (item.count / anoTotals.totalEquip) * 100 : 0;
                   const pctLocais = anoTotals.totalAddresses > 0 ? (item.addresses.size / anoTotals.totalAddresses) * 100 : 0;
+                  const isSelected = selectedChartAno === item.ano;
 
                   return (
-                    <tr key={item.ano} className={idx % 2 === 0 ? 'bg-white hover:bg-slate-50/80' : 'bg-slate-50/40 hover:bg-slate-50/90'}>
+                    <tr
+                      key={item.ano}
+                      onClick={() => handleAnoClick(item.ano)}
+                      className={`cursor-pointer transition-colors ${
+                        isSelected
+                          ? 'bg-purple-100 font-bold shadow-xs'
+                          : idx % 2 === 0
+                          ? 'bg-white hover:bg-purple-50/60'
+                          : 'bg-slate-50/40 hover:bg-purple-50/60'
+                      }`}
+                      title={`Clique para ${isSelected ? 'remover filtro de' : 'filtrar por'} Ano ${item.ano}`}
+                    >
                       <td className="px-4 py-3 font-semibold text-slate-900 text-center">
-                        {item.ano}
+                        <div className="flex items-center justify-center gap-1.5">
+                          {isSelected && <span className="w-2 h-2 rounded-full bg-purple-600 inline-block shrink-0" />}
+                          <span>{item.ano}</span>
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-center font-mono font-medium text-slate-800">
                         {item.count.toLocaleString('pt-BR')}
@@ -1819,11 +2077,26 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                   const pctFaixas = anoTotals.totalFaixas > 0 ? (item.faixas / anoTotals.totalFaixas) * 100 : 0;
                   const pctEquip = anoTotals.totalEquip > 0 ? (item.count / anoTotals.totalEquip) * 100 : 0;
                   const pctLocais = anoTotals.totalAddresses > 0 ? (item.addresses.size / anoTotals.totalAddresses) * 100 : 0;
+                  const isSelected = selectedChartMes === item.mes;
 
                   return (
-                    <tr key={item.mes} className={idx % 2 === 0 ? 'bg-white hover:bg-slate-50/80' : 'bg-slate-50/40 hover:bg-slate-50/90'}>
+                    <tr
+                      key={item.mes}
+                      onClick={() => handleMesClick(item.mes)}
+                      className={`cursor-pointer transition-colors ${
+                        isSelected
+                          ? 'bg-indigo-100 font-bold shadow-xs'
+                          : idx % 2 === 0
+                          ? 'bg-white hover:bg-indigo-50/60'
+                          : 'bg-slate-50/40 hover:bg-indigo-50/60'
+                      }`}
+                      title={`Clique para ${isSelected ? 'remover filtro de' : 'filtrar por'} Mês ${item.mes}`}
+                    >
                       <td className="px-4 py-3 font-semibold text-slate-900 text-center">
-                        {item.mes}
+                        <div className="flex items-center justify-center gap-1.5">
+                          {isSelected && <span className="w-2 h-2 rounded-full bg-indigo-600 inline-block shrink-0" />}
+                          <span>{item.mes}</span>
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-center font-mono font-medium text-slate-800">
                         {item.count.toLocaleString('pt-BR')}
@@ -1942,32 +2215,50 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                   </td>
                 </tr>
               ) : (
-                corredorSummary.map((item, idx) => (
-                  <tr key={item.name} className={idx % 2 === 0 ? 'bg-white hover:bg-slate-50/80' : 'bg-slate-50/40 hover:bg-slate-50/90'}>
-                    <td className="px-4 py-3 text-center font-bold">
-                      <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs ${
-                        idx === 0 ? 'bg-amber-100 text-amber-800 border border-amber-300 font-extrabold' :
-                        idx === 1 ? 'bg-slate-200 text-slate-700 border border-slate-300' :
-                        idx === 2 ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-                        'text-slate-500'
-                      }`}>
-                        {idx + 1}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 font-semibold text-slate-900">
-                      {item.name}
-                    </td>
-                    <td className="px-4 py-3 text-center font-mono font-medium text-slate-800">
-                      {item.count.toLocaleString('pt-BR')}
-                    </td>
-                    <td className="px-4 py-3 text-center font-mono font-bold text-amber-700">
-                      {item.faixas.toLocaleString('pt-BR')}
-                    </td>
-                    <td className="px-4 py-3 text-slate-600 text-xs">
-                      {item.tiposFormatted}
-                    </td>
-                  </tr>
-                ))
+                corredorSummary.map((item, idx) => {
+                  const isSelected = selectedChartCorredor === item.name;
+
+                  return (
+                    <tr
+                      key={item.name}
+                      onClick={() => handleCorredorClick(item.name)}
+                      className={`cursor-pointer transition-colors ${
+                        isSelected
+                          ? 'bg-amber-100 font-bold shadow-xs'
+                          : idx % 2 === 0
+                          ? 'bg-white hover:bg-amber-50/60'
+                          : 'bg-slate-50/40 hover:bg-amber-50/60'
+                      }`}
+                      title={`Clique para ${isSelected ? 'remover filtro de' : 'filtrar por'} Corredor ${item.name}`}
+                    >
+                      <td className="px-4 py-3 text-center font-bold">
+                        <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs ${
+                          idx === 0 ? 'bg-amber-100 text-amber-800 border border-amber-300 font-extrabold' :
+                          idx === 1 ? 'bg-slate-200 text-slate-700 border border-slate-300' :
+                          idx === 2 ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                          'text-slate-500'
+                        }`}>
+                          {idx + 1}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 font-semibold text-slate-900">
+                        <div className="flex items-center gap-1.5">
+                          {isSelected && <span className="w-2 h-2 rounded-full bg-amber-600 inline-block shrink-0" />}
+                          <span>{item.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-center font-mono font-medium text-slate-800">
+                        {item.count.toLocaleString('pt-BR')}
+                      </td>
+                      <td className="px-4 py-3 text-center font-mono font-bold text-amber-700">
+                        {item.faixas.toLocaleString('pt-BR')}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600 text-xs">
+                        {item.tiposFormatted}
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

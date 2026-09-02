@@ -34,6 +34,7 @@ export async function captureIndicatorsCharts(): Promise<{
   cardContratoFaixas: string | null;
   cardContratoEquip: string | null;
   cardContratoLocais: string | null;
+  cardTipoConsolidado: string | null;
   cardTipoFaixas: string | null;
   cardTipoLocais: string | null;
 }> {
@@ -46,6 +47,7 @@ export async function captureIndicatorsCharts(): Promise<{
       cardContratoFaixas,
       cardContratoEquip,
       cardContratoLocais,
+      cardTipoConsolidado,
       cardTipoFaixas,
       cardTipoLocais,
     ] = await Promise.all([
@@ -53,6 +55,7 @@ export async function captureIndicatorsCharts(): Promise<{
       captureChartCard('chart-card-contrato-faixas'),
       captureChartCard('chart-card-contrato-equip'),
       captureChartCard('chart-card-contrato-locais'),
+      captureChartCard('chart-card-tipo-consolidado'),
       captureChartCard('chart-card-tipo-faixas'),
       captureChartCard('chart-card-tipo-locais'),
     ]);
@@ -62,6 +65,7 @@ export async function captureIndicatorsCharts(): Promise<{
       cardContratoFaixas,
       cardContratoEquip,
       cardContratoLocais,
+      cardTipoConsolidado,
       cardTipoFaixas,
       cardTipoLocais,
     };
@@ -72,6 +76,7 @@ export async function captureIndicatorsCharts(): Promise<{
       cardContratoFaixas: null,
       cardContratoEquip: null,
       cardContratoLocais: null,
+      cardTipoConsolidado: null,
       cardTipoFaixas: null,
       cardTipoLocais: null,
     };
@@ -1054,9 +1059,28 @@ export async function exportCompleteIndicatorsPDF(data: IndicatorsReportData) {
     currentY += cardHeight + 6;
   }
 
-  // 2. Gráficos por Tipo de Equipamento (2 cards lado a lado)
-  const hasTipoCharts = !!(charts.cardTipoFaixas || charts.cardTipoLocais);
-  if (hasTipoCharts) {
+  // 2. Gráfico por Tipo de Equipamento (Consolidado ou Separados)
+  if (charts.cardTipoConsolidado) {
+    if (currentY > pageHeight - 75) {
+      doc.addPage();
+      renderHeader('Fiscalização Eletrônica — Relatório Completo de Indicadores');
+      currentY = 32;
+    }
+
+    currentY = sectionHeader('Gráfico Consolidado por Tipo de Equipamento (Faixas e Locais Fiscalizados)', currentY);
+    const cardWidth = pageWidth - 20; // 190mm
+    let cardHeight = 65;
+    try {
+      const imgProps = doc.getImageProperties(charts.cardTipoConsolidado);
+      if (imgProps.width > 0 && imgProps.height > 0) {
+        cardHeight = (cardWidth * imgProps.height) / imgProps.width;
+      }
+    } catch (e) {
+      console.warn('Erro ao obter proporções do gráfico tipo consolidado:', e);
+    }
+    doc.addImage(charts.cardTipoConsolidado, 'JPEG', 10, currentY, cardWidth, cardHeight, undefined, 'FAST');
+    currentY += cardHeight + 6;
+  } else if (charts.cardTipoFaixas || charts.cardTipoLocais) {
     if (currentY > pageHeight - 75) {
       doc.addPage();
       renderHeader('Fiscalização Eletrônica — Relatório Completo de Indicadores');

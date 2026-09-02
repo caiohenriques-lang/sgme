@@ -6,15 +6,55 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.24';
+export const APP_VERSION = 'v3.7.28';
 export const BUILD_DATE = '02/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.28',
+    date: '02/09/2026',
+    tag: 'Limpeza Visual dos Cabeçalhos dos Gráficos de Contrato e Tipo na Aba Indicadores',
+    isLatest: true,
+    changes: [
+      'Removidos os badges duplicados ao lado do título dos gráficos "Consolidação por Contrato" e "Consolidação por Tipo de Equipamento", mantendo a identificação das séries na legenda interativa inferior do Recharts.',
+      'Aprimorada a clareza e elegância visual dos cabeçalhos dos cards de gráficos no dashboard.'
+    ]
+  },
+  {
+    version: 'v3.7.27',
+    date: '02/09/2026',
+    tag: 'Disposição Lado a Lado dos Gráficos de Contrato e Tipo + Simplificação de Legendas',
+    changes: [
+      'Organizados os gráficos de "Consolidação por Contrato" e "Consolidação por Tipo de Equipamento" em grid responsivo de 2 colunas lado a lado no desktop (com empilhamento automático em telas menores), proporcionando visão executiva panorâmica sem rolagem excessiva.',
+      'Simplificada a nomenclatura do badge, barras, legenda e tooltip de "Locais Únicos" para "Locais" no gráfico de tipos de equipamento, garantindo consistência visual com os demais gráficos.',
+      'Ajustadas as proporções, margens e inclinação das legendas dos eixos dos dois gráficos para sincronia e legibilidade perfeita em qualquer resolução.'
+    ]
+  },
+  {
+    version: 'v3.7.26',
+    date: '02/09/2026',
+    tag: 'Interatividade Cruzada Bidirecional Total entre Gráficos, Tabelas e Filtros da Aba Indicadores',
+    changes: [
+      'Implementada reatividade bidirecional completa: o clique em qualquer barra dos gráficos ou em qualquer linha das tabelas (Contratos, Tipos, Ano, Mês, Corredores e Situação) filtra instantaneamente todos os demais gráficos, tabelas e a lista de equipamentos.',
+      'Criada filtragem cruzada independente por dimensão com useMemo e recordMatchesIndicatorsFilters, permitindo que cada tabela e gráfico mantenha seu contexto dimensional enquanto recalcula dinamicamente em relação aos outros filtros ativos.',
+      'Adicionado feedback visual com destaque de linha selecionada, badges de filtro no topo com botão individual de remoção e botão "Restaurar Filtros" para reset global.',
+      'Tornados interativos também os cards de KPI (Em Operação, Em Implantação e Em Relocação) com clique direto nas métricas para filtragem imediata por situação.'
+    ]
+  },
+  {
+    version: 'v3.7.25',
+    date: '02/09/2026',
+    tag: 'Unificação Consolidada do Gráfico por Tipo de Equipamento (Faixas e Locais)',
+    changes: [
+      'Unificados os gráficos de "Faixas por Tipo de Equipamento" e "Locais Fiscalizados por Tipo" em um único card panorâmico consolidado na aba Indicadores.',
+      'Implementada comparação visual direta entre Faixas (verde esmeralda) e Locais Únicos (roxo violeta) por tecnologia, com barras agrupadas, legendas interativas e rótulos numéricos no topo.',
+      'Integrado o novo gráfico unificado por tipo na rotina de exportação em PDF oficial, com proporção automática e alta fidelidade.'
+    ]
+  },
+  {
     version: 'v3.7.24',
     date: '02/09/2026',
     tag: 'Suporte Nativo a Cores Modernas (OKLCH) na Captura dos Gráficos para PDF',
-    isLatest: true,
     changes: [
       'Substituído o motor de renderização gráfica por html2canvas-pro com suporte total a funções de cor modernas (oklch, oklab, color spaces e variáveis CSS do Tailwind v4).',
       'Resolvido o erro "Attempting to parse an unsupported color function oklch" durante a captura dos cards de gráficos dos Indicadores.',
