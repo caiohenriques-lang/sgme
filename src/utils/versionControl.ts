@@ -6,15 +6,24 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.29';
+export const APP_VERSION = 'v3.7.30';
 export const BUILD_DATE = '02/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.30',
+    date: '02/09/2026',
+    tag: 'Tratamento de Contingência e Motor Analítico Local do Assistente IA',
+    isLatest: true,
+    changes: [
+      'Adicionado motor analítico e semântico local de contingência para o Assistente GEAPI, garantindo respostas instantâneas, precisas e estruturadas (com botões de ação e navegação) mesmo se a chave do Gemini estiver temporariamente ausente no ambiente.',
+      'Corrigido tratamento de erros e exceções de rede no fluxo do chatbot de inteligência artificial.'
+    ]
+  },
+  {
     version: 'v3.7.29',
     date: '02/09/2026',
     tag: 'Reativação do Assistente de Inteligência Artificial GEAPI',
-    isLatest: true,
     changes: [
       'Reativado o Assistente Inteligente GEAPI (alimentado por Gemini) tanto pelo botão de acesso rápido no cabeçalho superior quanto pelo botão flutuante no canto inferior da tela.',
       'Janela modal do assistente IA totalmente integrada com a base de dados oficial, permitindo consultas instantâneas de radares, coordenadas geográficas, contratos, situações operacionais, prazos de aferição e geração de relatórios.'

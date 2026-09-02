@@ -314,20 +314,36 @@ export async function sendChatMessage({
     totalRegistrosDisponiveis: targetRecords.length,
   };
 
-  const response = await fetch('/api/gemini/chat', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      message,
-      history,
-      context: contextPayload,
-    }),
-  });
+  let response: Response;
+  try {
+    response = await fetch('/api/gemini/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message,
+        history,
+        context: contextPayload,
+      }),
+    });
+  } catch (networkErr: any) {
+    console.warn('Falha de rede ao conectar com backend de IA, acionando motor analítico offline:', networkErr);
+    const { generateLocalFallbackResponse } = await import('./localAiFallback');
+    return generateLocalFallbackResponse(message, records, filters);
+  }
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
+    const errString = (errorData.error || '').toString();
+    
+    // Se a chave Gemini não estiver configurada no ambiente, responde de forma inteligente e precisa com o motor local embutido
+    if (errString.includes('GEMINI_API_KEY') || response.status === 500) {
+      console.warn('GEMINI_API_KEY não configurada no servidor ou erro de quota. Utilizando motor analítico local GEAPI.');
+      const { generateLocalFallbackResponse } = await import('./localAiFallback');
+      return generateLocalFallbackResponse(message, records, filters);
+    }
+
     throw new Error(errorData.error || `Erro ${response.status}: Falha ao comunicar com o Assistente de IA`);
   }
 
