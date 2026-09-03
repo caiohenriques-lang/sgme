@@ -6,15 +6,26 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.39';
+export const APP_VERSION = 'v3.7.40';
 export const BUILD_DATE = '03/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.40',
+    date: '03/09/2026',
+    tag: 'Memória Contextual Inteligente para Perguntas Sucessoras (Follow-up) no GEAPINHO',
+    isLatest: true,
+    changes: [
+      'Implementada inteligência contextual e memória de continuidade no GEAPINHO para perguntas sucessoras e elípticas (ex: "e em 2025?", "e no contrato 2741?", "e quantos DAS?").',
+      'Quando o usuário pergunta "quantos equipamentos entraram em operação no mês de setembro de 2026?" e em seguida pergunta "e em 2025?", o GEAPINHO agora herda o contexto ("mês de setembro" e "entrada em operação"), respondendo cirurgicamente sobre Setembro de 2025 em vez de listar o ano de 2025 inteiro.',
+      'Sincronizada a interpretação contextual de follow-up tanto no modelo em nuvem (Gemini) quanto no motor analítico ultrarrápido local.',
+      'Mantida velocidade máxima de resposta instantânea sem impacto de latência.'
+    ]
+  },
+  {
     version: 'v3.7.39',
     date: '03/09/2026',
     tag: 'Filtro Temporal Estrito por Ano em Consultas Delimitadas no GEAPINHO',
-    isLatest: true,
     changes: [
       'Implementada filtragem temporal estrita por ano quando o usuário delimitar o período na pergunta (ex: "agosto de 2026"), exibindo exclusivamente os dados do ano solicitado sem misturar históricos anteriores.',
       'Mantida a capacidade de consolidação histórica multianual caso o usuário faça perguntas genéricas sem especificar o ano (ex: "mês de setembro").',

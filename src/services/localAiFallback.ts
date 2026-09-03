@@ -60,12 +60,49 @@ function normalizeDate(raw: string): { formatted: string; day: string; month: st
 export function generateLocalFallbackResponse(
   message: string,
   records: EquipmentRecord[],
-  filters?: FilterState
+  filters?: FilterState,
+  history?: { role: 'user' | 'model'; parts: string }[]
 ): LocalFallbackResponse {
   const lower = message.toLowerCase().trim();
 
+  // 0. Detecção de Pergunta Sucessora / Follow-up Inteligente
+  const isFollowUpPattern =
+    lower.startsWith('e ') ||
+    lower.startsWith('e em ') ||
+    lower.startsWith('e no ') ||
+    lower.startsWith('e na ') ||
+    lower.startsWith('e de ') ||
+    lower.startsWith('e para ') ||
+    lower.startsWith('e quanto') ||
+    lower.startsWith('e quantos') ||
+    lower.startsWith('e quantas') ||
+    lower.startsWith('já em ') ||
+    lower.startsWith('mas e ') ||
+    lower.startsWith('e os ') ||
+    lower.startsWith('e as ') ||
+    lower.length < 30;
+
+  // Busca a última mensagem do usuário no histórico para herdar contexto e parâmetros
+  let prevUserMessage = '';
+  if (history && history.length > 0) {
+    for (let i = history.length - 1; i >= 0; i--) {
+      if (history[i].role === 'user' && history[i].parts.trim().toLowerCase() !== lower) {
+        prevUserMessage = history[i].parts.toLowerCase().trim();
+        break;
+      }
+    }
+  }
+
   // Filtragem básica por contrato vigente
-  const asksLegacy = lower.includes('2585') || lower.includes('2586') || lower.includes('2587') || lower.includes('antigo') || lower.includes('anterior');
+  const prevAsksLegacy = prevUserMessage.includes('2585') || prevUserMessage.includes('2586') || prevUserMessage.includes('2587') || prevUserMessage.includes('antigo');
+  const asksLegacy =
+    lower.includes('2585') ||
+    lower.includes('2586') ||
+    lower.includes('2587') ||
+    lower.includes('antigo') ||
+    lower.includes('anterior') ||
+    (isFollowUpPattern && prevAsksLegacy);
+
   const targetRecords = asksLegacy
     ? records
     : records.filter((r) => {
@@ -140,15 +177,27 @@ export function generateLocalFallbackResponse(
 
   // 1. Extração de Tipo específico mencionado (CEV, DAS, DIF, DTLP, DCP)
   const typeMatch = lower.match(/\b(CEV|DAS|DIF|DTLP|DCP)\b/i);
-  const requestedType = typeMatch ? typeMatch[1].toUpperCase() : null;
+  let requestedType: string | null = typeMatch ? typeMatch[1].toUpperCase() : null;
 
   // 2. Extração de Contrato específico mencionado (2740, 2741, 2742)
   const contractMatch = lower.match(/\b(2740|2741|2742|2585|2586|2587)\b/);
-  const requestedContract = contractMatch ? contractMatch[1] : null;
+  let requestedContract: string | null = contractMatch ? contractMatch[1] : null;
+
+  // Herança de Tipo e Contrato se for follow-up
+  if (isFollowUpPattern && prevUserMessage) {
+    if (!requestedType) {
+      const prevTypeMatch = prevUserMessage.match(/\b(CEV|DAS|DIF|DTLP|DCP)\b/i);
+      if (prevTypeMatch) requestedType = prevTypeMatch[1].toUpperCase();
+    }
+    if (!requestedContract) {
+      const prevContractMatch = prevUserMessage.match(/\b(2740|2741|2742|2585|2586|2587)\b/);
+      if (prevContractMatch) requestedContract = prevContractMatch[1];
+    }
+  }
 
   // 3. Busca por código de radar específico (ex: KBH11081, CEV01, R101)
   const codeMatch = lower.match(/\b([A-Z]{2,4}[-\s]?\d{3,6}|\d{4,6})\b/i);
-  if (codeMatch && !lower.includes('contrato') && !lower.includes('quantas') && !lower.includes('quantos') && !lower.includes('setembro') && !lower.includes('agosto')) {
+  if (codeMatch && !lower.includes('contrato') && !lower.includes('quantas') && !lower.includes('quantos') && !lower.includes('setembro') && !lower.includes('agosto') && !lower.includes('2025') && !lower.includes('2026')) {
     const rawCode = codeMatch[1].replace(/[-\s]/g, '').toUpperCase();
     const found = records.find((r) => {
       const c = (r.CÓDIGO || '').replace(/[-\s]/g, '').toUpperCase();
@@ -174,7 +223,7 @@ export function generateLocalFallbackResponse(
   }
 
   // 4. CONSULTAS TEMPORAIS DE ENTRADA EM OPERAÇÃO / ATIVAÇÕES
-  const isActivationQuery =
+  const explicitActivationQuery =
     lower.includes('entraram em operação') ||
     lower.includes('entrou em operação') ||
     lower.includes('entraram em operacao') ||
@@ -192,6 +241,21 @@ export function generateLocalFallbackResponse(
     lower.includes('começaram a operar') ||
     lower.includes('comecou a operar');
 
+  const prevIsActivation =
+    prevUserMessage.includes('entraram em operação') ||
+    prevUserMessage.includes('entrou em operação') ||
+    prevUserMessage.includes('entraram em operacao') ||
+    prevUserMessage.includes('entrou em operacao') ||
+    prevUserMessage.includes('início de operação') ||
+    prevUserMessage.includes('inicio de operacao') ||
+    prevUserMessage.includes('início operação') ||
+    prevUserMessage.includes('inicio operacao') ||
+    prevUserMessage.includes('ativad') ||
+    prevUserMessage.includes('ativaç') ||
+    prevUserMessage.includes('ativac');
+
+  const isActivationQuery = explicitActivationQuery || (isFollowUpPattern && prevIsActivation);
+
   // Identifica se há menção a mês
   let targetMonthNum: string | null = null;
   let targetMonthName: string | null = null;
@@ -207,6 +271,24 @@ export function generateLocalFallbackResponse(
   // Identifica se há menção a ano específico (ex: 2026, 2025, 2024)
   const yearMatch = lower.match(/\b(202\d|201\d)\b/);
   const targetYear = yearMatch ? yearMatch[1] : null;
+
+  // HERANÇA INTELIGENTE DE MÊS EM PERGUNTAS SUCESSORAS (ex: Q1 "setembro de 2026" -> Q2 "e em 2025?")
+  const explicitlyAsksWholeYear =
+    lower.includes('ano de') ||
+    lower.includes('ano inteiro') ||
+    lower.includes('todo o ano') ||
+    lower.includes('no ano');
+
+  if (isFollowUpPattern && !targetMonthNum && !explicitlyAsksWholeYear && prevUserMessage) {
+    for (const [key, val] of Object.entries(MONTH_NAMES_MAP)) {
+      const regex = new RegExp(`\\b(${key})\\b`, 'i');
+      if (regex.test(prevUserMessage)) {
+        targetMonthNum = val.num;
+        targetMonthName = val.name;
+        break;
+      }
+    }
+  }
 
   // Identifica se há menção a data específica DD/MM/AAAA ou DD/MM
   const dateMatch = lower.match(/\b(\d{1,2})[\/\-\.](\d{1,2})(?:[\/\-\.](\d{2,4}))?\b/);
@@ -402,8 +484,11 @@ export function generateLocalFallbackResponse(
   // 5. CONSULTA ESPECÍFICA POR TIPO (CEV, DAS, DIF, DTLP, DCP)
   if (requestedType && porTipo[requestedType]) {
     const tp = porTipo[requestedType];
-    const isAskingOp = lower.includes('operação') || lower.includes('operacao') || lower.includes('ativas') || lower.includes('ativo');
-    const isAskingImp = lower.includes('implantação') || lower.includes('implantacao') || lower.includes('projetado');
+    const prevAskingOp = prevUserMessage.includes('operação') || prevUserMessage.includes('operacao') || prevUserMessage.includes('ativas') || prevUserMessage.includes('ativo');
+    const prevAskingImp = prevUserMessage.includes('implantação') || prevUserMessage.includes('implantacao') || prevUserMessage.includes('projetado');
+
+    const isAskingOp = lower.includes('operação') || lower.includes('operacao') || lower.includes('ativas') || lower.includes('ativo') || (isFollowUpPattern && prevAskingOp);
+    const isAskingImp = lower.includes('implantação') || lower.includes('implantacao') || lower.includes('projetado') || (isFollowUpPattern && prevAskingImp);
 
     if (isAskingOp) {
       return {

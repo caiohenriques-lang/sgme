@@ -396,7 +396,7 @@ export async function sendChatMessage({
     clearTimeout(timeoutId);
     console.warn('Backend de IA indisponível ou demorado, acionando motor analítico ultrarrápido:', networkErr);
     const { generateLocalFallbackResponse } = await import('./localAiFallback');
-    return generateLocalFallbackResponse(message, records, filters);
+    return generateLocalFallbackResponse(message, records, filters, history);
   } finally {
     clearTimeout(timeoutId);
   }
@@ -409,7 +409,7 @@ export async function sendChatMessage({
     if (errString.includes('GEMINI_API_KEY') || response.status === 500 || response.status === 504) {
       console.warn('GEMINI_API_KEY não configurada ou instabilidade no servidor. Utilizando motor analítico local GEAPI.');
       const { generateLocalFallbackResponse } = await import('./localAiFallback');
-      return generateLocalFallbackResponse(message, records, filters);
+      return generateLocalFallbackResponse(message, records, filters, history);
     }
 
     throw new Error(errorData.error || `Erro ${response.status}: Falha ao comunicar com o Assistente de IA`);
