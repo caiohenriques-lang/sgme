@@ -351,18 +351,30 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
 
                   {/* 11. CONDIÇÃO */}
                   <td className="py-1.5 px-1 text-slate-600 text-center truncate text-[10px]">
-                    {r.CONDIÇÃO || '-'}
+                    {r.CONDIÇÃO ? (
+                      r.CONDIÇÃO.toLowerCase().includes('relocação') || r.CONDIÇÃO.toLowerCase().includes('relocacao') ? (
+                        <span className="inline-block px-1 py-0.5 rounded-full font-medium text-[9.5px] bg-purple-100 text-purple-800 border border-purple-200/80 truncate max-w-full">
+                          {r.CONDIÇÃO}
+                        </span>
+                      ) : (
+                        r.CONDIÇÃO
+                      )
+                    ) : (
+                      '-'
+                    )}
                   </td>
 
                   {/* 12. SITUAÇÃO */}
                   <td className="py-1.5 px-1 text-center text-[9.5px]">
                     <span
-                      className={`inline-block px-1 py-0.5 rounded-full font-medium truncate max-w-full ${
-                        r.Situação?.includes('Em operação')
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : r.Situação?.includes('Desligado')
-                          ? 'bg-rose-100 text-rose-800'
-                          : 'bg-amber-100 text-amber-800'
+                      className={`inline-block px-1 py-0.5 rounded-full font-medium truncate max-w-full border ${
+                        r.Situação?.toLowerCase().includes('relocação') || r.Situação?.toLowerCase().includes('relocacao')
+                          ? 'bg-purple-100 text-purple-800 border-purple-200/80 font-semibold'
+                          : r.Situação?.toLowerCase().includes('em operação') || r.Situação?.toLowerCase().includes('em operacao') || r.Situação?.toLowerCase().includes('operação') || r.Situação?.toLowerCase().includes('operacao')
+                          ? 'bg-emerald-100 text-emerald-800 border-emerald-200/80'
+                          : r.Situação?.toLowerCase().includes('desligado')
+                          ? 'bg-rose-100 text-rose-800 border-rose-200/80'
+                          : 'bg-amber-100 text-amber-800 border-amber-200/80'
                       }`}
                     >
                       {r.Situação?.replace('\n', ' ') || '-'}

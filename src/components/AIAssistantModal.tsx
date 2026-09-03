@@ -77,7 +77,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
     {
       id: 'welcome',
       sender: 'assistant',
-      text: `Olá! Sou o **Assistente Inteligente GEAPI**, alimentado por IA.\n\nPosso ajudar você a:\n- 📍 **Consultar Coordenadas Geográficas** e localizações exatas de radares\n- 🔍 **Pesquisar Status, Contratos e Tipos** (CEV, DAS, DIF, DTLP, DCP)\n- ⏱️ **Verificar Prazos de Aferição** e equipamentos inoperantes\n- 📄 **Emitir Relatórios e PDFs** personalizados para download\n- 🗺️ **Navegar e Filtrar** dados diretamente no portal\n\nComo posso ajudar você hoje?`,
+      text: `Olá! Eu sou o **GEAPINHO**, a Inteligência Artificial da FE.\n\nPosso ajudar você com respostas instantâneas sobre:\n- 📍 **Coordenadas Geográficas** e localização exata de cada radar\n- 🔍 **Status, Contratos e Tipos** (CEV, DAS, DIF, DTLP, DCP)\n- ⏱️ **Prazos de Aferição**, equipamentos inoperantes e desligados\n- 📄 **Emissão de Relatórios e Fichas em PDF** para download\n- 🗺️ **Navegação e Filtros Rápidos** direto no portal\n\nComo posso te ajudar agora?`,
       timestamp: new Date(),
     },
   ]);
@@ -162,7 +162,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
       {
         id: 'welcome-reset',
         sender: 'assistant',
-        text: 'Histórico limpo. Como posso ajudar com os equipamentos da GEAPI?',
+        text: 'Histórico limpo. Olá! Sou o **Geapinho**. Como posso ajudar com os equipamentos e radares da GEAPI hoje?',
         timestamp: new Date(),
       },
     ]);
@@ -259,14 +259,14 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
             <div>
               <div className="flex items-center gap-1.5">
                 <h3 className="font-bold text-sm sm:text-base text-white tracking-tight">
-                  Assistente IA GEAPI
+                  Geapinho
                 </h3>
                 <span className="px-1.5 py-0.5 rounded-full bg-blue-500/30 text-blue-200 border border-blue-400/30 text-[10px] font-semibold flex items-center gap-1">
-                  <Sparkles className="w-2.5 h-2.5" /> Gemini
+                  <Sparkles className="w-2.5 h-2.5" /> IA GEAPI
                 </span>
               </div>
               <p className="text-[11px] text-slate-300">
-                Fiscalização Eletrônica • Inteligência Operacional
+                Inteligência Artificial interativa da Fiscalização Eletrônica
               </p>
             </div>
           </div>

@@ -6,15 +6,78 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.33';
+export const APP_VERSION = 'v3.7.39';
 export const BUILD_DATE = '03/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.39',
+    date: '03/09/2026',
+    tag: 'Filtro Temporal Estrito por Ano em Consultas Delimitadas no GEAPINHO',
+    isLatest: true,
+    changes: [
+      'Implementada filtragem temporal estrita por ano quando o usuário delimitar o período na pergunta (ex: "agosto de 2026"), exibindo exclusivamente os dados do ano solicitado sem misturar históricos anteriores.',
+      'Mantida a capacidade de consolidação histórica multianual caso o usuário faça perguntas genéricas sem especificar o ano (ex: "mês de setembro").',
+      'Estruturada resposta direta com título contextualizado (ex: "📍 4 faixas (4 equipamentos) entraram em operação no mês de Agosto de 2026:") e totalização precisa em locais.',
+      'Sincronizado no backend Gemini e no motor analítico local preservando a máxima velocidade de resposta.'
+    ]
+  },
+  {
+    version: 'v3.7.38',
+    date: '03/09/2026',
+    tag: 'Padronização da Nomenclatura ("Locais") e Formatação Mensal das Respostas do GEAPINHO',
+    changes: [
+      'Refinada a apresentação de consultas mensais de ativação para exibir apenas o nome do mês na saudação (ex: "mês de Setembro:"), removendo o sufixo de ano redundante.',
+      'Substituído o termo "postos" pela denominação técnica oficial "locais" nas linhas de totalização (ex: "• Total do Mês: 187 faixas em 187 locais.").',
+      'Harmonizadas as diretrizes sistêmicas do modelo de IA e do motor analítico ultrarrápido para preservar velocidade máxima e coerência terminológica.'
+    ]
+  },
+  {
+    version: 'v3.7.37',
+    date: '03/09/2026',
+    tag: 'Otimização de Respostas Diretas e Análise Temporal de Ativações no GEAPINHO',
+    changes: [
+      'Aprimorado o motor de inteligência analítica do GEAPINHO para responder de forma direta e cirúrgica sobre entradas em operação por mês, dia, tipo (CEV, DAS, DIF) e contrato.',
+      'Consultas como "quantas faixas CEV entraram em operação no mês de setembro?" agora informam o total exato e a data na primeira linha (ex: "141 faixas (em 97 equipamentos CEV) no dia 02/09/2026").',
+      'Estruturada agregação cronológica de ativações diárias e mensais no backend e no motor analítico ultrarrápido.',
+      'Mantida velocidade máxima de resposta instantânea sem sobrecarga de processamento.'
+    ]
+  },
+  {
+    version: 'v3.7.36',
+    date: '03/09/2026',
+    tag: 'Atualização Textual do Cabeçalho e Saudação Inicial do GEAPINHO',
+    changes: [
+      'Atualizado o subtítulo do cabeçalho no popup do GEAPINHO para: "Inteligência Artificial interativa da Fiscalização Eletrônica".',
+      'Personalizada a frase de abertura da mensagem inicial para: "Olá! Eu sou o GEAPINHO, a Inteligência Artificial da FE.".',
+      'Mantida toda a estrutura de tópicos explicativos com atalhos de consulta rápida e ações interativas.'
+    ]
+  },
+  {
+    version: 'v3.7.35',
+    date: '03/09/2026',
+    tag: 'Oficialização da Identidade do Assistente de Inteligência Artificial: "GEAPINHO"',
+    changes: [
+      'Oficializado o nome e a identidade "Geapinho" para o Assistente Inteligente oficial do Portal GEAPI.',
+      'Atualizado o botão flutuante, tooltips e indicadores de estado com a marca "Geapinho".',
+      'Personalizada a mensagem de boas-vindas, cabeçalho do chat e instruções de sistema do modelo de IA.',
+      'Sincronizada a persona amigável e de alta precisão analítica em todos os canais de interação do portal.'
+    ]
+  },
+  {
+    version: 'v3.7.34',
+    date: '03/09/2026',
+    tag: 'Diferenciação Visual de Cor para o Badge de "Relocação" nas Tabelas e Fichas',
+    changes: [
+      'Implementada cor exclusiva e de alto contraste (púrpura/violeta suave com texto roxo escuro e borda delicada) para o badge de "Relocação".',
+      'Diferenciada a situação/condição "Relocação" das situações "Em implantação" (âmbar/dourado) e "Em operação" (verde esmeralda).',
+      'Aplicada a nova padronização visual em todas as tabelas do portal (Tabela Geral de Equipamentos, Lista Espelho de Indicadores e Modal de Detalhes).'
+    ]
+  },
+  {
     version: 'v3.7.33',
     date: '03/09/2026',
     tag: 'Sincronização Completa das Fichas e Relatórios em PDF com a Reestruturação do Modal',
-    isLatest: true,
     changes: [
       'Sincronizada a estrutura dos relatórios e fichas em PDF na aba "Relatórios" (exportação customizada por filtros e demandas).',
       'Reposicionado o campo "Observações" para o bloco "Especificações Técnicas e Operação" como último item em todos os PDFs gerados.',

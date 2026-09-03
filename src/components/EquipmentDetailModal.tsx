@@ -249,6 +249,8 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
                       const rbmlqUrl = isCEV && isNumSerie && value && value !== '-' ? 'https://servicos.rbmlq.gov.br/Instrumento' : null;
 
                       const isCoord = header === 'COORD_LAT_LONG' || labelText === 'COORDENADAS GEOGRÁFICAS';
+                      const isSituacao = header === 'Situação' || labelText === 'SITUAÇÃO';
+                      const isCondicao = header === 'CONDIÇÃO' || labelText === 'CONDIÇÃO';
 
                       return (
                         <div key={header} className="grid grid-cols-1 sm:grid-cols-3 px-4 py-2.5 hover:bg-slate-50/80 transition-colors">
@@ -351,6 +353,24 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
                               ) : (
                                 '-'
                               )
+                            ) : isSituacao && value && value !== '-' ? (
+                              <span
+                                className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
+                                  value.toLowerCase().includes('relocação') || value.toLowerCase().includes('relocacao')
+                                    ? 'bg-purple-100 text-purple-800 border-purple-200/80'
+                                    : value.toLowerCase().includes('em operação') || value.toLowerCase().includes('em operacao') || value.toLowerCase().includes('operação') || value.toLowerCase().includes('operacao')
+                                    ? 'bg-emerald-100 text-emerald-800 border-emerald-200/80'
+                                    : value.toLowerCase().includes('desligado')
+                                    ? 'bg-rose-100 text-rose-800 border-rose-200/80'
+                                    : 'bg-amber-100 text-amber-800 border-amber-200/80'
+                                }`}
+                              >
+                                {value}
+                              </span>
+                            ) : isCondicao && value && (value.toLowerCase().includes('relocação') || value.toLowerCase().includes('relocacao')) ? (
+                              <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 border border-purple-200/80">
+                                {value}
+                              </span>
                             ) : (
                               value
                             )}

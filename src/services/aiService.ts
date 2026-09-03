@@ -229,6 +229,61 @@ export async function sendChatMessage({
     }
   });
 
+  // Agregações cronológicas de Entrada em Operação (por data, por mês/ano e por ano)
+  const ativacoesPorData: Record<string, { totalFaixas: number; totalEquipamentos: number; porTipo: Record<string, { faixas: number; equipamentos: number }>; porContrato: Record<string, number> }> = {};
+  const ativacoesPorMesAno: Record<string, { totalFaixas: number; totalEquipamentos: number; mes: string; ano: string; porTipo: Record<string, { faixas: number; equipamentos: number }>; datas: string[] }> = {};
+  const ativacoesPorAno: Record<string, { totalFaixas: number; totalEquipamentos: number; porTipo: Record<string, { faixas: number; equipamentos: number }> }> = {};
+
+  targetRecords.forEach(r => {
+    const rawDate = (r['Data início operação'] || '').trim();
+    if (!rawDate) return;
+    const numFaixas = typeof r.FAIXAS === 'number' && !isNaN(r.FAIXAS) ? r.FAIXAS : 1;
+    const tp = r.TIPO || 'N/D';
+    const ct = r.CONTRATO || 'N/D';
+
+    // Normaliza formato DD/MM/AAAA
+    const parts = rawDate.split(/[\/\-\.]/);
+    if (parts.length === 3) {
+      const d = parts[0].padStart(2, '0');
+      const m = parts[1].padStart(2, '0');
+      const y = parts[2].length === 2 ? `20${parts[2]}` : parts[2];
+      const normDate = `${d}/${m}/${y}`;
+      const mesAno = `${m}/${y}`;
+
+      // Por data
+      if (!ativacoesPorData[normDate]) {
+        ativacoesPorData[normDate] = { totalFaixas: 0, totalEquipamentos: 0, porTipo: {}, porContrato: {} };
+      }
+      ativacoesPorData[normDate].totalFaixas += numFaixas;
+      ativacoesPorData[normDate].totalEquipamentos += 1;
+      if (!ativacoesPorData[normDate].porTipo[tp]) ativacoesPorData[normDate].porTipo[tp] = { faixas: 0, equipamentos: 0 };
+      ativacoesPorData[normDate].porTipo[tp].faixas += numFaixas;
+      ativacoesPorData[normDate].porTipo[tp].equipamentos += 1;
+      ativacoesPorData[normDate].porContrato[ct] = (ativacoesPorData[normDate].porContrato[ct] || 0) + numFaixas;
+
+      // Por mês/ano (ex: "08/2026", "08/2025")
+      if (!ativacoesPorMesAno[mesAno]) {
+        ativacoesPorMesAno[mesAno] = { totalFaixas: 0, totalEquipamentos: 0, mes: m, ano: y, porTipo: {}, datas: [] };
+      }
+      ativacoesPorMesAno[mesAno].totalFaixas += numFaixas;
+      ativacoesPorMesAno[mesAno].totalEquipamentos += 1;
+      if (!ativacoesPorMesAno[mesAno].porTipo[tp]) ativacoesPorMesAno[mesAno].porTipo[tp] = { faixas: 0, equipamentos: 0 };
+      ativacoesPorMesAno[mesAno].porTipo[tp].faixas += numFaixas;
+      ativacoesPorMesAno[mesAno].porTipo[tp].equipamentos += 1;
+      if (!ativacoesPorMesAno[mesAno].datas.includes(normDate)) ativacoesPorMesAno[mesAno].datas.push(normDate);
+
+      // Por ano (ex: "2026", "2025")
+      if (!ativacoesPorAno[y]) {
+        ativacoesPorAno[y] = { totalFaixas: 0, totalEquipamentos: 0, porTipo: {} };
+      }
+      ativacoesPorAno[y].totalFaixas += numFaixas;
+      ativacoesPorAno[y].totalEquipamentos += 1;
+      if (!ativacoesPorAno[y].porTipo[tp]) ativacoesPorAno[y].porTipo[tp] = { faixas: 0, equipamentos: 0 };
+      ativacoesPorAno[y].porTipo[tp].faixas += numFaixas;
+      ativacoesPorAno[y].porTipo[tp].equipamentos += 1;
+    }
+  });
+
   // Identifica se a pergunta busca um corredor específico
   const corredoresFormatados: any[] = [];
   Object.entries(porCorredor).forEach(([nome, dados]) => {
@@ -291,6 +346,11 @@ export async function sendChatMessage({
       porTipo,
       filtroAtual: filters,
       abaAtual: activeTab,
+    },
+    historicoAtivacoes: {
+      ativacoesPorMesAno,
+      ativacoesPorAno,
+      ativacoesPorData,
     },
     dadosAgregadosCorredores: corredoresFormatados.slice(0, 15),
     matchedRecords: matchedRecords.slice(0, 15).map(r => ({

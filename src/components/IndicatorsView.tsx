@@ -2442,12 +2442,14 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                     </td>
                     <td className="py-2 px-1 text-center text-[10px] truncate">
                       <span
-                        className={`inline-block px-1.5 py-0.5 rounded-full font-medium truncate max-w-full ${
-                          r.Situação?.includes('Em operação')
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : r.Situação?.includes('Desligado')
-                            ? 'bg-rose-100 text-rose-800'
-                            : 'bg-amber-100 text-amber-800'
+                        className={`inline-block px-1.5 py-0.5 rounded-full font-medium truncate max-w-full border ${
+                          r.Situação?.toLowerCase().includes('relocação') || r.Situação?.toLowerCase().includes('relocacao')
+                            ? 'bg-purple-100 text-purple-800 border-purple-200/80 font-semibold'
+                            : r.Situação?.toLowerCase().includes('em operação') || r.Situação?.toLowerCase().includes('em operacao') || r.Situação?.toLowerCase().includes('operação') || r.Situação?.toLowerCase().includes('operacao')
+                            ? 'bg-emerald-100 text-emerald-800 border-emerald-200/80'
+                            : r.Situação?.toLowerCase().includes('desligado')
+                            ? 'bg-rose-100 text-rose-800 border-rose-200/80'
+                            : 'bg-amber-100 text-amber-800 border-amber-200/80'
                         }`}
                       >
                         {r.Situação?.replace('\n', ' ') || '-'}
