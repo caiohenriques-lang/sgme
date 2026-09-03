@@ -30,6 +30,7 @@ export const ALL_SHEET_HEADERS = [
   'CONDIÇÃO',
   'DIF Pareado',
   'Observações',
+  'Plano de Operação',
   'COORD_LAT_LONG',
   'Código Sem Faixa (kopp)',
   'REG. OBJ'
@@ -172,6 +173,18 @@ export async function fetchEquipmentData(): Promise<{
               ''
             ).trim();
 
+            const planoOperacaoVal = (
+              row['Plano de Operação'] ||
+              row['Plano de Operacao'] ||
+              row['PLANO DE OPERAÇÃO'] ||
+              row['PLANO DE OPERACAO'] ||
+              row['Plano de operação'] ||
+              row['Plano de operacao'] ||
+              row['Plano de Operação '] ||
+              row['PLANO DE OPERAÇÃO '] ||
+              ''
+            ).trim();
+
             const rawFields: Record<string, string> = {};
             ALL_SHEET_HEADERS.forEach((header) => {
               let val = '';
@@ -183,6 +196,8 @@ export async function fetchEquipmentData(): Promise<{
                 val = row['Data de Desligamento'] ?? row['Data de desligamento'] ?? row['Data Desligamento'] ?? row['DATA DE DESLIGAMENTO'] ?? row['Data de Desligamento '] ?? '';
               } else if (header === 'REG. OBJ' || header === 'Registro do Objeto') {
                 val = regObjVal;
+              } else if (header === 'Plano de Operação') {
+                val = planoOperacaoVal;
               } else {
                 val = row[header] !== undefined ? String(row[header]) : '';
               }
@@ -226,6 +241,7 @@ export async function fetchEquipmentData(): Promise<{
               CONDIÇÃO: (row['CONDIÇÃO'] || '').trim(),
               'DIF Pareado': (row['DIF Pareado'] || '').trim(),
               Observações: (row['Observações'] || '').trim(),
+              'Plano de Operação': planoOperacaoVal,
               COORD_LAT_LONG: coordStr,
               'Código Sem Faixa (kopp)': (row['Código Sem Faixa (kopp)'] || '').trim(),
               'REG. OBJ': regObjVal,

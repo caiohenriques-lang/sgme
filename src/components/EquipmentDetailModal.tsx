@@ -52,6 +52,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
         'CONTRATADA',
         'CÓDIGO',
         'Nº DE SÉRIE',
+        'REG. OBJ',
       ],
     },
     {
@@ -76,8 +77,9 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
         'Situação',
         'CONDIÇÃO',
         'DIF Pareado',
+        'Plano de Operação',
         'OS',
-        'REG. OBJ',
+        'Observações',
       ],
     },
     {
@@ -89,7 +91,6 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
         'Data da Aferição',
         'Data de Vencimento da Aferição',
         'Data de Desligamento',
-        'Observações',
       ],
     },
   ];
@@ -177,6 +178,17 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
                   '';
                 return String(reg).trim();
               }
+              if (header === 'Plano de Operação') {
+                const po =
+                  record['Plano de Operação'] ||
+                  record.rawFields?.['Plano de Operação'] ||
+                  record.rawFields?.['Plano de Operacao'] ||
+                  record.rawFields?.['PLANO DE OPERAÇÃO'] ||
+                  record.rawFields?.['PLANO DE OPERACAO'] ||
+                  (record as any)['Plano de Operação'] ||
+                  '';
+                return String(po).trim();
+              }
               const raw = record.rawFields ? record.rawFields[header] : undefined;
               const direct = (record as any)[header];
               let val = raw !== undefined && raw !== null ? String(raw).trim() : (direct !== undefined && direct !== null ? String(direct).trim() : '');
@@ -216,6 +228,8 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
                       else if (header === 'Situação') labelText = 'SITUAÇÃO';
                       else if (header === 'Velocidade Fiscalizada') labelText = 'VELOCIDADE FISCALIZADA';
                       else if (header === 'DIF Pareado') labelText = 'DIF PAREADO';
+                      else if (header === 'Plano de Operação') labelText = 'PLANO DE OPERAÇÃO';
+                      else if (header === 'OS') labelText = 'ORDEM DE SERVIÇO';
                       else if (header === 'REG. OBJ') labelText = 'REGISTRO DE OBJETO';
                       else if (header === 'Data início operação') labelText = 'INÍCIO DE OPERAÇÃO';
                       else if (header === 'Data de aceite') labelText = 'ACEITE';

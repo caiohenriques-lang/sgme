@@ -25,6 +25,7 @@ export interface EquipmentRecord {
   CONDIÇÃO: string;
   'DIF Pareado': string;
   Observações: string;
+  'Plano de Operação'?: string;
   COORD_LAT_LONG: string;
   'Código Sem Faixa (kopp)': string;
   'REG. OBJ'?: string;

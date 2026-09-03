@@ -25,23 +25,8 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           
-          {/* Top Right: Timbre / Logo Image & AI Trigger */}
+          {/* Top Right: Timbre / Logo Image */}
           <div className="flex items-center justify-center md:justify-end gap-2.5 shrink-0 w-full md:w-auto order-first md:order-last flex-wrap">
-            {onOpenAI && (
-              <button
-                onClick={onOpenAI}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs shadow-xs hover:shadow-md transition-all cursor-pointer active:scale-95 border border-blue-400/40 group"
-                title="Abrir Assistente Inteligente com IA da GEAPI"
-              >
-                <div className="relative">
-                  <Bot className="w-4 h-4 text-white group-hover:rotate-12 transition-transform" />
-                  <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-emerald-400 rounded-full" />
-                </div>
-                <span>Assistente IA</span>
-                <Sparkles className="w-3 h-3 text-blue-200" />
-              </button>
-            )}
-
             <div className="bg-white p-1 rounded-lg border border-slate-200/80 shadow-2xs flex items-center justify-center">
               <img
                 src="/logo_pbh_bhtrans.png"

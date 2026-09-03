@@ -6,15 +6,41 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.31';
-export const BUILD_DATE = '02/09/2026';
+export const APP_VERSION = 'v3.7.33';
+export const BUILD_DATE = '03/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v3.7.33',
+    date: '03/09/2026',
+    tag: 'Sincronização Completa das Fichas e Relatórios em PDF com a Reestruturação do Modal',
+    isLatest: true,
+    changes: [
+      'Sincronizada a estrutura dos relatórios e fichas em PDF na aba "Relatórios" (exportação customizada por filtros e demandas).',
+      'Reposicionado o campo "Observações" para o bloco "Especificações Técnicas e Operação" como último item em todos os PDFs gerados.',
+      'Reposicionado o campo "Registro de Objeto" (REG. OBJ) para "Identificação & Contrato" como último item em todos os relatórios.',
+      'Incluído o campo "Plano de Operação" logo acima de "ORDEM DE SERVIÇO" em todas as fichas geradas a partir da aba Relatórios.',
+      'Garantida total consistência entre a visualização do modal na tela e todos os formatos de relatórios impressos/exportados.'
+    ]
+  },
+  {
+    version: 'v3.7.32',
+    date: '03/09/2026',
+    tag: 'Inclusão da Coluna Plano de Operação, Reestruturação e Padronização dos Campos no Modal e Exportação PDF',
+    changes: [
+      'Removido o botão de Assistente IA do topo/cabeçalho do portal, mantendo a interface superior mais limpa.',
+      'Integrada a nova coluna "Plano de Operação" da planilha oficial ao modal de detalhes e ficha técnica do equipamento.',
+      'Posicionado o campo "Plano de Operação" dentro da seção "Especificações Técnicas e Operação", exibido quando houver informação preenchida logo acima de "ORDEM DE SERVIÇO".',
+      'Movido o campo "Observações" para o subitem "Especificações Técnicas e Operação" como último item.',
+      'Movido o campo "Registro de Objeto" (REG. OBJ) para o subitem "Identificação & Contrato" como último item.',
+      'Renomeado o campo "OS" para "ORDEM DE SERVIÇO" tanto na visualização do modal quanto no relatório/ficha exportado em PDF.',
+      'Sincronizada toda a reorganização estrutural do modal na exportação da Ficha do Equipamento em formato PDF.'
+    ]
+  },
   {
     version: 'v3.7.31',
     date: '02/09/2026',
     tag: 'Otimização de Velocidade do Assistente IA (Resposta Instantânea com Timeout & Fallback Dinâmico)',
-    isLatest: true,
     changes: [
       'Configurado timeout de resposta máxima de 6 segundos com AbortController no cliente de IA, impedindo travamentos ou espera prolongada.',
       'Aprimorado o motor analítico local embutido para responder em milissegundos a perguntas sobre ativação diária ("quantas faixas entraram em operação hoje"), contratos, tipos, status e equipamentos com alta precisão e ações interativas.',

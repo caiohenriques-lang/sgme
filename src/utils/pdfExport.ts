@@ -212,6 +212,7 @@ export async function exportSingleRecordPDF(record: EquipmentRecord) {
         ['CONTRATADA', record.CONTRATADA],
         ['CÓDIGO', record.CÓDIGO],
         ['Nº DE SÉRIE', record['Nº DE SÉRIE']],
+        ['REGISTRO DE OBJETO', (record.TIPO || '').toUpperCase().trim() === 'CEV' ? '' : (record['REG. OBJ'] || record.rawFields?.['REG. OBJ'] || record.rawFields?.['REG. OBJ.'] || '')],
       ]
     },
     {
@@ -234,8 +235,9 @@ export async function exportSingleRecordPDF(record: EquipmentRecord) {
         ['SITUAÇÃO', record.Situação],
         ['CONDIÇÃO', record.CONDIÇÃO],
         ['DIF PAREADO', record['DIF Pareado']],
-        ['OS', record.OS],
-        ['REGISTRO DE OBJETO', (record.TIPO || '').toUpperCase().trim() === 'CEV' ? '' : (record['REG. OBJ'] || record.rawFields?.['REG. OBJ'] || record.rawFields?.['REG. OBJ.'] || '')],
+        ['PLANO DE OPERAÇÃO', record['Plano de Operação'] || record.rawFields?.['Plano de Operação'] || record.rawFields?.['Plano de Operacao'] || record.rawFields?.['PLANO DE OPERAÇÃO'] || record.rawFields?.['PLANO DE OPERACAO'] || ''],
+        ['ORDEM DE SERVIÇO', record.OS],
+        ['OBSERVAÇÕES', record.Observações],
       ]
     },
     {
@@ -246,7 +248,6 @@ export async function exportSingleRecordPDF(record: EquipmentRecord) {
         ['AFERIÇÃO', record['Data da Aferição']],
         ['VENCIMENTO DA AFERIÇÃO', record['Data de Vencimento da Aferição']],
         ['DATA DE DESLIGAMENTO', record['Data de Desligamento']],
-        ['OBSERVAÇÕES', record.Observações],
       ]
     }
   ];
@@ -775,6 +776,7 @@ export async function exportCustomReportPDF(records: EquipmentRecord[], filtersA
           ['CONTRATADA', record.CONTRATADA],
           ['CÓDIGO', record.CÓDIGO],
           ['Nº DE SÉRIE', record['Nº DE SÉRIE']],
+          ['REGISTRO DE OBJETO', (record.TIPO || '').toUpperCase().trim() === 'CEV' ? '' : (record['REG. OBJ'] || record.rawFields?.['REG. OBJ'] || record.rawFields?.['REG. OBJ.'] || '')],
         ]
       },
       {
@@ -797,8 +799,9 @@ export async function exportCustomReportPDF(records: EquipmentRecord[], filtersA
           ['SITUAÇÃO', record.Situação],
           ['CONDIÇÃO', record.CONDIÇÃO],
           ['DIF PAREADO', record['DIF Pareado']],
-          ['OS', record.OS],
-          ['REGISTRO DE OBJETO', (record.TIPO || '').toUpperCase().trim() === 'CEV' ? '' : (record['REG. OBJ'] || record.rawFields?.['REG. OBJ'] || record.rawFields?.['REG. OBJ.'] || '')],
+          ['PLANO DE OPERAÇÃO', record['Plano de Operação'] || record.rawFields?.['Plano de Operação'] || record.rawFields?.['Plano de Operacao'] || record.rawFields?.['PLANO DE OPERAÇÃO'] || record.rawFields?.['PLANO DE OPERACAO'] || ''],
+          ['ORDEM DE SERVIÇO', record.OS],
+          ['OBSERVAÇÕES', record.Observações || record.rawFields?.['OBSERVAÇÃO'] || record.rawFields?.['Observações']],
         ]
       },
       {
@@ -809,7 +812,6 @@ export async function exportCustomReportPDF(records: EquipmentRecord[], filtersA
           ['AFERIÇÃO', formatDate(record['Data da Aferição'] || record.rawFields?.['DATA DA AFERIÇÃO'] || record.rawFields?.['Data da Aferição'])],
           ['VENCIMENTO DA AFERIÇÃO', formatDate(record['Data de Vencimento da Aferição'] || record.rawFields?.['DATA DO VENCIMENTO DA AFERIÇÃO'] || record.rawFields?.['Data de Vencimento da Aferição'])],
           ['DATA DE DESLIGAMENTO', formatDate(record['Data de Desligamento'] || record.rawFields?.['DATA DE DESLIGAMENTO'] || record.rawFields?.['Data de Desligamento'])],
-          ['OBSERVAÇÕES', record.Observações || record.rawFields?.['OBSERVAÇÃO'] || record.rawFields?.['Observações']],
         ]
       }
     ];
