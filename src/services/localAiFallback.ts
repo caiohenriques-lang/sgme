@@ -175,9 +175,33 @@ export function generateLocalFallbackResponse(
     }
   });
 
-  // 1. Extração de Tipo específico mencionado (CEV, DAS, DIF, DTLP, DCP)
+  // Detecção de consultas sobre caminhões e veículos pesados (restrição de circulação)
+  const isTruckQuery =
+    lower.includes('caminhao') ||
+    lower.includes('caminhão') ||
+    lower.includes('caminhoes') ||
+    lower.includes('caminhões') ||
+    lower.includes('veiculo pesado') ||
+    lower.includes('veículo pesado') ||
+    lower.includes('veiculos pesados') ||
+    lower.includes('veículos pesados') ||
+    lower.includes('trafego pesado') ||
+    lower.includes('tráfego pesado') ||
+    lower.includes('transito pesado') ||
+    lower.includes('trânsito pesado') ||
+    lower.includes('veiculo de carga') ||
+    lower.includes('veículo de carga') ||
+    lower.includes('veiculos de carga') ||
+    lower.includes('veículos de carga') ||
+    lower.includes('restricao de caminhao') ||
+    lower.includes('restrição de caminhão') ||
+    lower.includes('restricao de caminhoes') ||
+    lower.includes('restrição de caminhões') ||
+    lower.includes('locais proibidos');
+
+  // 1. Extração de Tipo específico mencionado (CEV, DAS, DIF, DTLP, DCP) ou inferido por caminhão
   const typeMatch = lower.match(/\b(CEV|DAS|DIF|DTLP|DCP)\b/i);
-  let requestedType: string | null = typeMatch ? typeMatch[1].toUpperCase() : null;
+  let requestedType: string | null = typeMatch ? typeMatch[1].toUpperCase() : (isTruckQuery ? 'DTLP' : null);
 
   // 2. Extração de Contrato específico mencionado (2740, 2741, 2742)
   const contractMatch = lower.match(/\b(2740|2741|2742|2585|2586|2587)\b/);
@@ -481,7 +505,7 @@ export function generateLocalFallbackResponse(
     }
   }
 
-  // 5. CONSULTA ESPECÍFICA POR TIPO (CEV, DAS, DIF, DTLP, DCP)
+  // 5. CONSULTA ESPECÍFICA POR TIPO (CEV, DAS, DIF, DTLP, DCP) OU CAMINHÕES/VEÍCULOS PESADOS
   if (requestedType && porTipo[requestedType]) {
     const tp = porTipo[requestedType];
     const prevAskingOp = prevUserMessage.includes('operação') || prevUserMessage.includes('operacao') || prevUserMessage.includes('ativas') || prevUserMessage.includes('ativo');
@@ -489,6 +513,44 @@ export function generateLocalFallbackResponse(
 
     const isAskingOp = lower.includes('operação') || lower.includes('operacao') || lower.includes('ativas') || lower.includes('ativo') || (isFollowUpPattern && prevAskingOp);
     const isAskingImp = lower.includes('implantação') || lower.includes('implantacao') || lower.includes('projetado') || (isFollowUpPattern && prevAskingImp);
+
+    // Resposta contextualizada quando o usuário pergunta de caminhões / veículos pesados
+    if (isTruckQuery || requestedType === 'DTLP') {
+      if (isAskingOp) {
+        return {
+          text: `📍 A fiscalização de **caminhões e veículos pesados** (restrição de circulação) é realizada pelos equipamentos do tipo **DTLP** (Detector de Tráfego de Locais Proibidos).\n\n` +
+            `• **Em Operação:** **${tp.opFaixas.toLocaleString('pt-BR')} faixas DTLP** (${tp.opEquip.toLocaleString('pt-BR')} equipamentos) ativas (de um total de ${tp.faixas} faixas previstas).`,
+          actions: [
+            { type: 'NAVIGATE_TAB', label: 'Ver DTLP na Tabela', payload: { tab: 'tabela' } },
+            { type: 'NAVIGATE_TAB', label: 'Ver DTLP no Mapa', payload: { tab: 'mapa' } },
+            { type: 'QUICK_PROMPT', label: 'Ver DTLP em Implantação', payload: { prompt: 'Quantas faixas DTLP de caminhão estão em implantação?' } },
+          ],
+        };
+      }
+
+      if (isAskingImp) {
+        return {
+          text: `📍 A fiscalização de **caminhões e veículos pesados** (restrição de circulação) é realizada pelos equipamentos do tipo **DTLP** (Detector de Tráfego de Locais Proibidos).\n\n` +
+            `• **Em Implantação / Projetadas:** **${tp.impFaixas.toLocaleString('pt-BR')} faixas DTLP** (${tp.impEquip.toLocaleString('pt-BR')} equipamentos).`,
+          actions: [
+            { type: 'NAVIGATE_TAB', label: 'Ver DTLP na Tabela', payload: { tab: 'tabela' } },
+            { type: 'QUICK_PROMPT', label: 'Ver DTLP em Operação', payload: { prompt: 'Quantas faixas DTLP estão em operação?' } },
+          ],
+        };
+      }
+
+      return {
+        text: `📍 A fiscalização eletrônica de **caminhões e veículos pesados** (restrição de trânsito em locais/horários proibidos) em Belo Horizonte é realizada pelos equipamentos do tipo **DTLP** (Detector de Tráfego de Locais Proibidos):\n\n` +
+          `• **Total Previsto:** **${tp.faixas.toLocaleString('pt-BR')} faixas** (${tp.equip.toLocaleString('pt-BR')} equipamentos)\n` +
+          `• **Em Operação:** **${tp.opFaixas.toLocaleString('pt-BR')} faixas** (${tp.opEquip.toLocaleString('pt-BR')} equipamentos)\n` +
+          `• **Em Implantação / Projetadas:** **${tp.impFaixas.toLocaleString('pt-BR')} faixas** (${tp.impEquip.toLocaleString('pt-BR')} equipamentos)`,
+        actions: [
+          { type: 'NAVIGATE_TAB', label: 'Filtrar DTLP no Mapa', payload: { tab: 'mapa' } },
+          { type: 'NAVIGATE_TAB', label: 'Ver DTLP na Tabela', payload: { tab: 'tabela' } },
+          { type: 'QUICK_PROMPT', label: 'Ver Todos os Tipos de Radar', payload: { prompt: 'Qual a divisão de faixas por tipo de radar?' } },
+        ],
+      };
+    }
 
     if (isAskingOp) {
       return {

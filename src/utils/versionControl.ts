@@ -6,15 +6,26 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.41';
+export const APP_VERSION = 'v3.7.42';
 export const BUILD_DATE = '03/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.42',
+    date: '03/09/2026',
+    tag: 'Associação Automática de Consultas de Caminhão e Veículos Pesados ao Tipo DTLP no GEAPINHO',
+    isLatest: true,
+    changes: [
+      'Configurado o GEAPINHO para associar de forma imediata e inteligente qualquer pergunta sobre "equipamentos de caminhão", "radares de caminhão", "veículos pesados" ou "tráfego pesado" à tecnologia DTLP (Detector de Tráfego de Locais Proibidos).',
+      'Estruturada resposta explicativa e direta informando o papel da fiscalização de locais proibidos e restrição de caminhões em BH, detalhando o total de faixas/equipamentos DTLP em operação e em implantação.',
+      'Sincronizadas as regras de associação tanto no modelo em nuvem (Gemini) quanto no motor analítico local de alta velocidade.',
+      'Inseridas ações rápidas para visualização e filtragem imediata dos radares DTLP no Mapa e na Tabela.'
+    ]
+  },
+  {
     version: 'v3.7.41',
     date: '03/09/2026',
     tag: 'Ocultação 100% Automática do GEAPINHO em caso de Esgotamento de Cota/Tokens',
-    isLatest: true,
     changes: [
       'Implementada detecção proativa e reativa de cota da API de IA: se a cota de tokens do Gemini estiver esgotada (Erro 429 / RESOURCE_EXHAUSTED), o ícone flutuante do GEAPINHO e sua interface de chat desaparecem 100% do portal.',
       'Criado endpoint backend `/api/gemini/status` e mecanismo de persistência com expiração temporizada para evitar tentativas falhas enquanto a cota estiver esgotada.',
