@@ -20,6 +20,11 @@ import { LockScreen } from './components/LockScreen';
 import { SmartphoneInstallPrompt } from './components/SmartphoneInstallPrompt';
 import { AIAssistantModal } from './components/AIAssistantModal';
 import { AIAssistantButton } from './components/AIAssistantButton';
+import {
+  checkAIAvailability,
+  isAIQuotaExhaustedLocally,
+  AI_QUOTA_EVENT,
+} from './services/aiService';
 import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 
 const initialFilters: FilterState = {
@@ -85,23 +90,35 @@ export default function App() {
   const [selectedRecord, setSelectedRecord] = useState<EquipmentRecord | null>(null);
   const [isVercelGuideOpen, setIsVercelGuideOpen] = useState<boolean>(false);
   const [isAIAssistantOpen, setIsAIAssistantOpen] = useState<boolean>(false);
-  // Controle de visibilidade dos botões da IA (ocultado se a cota de tokens do Gemini estiver esgotada)
-  const [isAiAvailable, setIsAiAvailable] = useState<boolean>(true);
+  
+  // Controle inteligente de visibilidade do GEAPINHO: oculto 100% caso a cota/token acabe
+  const [isAIAvailable, setIsAIAvailable] = useState<boolean>(() => !isAIQuotaExhaustedLocally());
 
-  // Escuta evento de esgotamento de cota para ocultar o GEAPINHO instantaneamente
   useEffect(() => {
-    const handleQuotaExhausted = () => {
-      setIsAiAvailable(false);
-      setIsAIAssistantOpen(false);
+    // Checagem proativa inicial de disponibilidade da IA
+    checkAIAvailability().then((available) => {
+      setIsAIAvailable(available);
+      if (!available) {
+        setIsAIAssistantOpen(false);
+      }
+    });
+
+    // Listener para eventos em tempo real de esgotamento/restauração da cota de tokens
+    const handleQuotaEvent = (e: any) => {
+      const available = e.detail?.available ?? !isAIQuotaExhaustedLocally();
+      setIsAIAvailable(available);
+      if (!available) {
+        setIsAIAssistantOpen(false);
+      }
     };
 
-    window.addEventListener('geapi:ai-quota-exhausted', handleQuotaExhausted);
+    window.addEventListener(AI_QUOTA_EVENT, handleQuotaEvent);
     return () => {
-      window.removeEventListener('geapi:ai-quota-exhausted', handleQuotaExhausted);
+      window.removeEventListener(AI_QUOTA_EVENT, handleQuotaEvent);
     };
   }, []);
 
-  const showAIControls = isAiAvailable;
+  const showAIControls = isAIAvailable;
 
   // Load data from published Google Sheet CSV
   const loadData = useCallback(async () => {

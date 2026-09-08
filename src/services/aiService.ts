@@ -1,5 +1,74 @@
 import { EquipmentRecord, FilterState } from '../types';
 
+export const AI_QUOTA_STORAGE_KEY = 'geapi_ai_quota_exhausted_until';
+export const AI_QUOTA_EVENT = 'geapi_ai_quota_status_changed';
+
+/**
+ * Verifica se a cota de tokens está temporariamente esgotada no armazenamento local.
+ */
+export function isAIQuotaExhaustedLocally(): boolean {
+  try {
+    const stored = localStorage.getItem(AI_QUOTA_STORAGE_KEY);
+    if (!stored) return false;
+    const expireTime = parseInt(stored, 10);
+    if (isNaN(expireTime)) return false;
+    if (Date.now() < expireTime) {
+      return true;
+    }
+    localStorage.removeItem(AI_QUOTA_STORAGE_KEY);
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Marca a cota como esgotada por um período (padrão: 1 hora) e dispara evento para ocultar o GEAPINHO 100%.
+ */
+export function markAIQuotaExhausted(durationMs = 60 * 60 * 1000): void {
+  try {
+    const expireTime = Date.now() + Math.max(durationMs, 5 * 60 * 1000);
+    localStorage.setItem(AI_QUOTA_STORAGE_KEY, expireTime.toString());
+    window.dispatchEvent(new CustomEvent(AI_QUOTA_EVENT, { detail: { available: false, expireTime } }));
+  } catch (e) {
+    console.warn('Erro ao registrar esgotamento de cota do assistente:', e);
+  }
+}
+
+/**
+ * Restaura o status de disponibilidade do assistente.
+ */
+export function clearAIQuotaExhausted(): void {
+  try {
+    localStorage.removeItem(AI_QUOTA_STORAGE_KEY);
+    window.dispatchEvent(new CustomEvent(AI_QUOTA_EVENT, { detail: { available: true } }));
+  } catch (e) {
+    console.warn('Erro ao restaurar status de cota:', e);
+  }
+}
+
+/**
+ * Checa proativamente a disponibilidade da API de IA e oculta o botão se a cota estiver esgotada.
+ */
+export async function checkAIAvailability(): Promise<boolean> {
+  if (isAIQuotaExhaustedLocally()) {
+    return false;
+  }
+  try {
+    const res = await fetch('/api/gemini/status', { method: 'GET' });
+    if (!res.ok) return true;
+    const data = await res.json();
+    if (data.available === false) {
+      const waitMs = data.retryAfter ? Math.max(data.retryAfter - Date.now(), 60000) : 60 * 60 * 1000;
+      markAIQuotaExhausted(waitMs);
+      return false;
+    }
+    return true;
+  } catch {
+    return true;
+  }
+}
+
 export interface ChatMessage {
   id: string;
   sender: 'user' | 'assistant' | 'system';
@@ -20,29 +89,6 @@ export interface SendMessageParams {
   records: EquipmentRecord[];
   filters?: FilterState;
   activeTab?: string;
-}
-
-export class QuotaExhaustedError extends Error {
-  constructor(message: string = 'Quota esgotada') {
-    super(message);
-    this.name = 'QuotaExhaustedError';
-  }
-}
-
-// Emissor de evento para notificar a UI quando os tokens/cota acabarem
-export const onAiQuotaExhausted = () => {
-  window.dispatchEvent(new CustomEvent('geapi:ai-quota-exhausted'));
-};
-
-export async function checkAiAvailability(): Promise<boolean> {
-  try {
-    const res = await fetch('/api/gemini/status');
-    if (!res.ok) return false;
-    const data = await res.json();
-    return data.available === true;
-  } catch {
-    return false;
-  }
 }
 
 export async function sendChatMessage({
@@ -397,6 +443,11 @@ export async function sendChatMessage({
     totalRegistrosDisponiveis: targetRecords.length,
   };
 
+  if (isAIQuotaExhaustedLocally()) {
+    markAIQuotaExhausted();
+    throw new Error('A cota de tokens da IA do GEAPINHO está temporariamente esgotada.');
+  }
+
   let response: Response;
   const controller = new AbortController();
   // Limite estrito de 6 segundos para a API do Gemini responder; se demorar, aciona o motor local instantaneamente (<10ms)
@@ -427,21 +478,18 @@ export async function sendChatMessage({
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     const errString = (errorData.error || '').toString();
-
-    // Se os tokens/cota acabarem (429 ou RESOURCE_EXHAUSTED), aciona o evento para OCULTAR o GEAPINHO
-    if (
+    const isQuota = 
       response.status === 429 ||
-      errorData.quotaExhausted === true ||
-      errString.includes('RESOURCE_EXHAUSTED') ||
-      errString.includes('429') ||
-      errString.includes('quota') ||
-      errString.includes('Quota')
-    ) {
-      console.warn('Cota/Tokens da API de IA esgotados. Ocultando GEAPINHO da interface.');
-      onAiQuotaExhausted();
-      throw new QuotaExhaustedError('A cota de tokens do Assistente de IA foi esgotada temporariamente.');
+      errorData.isQuotaExhausted === true ||
+      /resource_exhausted|cota|quota|rate limit|too many requests/i.test(errString);
+
+    if (isQuota) {
+      console.warn('Cota de tokens do Gemini esgotada. Ocultando GEAPINHO da interface.');
+      const waitMs = errorData.retryAfter ? Math.max(errorData.retryAfter - Date.now(), 60000) : 60 * 60 * 1000;
+      markAIQuotaExhausted(waitMs);
+      throw new Error('A cota de tokens da IA do GEAPINHO esgotou. O assistente foi ocultado automaticamente.');
     }
-    
+
     // Se a chave Gemini não estiver configurada no ambiente ou houver erro 500/timeout, responde imediatamente com o motor local embutido
     if (errString.includes('GEMINI_API_KEY') || response.status === 500 || response.status === 504) {
       console.warn('GEMINI_API_KEY não configurada ou instabilidade no servidor. Utilizando motor analítico local GEAPI.');

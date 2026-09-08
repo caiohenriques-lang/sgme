@@ -4,6 +4,7 @@ import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 
 let geminiClient: GoogleGenAI | null = null;
+let quotaExhaustedUntil: number | null = null;
 
 function getGeminiClient(): GoogleGenAI {
   if (!geminiClient) {
@@ -34,9 +35,43 @@ async function startServer() {
     res.json({ status: 'ok', service: 'GEAPI Radar Portal' });
   });
 
+  // AI Status check (determina se o GEAPINHO está ativo ou deve ser ocultado por falta de cota/token)
+  app.get('/api/gemini/status', (req, res) => {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.json({ available: false, reason: 'NO_API_KEY' });
+    }
+    if (quotaExhaustedUntil && Date.now() < quotaExhaustedUntil) {
+      return res.json({
+        available: false,
+        reason: 'QUOTA_EXHAUSTED',
+        retryAfter: quotaExhaustedUntil,
+      });
+    }
+    return res.json({ available: true });
+  });
+
   // AI Chat Route for GEAPI Assistant
   app.post('/api/gemini/chat', async (req, res) => {
     try {
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        return res.status(401).json({
+          error: 'GEMINI_API_KEY não configurada no ambiente.',
+          isQuotaExhausted: true,
+          code: 'NO_API_KEY',
+        });
+      }
+
+      if (quotaExhaustedUntil && Date.now() < quotaExhaustedUntil) {
+        return res.status(429).json({
+          error: 'Cota de tokens do assistente temporariamente esgotada.',
+          isQuotaExhausted: true,
+          code: 'QUOTA_EXHAUSTED',
+          retryAfter: quotaExhaustedUntil,
+        });
+      }
+
       const { message, history = [], context = {} } = req.body;
 
       if (!message || typeof message !== 'string') {
@@ -216,32 +251,28 @@ ${JSON.stringify(context, null, 2)}
       });
     } catch (error: any) {
       console.error('Erro na rota /api/gemini/chat:', error);
-      const errorMessage = error?.message || '';
-      const isQuotaExhausted =
-        errorMessage.includes('429') ||
-        errorMessage.includes('RESOURCE_EXHAUSTED') ||
-        errorMessage.includes('quota') ||
-        errorMessage.includes('Quota') ||
-        errorMessage.includes('Too Many Requests') ||
-        errorMessage.includes('rate limit');
+      const errMsg = (error?.message || '').toString();
+      const errStatus = error?.status || error?.statusCode || error?.code;
+      
+      const isQuota = 
+        errStatus === 429 ||
+        /resource_exhausted|quota|rate limit|too many requests|tokens/i.test(errMsg);
 
-      res.status(isQuotaExhausted ? 429 : 500).json({
-        error: errorMessage || 'Erro interno ao processar a solicitação de IA.',
-        quotaExhausted: isQuotaExhausted,
-      });
-    }
-  });
-
-  // Rota para verificar status e disponibilidade do token Gemini
-  app.get('/api/gemini/status', async (req, res) => {
-    try {
-      const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) {
-        return res.json({ available: false, reason: 'missing_key' });
+      if (isQuota) {
+        // Bloqueia temporariamente por 1 hora (ou até reinício da cota)
+        quotaExhaustedUntil = Date.now() + 60 * 60 * 1000;
+        return res.status(429).json({
+          error: 'Cota de tokens da API Gemini esgotada.',
+          code: 'RESOURCE_EXHAUSTED',
+          isQuotaExhausted: true,
+          retryAfter: quotaExhaustedUntil,
+        });
       }
-      res.json({ available: true });
-    } catch (err: any) {
-      res.json({ available: false, error: err?.message });
+
+      res.status(500).json({
+        error: error.message || 'Erro interno ao processar a solicitação de IA.',
+        isQuotaExhausted: false,
+      });
     }
   });
 

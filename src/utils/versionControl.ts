@@ -13,12 +13,13 @@ export const VERSION_HISTORY: VersionRelease[] = [
   {
     version: 'v3.7.41',
     date: '03/09/2026',
-    tag: 'Mecanismo de Ocultação Automática do GEAPINHO por Esgotamento de Tokens/Cota',
+    tag: 'Ocultação 100% Automática do GEAPINHO em caso de Esgotamento de Cota/Tokens',
     isLatest: true,
     changes: [
-      'Implementado mecanismo inteligente de autoproteção: se a cota ou os tokens do assistente Gemini se esgotarem (erro 429 ou RESOURCE_EXHAUSTED), o GEAPINHO é ocultado automaticamente da interface do portal.',
-      'Criada rota de verificação de status (/api/gemini/status) e disparador de eventos reativo no frontend.',
-      'Garantida experiência de usuário limpa e sem erros aparentes na tela caso os limites de consumo da API sejam atingidos.'
+      'Implementada detecção proativa e reativa de cota da API de IA: se a cota de tokens do Gemini estiver esgotada (Erro 429 / RESOURCE_EXHAUSTED), o ícone flutuante do GEAPINHO e sua interface de chat desaparecem 100% do portal.',
+      'Criado endpoint backend `/api/gemini/status` e mecanismo de persistência com expiração temporizada para evitar tentativas falhas enquanto a cota estiver esgotada.',
+      'Disparo de eventos em tempo real (`geapi_ai_quota_status_changed`) que sincronizam instantaneamente a remoção/restauração do assistente na tela do usuário.',
+      'Garantida navegação limpa e fluida no portal sem exibir erros ou botões inoperantes ao usuário.'
     ]
   },
   {
