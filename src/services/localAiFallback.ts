@@ -199,9 +199,26 @@ export function generateLocalFallbackResponse(
     lower.includes('restrição de caminhões') ||
     lower.includes('locais proibidos');
 
-  // 1. Extração de Tipo específico mencionado (CEV, DAS, DIF, DTLP, DCP) ou inferido por caminhão
+  // Detecção de consultas sobre conversão proibida e movimentos veiculares proibidos
+  const isConversionQuery =
+    lower.includes('conversão') ||
+    lower.includes('conversao') ||
+    lower.includes('converão') ||
+    lower.includes('converao') ||
+    lower.includes('conversões') ||
+    lower.includes('conversoes') ||
+    lower.includes('movimento proibido') ||
+    lower.includes('movimentos proibidos') ||
+    lower.includes('manobra proibida') ||
+    lower.includes('manobras proibidas') ||
+    lower.includes('virada proibida') ||
+    lower.includes('retorno proibido');
+
+  // 1. Extração de Tipo específico mencionado (CEV, DAS, DIF, DTLP, DCP) ou inferido por caminhão / conversão
   const typeMatch = lower.match(/\b(CEV|DAS|DIF|DTLP|DCP)\b/i);
-  let requestedType: string | null = typeMatch ? typeMatch[1].toUpperCase() : (isTruckQuery ? 'DTLP' : null);
+  let requestedType: string | null = typeMatch
+    ? typeMatch[1].toUpperCase()
+    : (isTruckQuery ? 'DTLP' : (isConversionQuery ? 'DCP' : null));
 
   // 2. Extração de Contrato específico mencionado (2740, 2741, 2742)
   const contractMatch = lower.match(/\b(2740|2741|2742|2585|2586|2587)\b/);
@@ -505,7 +522,7 @@ export function generateLocalFallbackResponse(
     }
   }
 
-  // 5. CONSULTA ESPECÍFICA POR TIPO (CEV, DAS, DIF, DTLP, DCP) OU CAMINHÕES/VEÍCULOS PESADOS
+  // 5. CONSULTA ESPECÍFICA POR TIPO (CEV, DAS, DIF, DTLP, DCP) OU CAMINHÕES/CONVERSÃO PROIBIDA
   if (requestedType && porTipo[requestedType]) {
     const tp = porTipo[requestedType];
     const prevAskingOp = prevUserMessage.includes('operação') || prevUserMessage.includes('operacao') || prevUserMessage.includes('ativas') || prevUserMessage.includes('ativo');
@@ -547,6 +564,44 @@ export function generateLocalFallbackResponse(
         actions: [
           { type: 'NAVIGATE_TAB', label: 'Filtrar DTLP no Mapa', payload: { tab: 'mapa' } },
           { type: 'NAVIGATE_TAB', label: 'Ver DTLP na Tabela', payload: { tab: 'tabela' } },
+          { type: 'QUICK_PROMPT', label: 'Ver Todos os Tipos de Radar', payload: { prompt: 'Qual a divisão de faixas por tipo de radar?' } },
+        ],
+      };
+    }
+
+    // Resposta contextualizada quando o usuário pergunta de conversão proibida
+    if (isConversionQuery || requestedType === 'DCP') {
+      if (isAskingOp) {
+        return {
+          text: `📍 A fiscalização eletrônica de **conversão proibida e movimentos não permitidos** é realizada pelos equipamentos do tipo **DCP** (Detector de Conversão Proibida).\n\n` +
+            `• **Em Operação:** **${tp.opFaixas.toLocaleString('pt-BR')} faixas DCP** (${tp.opEquip.toLocaleString('pt-BR')} equipamentos) ativas (de um total de ${tp.faixas} faixas previstas).`,
+          actions: [
+            { type: 'NAVIGATE_TAB', label: 'Ver DCP na Tabela', payload: { tab: 'tabela' } },
+            { type: 'NAVIGATE_TAB', label: 'Ver DCP no Mapa', payload: { tab: 'mapa' } },
+            { type: 'QUICK_PROMPT', label: 'Ver DCP em Implantação', payload: { prompt: 'Quantas faixas DCP de conversão proibida estão em implantação?' } },
+          ],
+        };
+      }
+
+      if (isAskingImp) {
+        return {
+          text: `📍 A fiscalização eletrônica de **conversão proibida e movimentos não permitidos** é realizada pelos equipamentos do tipo **DCP** (Detector de Conversão Proibida).\n\n` +
+            `• **Em Implantação / Projetadas:** **${tp.impFaixas.toLocaleString('pt-BR')} faixas DCP** (${tp.impEquip.toLocaleString('pt-BR')} equipamentos).`,
+          actions: [
+            { type: 'NAVIGATE_TAB', label: 'Ver DCP na Tabela', payload: { tab: 'tabela' } },
+            { type: 'QUICK_PROMPT', label: 'Ver DCP em Operação', payload: { prompt: 'Quantas faixas DCP estão em operação?' } },
+          ],
+        };
+      }
+
+      return {
+        text: `📍 A fiscalização eletrônica de **conversão proibida e movimentos veiculares não permitidos** em Belo Horizonte é realizada pelos equipamentos do tipo **DCP** (Detector de Conversão Proibida):\n\n` +
+          `• **Total Previsto:** **${tp.faixas.toLocaleString('pt-BR')} faixas** (${tp.equip.toLocaleString('pt-BR')} equipamentos)\n` +
+          `• **Em Operação:** **${tp.opFaixas.toLocaleString('pt-BR')} faixas** (${tp.opEquip.toLocaleString('pt-BR')} equipamentos)\n` +
+          `• **Em Implantação / Projetadas:** **${tp.impFaixas.toLocaleString('pt-BR')} faixas** (${tp.impEquip.toLocaleString('pt-BR')} equipamentos)`,
+        actions: [
+          { type: 'NAVIGATE_TAB', label: 'Filtrar DCP no Mapa', payload: { tab: 'mapa' } },
+          { type: 'NAVIGATE_TAB', label: 'Ver DCP na Tabela', payload: { tab: 'tabela' } },
           { type: 'QUICK_PROMPT', label: 'Ver Todos os Tipos de Radar', payload: { prompt: 'Qual a divisão de faixas por tipo de radar?' } },
         ],
       };

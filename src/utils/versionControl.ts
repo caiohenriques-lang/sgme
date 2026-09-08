@@ -6,15 +6,26 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.42';
+export const APP_VERSION = 'v3.7.43';
 export const BUILD_DATE = '03/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.43',
+    date: '03/09/2026',
+    tag: 'Associação Automática de Consultas de Conversão Proibida ao Tipo DCP no GEAPINHO',
+    isLatest: true,
+    changes: [
+      'Configurado o GEAPINHO para associar imediatamente qualquer pergunta sobre "equipamentos de conversão", "radares de conversão proibida", "manobra proibida" ou "movimento proibido" à tecnologia DCP (Detector de Conversão Proibida).',
+      'Estruturada resposta explicativa e precisa detalhando o total de faixas/equipamentos DCP em operação e em implantação/projetados nos contratos vigentes.',
+      'Sincronizadas as regras de associação e filtragem tanto no modelo em nuvem (Gemini) quanto no motor de fallback analítico local.',
+      'Disponibilizados botões interativos de ação rápida para visualizar os radares DCP no Mapa e na Tabela com 1 clique.'
+    ]
+  },
+  {
     version: 'v3.7.42',
     date: '03/09/2026',
     tag: 'Associação Automática de Consultas de Caminhão e Veículos Pesados ao Tipo DTLP no GEAPINHO',
-    isLatest: true,
     changes: [
       'Configurado o GEAPINHO para associar de forma imediata e inteligente qualquer pergunta sobre "equipamentos de caminhão", "radares de caminhão", "veículos pesados" ou "tráfego pesado" à tecnologia DTLP (Detector de Tráfego de Locais Proibidos).',
       'Estruturada resposta explicativa e direta informando o papel da fiscalização de locais proibidos e restrição de caminhões em BH, detalhando o total de faixas/equipamentos DTLP em operação e em implantação.',
