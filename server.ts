@@ -216,9 +216,32 @@ ${JSON.stringify(context, null, 2)}
       });
     } catch (error: any) {
       console.error('Erro na rota /api/gemini/chat:', error);
-      res.status(500).json({
-        error: error.message || 'Erro interno ao processar a solicitação de IA.',
+      const errorMessage = error?.message || '';
+      const isQuotaExhausted =
+        errorMessage.includes('429') ||
+        errorMessage.includes('RESOURCE_EXHAUSTED') ||
+        errorMessage.includes('quota') ||
+        errorMessage.includes('Quota') ||
+        errorMessage.includes('Too Many Requests') ||
+        errorMessage.includes('rate limit');
+
+      res.status(isQuotaExhausted ? 429 : 500).json({
+        error: errorMessage || 'Erro interno ao processar a solicitação de IA.',
+        quotaExhausted: isQuotaExhausted,
       });
+    }
+  });
+
+  // Rota para verificar status e disponibilidade do token Gemini
+  app.get('/api/gemini/status', async (req, res) => {
+    try {
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        return res.json({ available: false, reason: 'missing_key' });
+      }
+      res.json({ available: true });
+    } catch (err: any) {
+      res.json({ available: false, error: err?.message });
     }
   });
 

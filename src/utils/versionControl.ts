@@ -6,15 +6,25 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.40';
+export const APP_VERSION = 'v3.7.41';
 export const BUILD_DATE = '03/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.41',
+    date: '03/09/2026',
+    tag: 'Mecanismo de Ocultação Automática do GEAPINHO por Esgotamento de Tokens/Cota',
+    isLatest: true,
+    changes: [
+      'Implementado mecanismo inteligente de autoproteção: se a cota ou os tokens do assistente Gemini se esgotarem (erro 429 ou RESOURCE_EXHAUSTED), o GEAPINHO é ocultado automaticamente da interface do portal.',
+      'Criada rota de verificação de status (/api/gemini/status) e disparador de eventos reativo no frontend.',
+      'Garantida experiência de usuário limpa e sem erros aparentes na tela caso os limites de consumo da API sejam atingidos.'
+    ]
+  },
+  {
     version: 'v3.7.40',
     date: '03/09/2026',
     tag: 'Memória Contextual Inteligente para Perguntas Sucessoras (Follow-up) no GEAPINHO',
-    isLatest: true,
     changes: [
       'Implementada inteligência contextual e memória de continuidade no GEAPINHO para perguntas sucessoras e elípticas (ex: "e em 2025?", "e no contrato 2741?", "e quantos DAS?").',
       'Quando o usuário pergunta "quantos equipamentos entraram em operação no mês de setembro de 2026?" e em seguida pergunta "e em 2025?", o GEAPINHO agora herda o contexto ("mês de setembro" e "entrada em operação"), respondendo cirurgicamente sobre Setembro de 2025 em vez de listar o ano de 2025 inteiro.',

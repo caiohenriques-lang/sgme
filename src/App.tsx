@@ -85,8 +85,23 @@ export default function App() {
   const [selectedRecord, setSelectedRecord] = useState<EquipmentRecord | null>(null);
   const [isVercelGuideOpen, setIsVercelGuideOpen] = useState<boolean>(false);
   const [isAIAssistantOpen, setIsAIAssistantOpen] = useState<boolean>(false);
-  // Controle de visibilidade dos botões da IA reativado
-  const showAIControls = true;
+  // Controle de visibilidade dos botões da IA (ocultado se a cota de tokens do Gemini estiver esgotada)
+  const [isAiAvailable, setIsAiAvailable] = useState<boolean>(true);
+
+  // Escuta evento de esgotamento de cota para ocultar o GEAPINHO instantaneamente
+  useEffect(() => {
+    const handleQuotaExhausted = () => {
+      setIsAiAvailable(false);
+      setIsAIAssistantOpen(false);
+    };
+
+    window.addEventListener('geapi:ai-quota-exhausted', handleQuotaExhausted);
+    return () => {
+      window.removeEventListener('geapi:ai-quota-exhausted', handleQuotaExhausted);
+    };
+  }, []);
+
+  const showAIControls = isAiAvailable;
 
   // Load data from published Google Sheet CSV
   const loadData = useCallback(async () => {

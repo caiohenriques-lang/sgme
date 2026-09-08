@@ -22,6 +22,29 @@ export interface SendMessageParams {
   activeTab?: string;
 }
 
+export class QuotaExhaustedError extends Error {
+  constructor(message: string = 'Quota esgotada') {
+    super(message);
+    this.name = 'QuotaExhaustedError';
+  }
+}
+
+// Emissor de evento para notificar a UI quando os tokens/cota acabarem
+export const onAiQuotaExhausted = () => {
+  window.dispatchEvent(new CustomEvent('geapi:ai-quota-exhausted'));
+};
+
+export async function checkAiAvailability(): Promise<boolean> {
+  try {
+    const res = await fetch('/api/gemini/status');
+    if (!res.ok) return false;
+    const data = await res.json();
+    return data.available === true;
+  } catch {
+    return false;
+  }
+}
+
 export async function sendChatMessage({
   message,
   history,
@@ -404,6 +427,20 @@ export async function sendChatMessage({
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     const errString = (errorData.error || '').toString();
+
+    // Se os tokens/cota acabarem (429 ou RESOURCE_EXHAUSTED), aciona o evento para OCULTAR o GEAPINHO
+    if (
+      response.status === 429 ||
+      errorData.quotaExhausted === true ||
+      errString.includes('RESOURCE_EXHAUSTED') ||
+      errString.includes('429') ||
+      errString.includes('quota') ||
+      errString.includes('Quota')
+    ) {
+      console.warn('Cota/Tokens da API de IA esgotados. Ocultando GEAPINHO da interface.');
+      onAiQuotaExhausted();
+      throw new QuotaExhaustedError('A cota de tokens do Assistente de IA foi esgotada temporariamente.');
+    }
     
     // Se a chave Gemini não estiver configurada no ambiente ou houver erro 500/timeout, responde imediatamente com o motor local embutido
     if (errString.includes('GEMINI_API_KEY') || response.status === 500 || response.status === 504) {
