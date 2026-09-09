@@ -21,7 +21,7 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import { EquipmentRecord, FilterState, ActiveTab } from '../types';
-import { sendChatMessage, ChatMessage, AIAction } from '../services/aiService';
+import { sendChatMessage, ChatMessage, AIAction, isAIQuotaExhaustedLocally } from '../services/aiService';
 import { exportFilteredRecordsPDF, exportSingleRecordPDF } from '../utils/pdfExport';
 
 interface AIAssistantModalProps {
@@ -86,6 +86,9 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [activeSource, setActiveSource] = useState<'gemini' | 'local'>(() => {
+    return isAIQuotaExhaustedLocally() ? 'local' : 'gemini';
+  });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -134,6 +137,10 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
         activeTab,
       });
 
+      if (res.source) {
+        setActiveSource(res.source);
+      }
+
       const aiMessage: ChatMessage = {
         id: `ai-${Date.now()}`,
         sender: 'assistant',
@@ -145,6 +152,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
       setMessages((prev) => [...prev, aiMessage]);
     } catch (err: any) {
       console.error('Erro no assistente IA:', err);
+      setActiveSource('local');
       const errorMessage: ChatMessage = {
         id: `error-${Date.now()}`,
         sender: 'assistant',
@@ -265,9 +273,14 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                   <Sparkles className="w-2.5 h-2.5" /> IA GEAPI
                 </span>
               </div>
-              <p className="text-[11px] text-slate-300">
-                Inteligência Artificial interativa da Fiscalização Eletrônica
-              </p>
+              <div className="flex items-center gap-1.5 text-[11px] text-slate-300">
+                <span>Inteligência Artificial da FE</span>
+                <span>•</span>
+                <span className="flex items-center gap-1 font-semibold">
+                  <span className={`w-1.5 h-1.5 rounded-full ${activeSource === 'gemini' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                  {activeSource === 'gemini' ? 'Gemini' : 'Modo local'}
+                </span>
+              </div>
             </div>
           </div>
 

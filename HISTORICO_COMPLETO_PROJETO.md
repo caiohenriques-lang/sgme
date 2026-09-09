@@ -380,7 +380,7 @@ graph TD
    * `src/services/dataService.ts` faz o parsing via PapaParse, higieniza as strings e converte os dados brutos na tipagem rigorosa `EquipmentRecord`.
    * Um timer recarrega esses dados a cada 3 minutos em segundo plano de forma assíncrona.
 2. **Autenticação (Access Protection):**
-   * Componente `LockScreen.tsx` intercepta a renderização do `App.tsx` se a variável `isAuthenticated` (armazenada em `sessionStorage`) não for verdadeira. A senha cadastrada em código é `GEAPIFE2026`.
+   * Componente `LockScreen.tsx` intercepta a renderização do `App.tsx` se a variável `isAuthenticated` (armazenada em `sessionStorage`) não for verdadeira. A senha cadastrada em código é `GEAPIFE`.
 3. **Estado de Filtragem (Reactive Flow):**
    * O portal utiliza um estado principal `filters` (tipo `FilterState`) em `App.tsx`. Toda alteração de filtros através da `FilterBar` ou interações bidirecionais de gráficos recalcula o array derivado `filteredRecords` usando `useMemo` de alta performance.
 4. **Exportação de Relatórios (PDF Capture):**
@@ -721,7 +721,7 @@ O GEAPINHO é capaz de interagir fisicamente com a interface através da emissã
 Após auditoria rigorosa de consistência entre discussões de chat anteriores e o código-fonte atual dos arquivos, identifica-se as seguintes discrepâncias para atenção dos próximos desenvolvedores:
 
 * **Integração Real de Autenticação Multifator (MFA):** Discutida em sessões antigas de especificação de segurança da PBH para gerentes da GEAPI.
-  * *Evidência no código:* Não implementada. O componente `LockScreen.tsx` protege o acesso por meio de uma palavra-passe única (`GEAPIFE2026`) estática e local.
+  * *Evidência no código:* Não implementada. O componente `LockScreen.tsx` protege o acesso por meio de uma palavra-passe única (`GEAPIFE`) estática e local.
 * **Hospedagem no Firebase Firestore para Logs de Chat:** Discutido para auditoria de histórico de conversas do GEAPINHO.
   * *Evidência no código:* Não há banco de dados conectado. As mensagens do chat do assistente são salvas puramente no estado local do React da janela ativa (`useState`), sendo limpas se o usuário recarregar a página do portal.
 

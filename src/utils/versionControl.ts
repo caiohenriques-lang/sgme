@@ -6,15 +6,27 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.43';
-export const BUILD_DATE = '03/09/2026';
+export const APP_VERSION = 'v3.7.44';
+export const BUILD_DATE = '09/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v3.7.44',
+    date: '09/09/2026',
+    tag: 'Modo Local Permanente e Unificação das Regras do GEAPINHO',
+    isLatest: true,
+    changes: [
+      'Garantida a disponibilidade permanente do GEAPINHO na interface do usuário, impedindo a ocultação do botão flutuante ou modal em caso de cota esgotada (HTTP 429).',
+      'Configurado o assistente para alternar instantaneamente para o motor analítico local em caso de erros de rede, cota de API do Gemini esgotada ou indisponibilidades gerais.',
+      'Evoluído o serviço de IA para identificar com precisão a origem de cada resposta através do campo "source: gemini | local".',
+      'Adicionado um indicador de status visual discreto ("● Gemini" ou "● Modo local") no cabeçalho do painel do modal do GEAPINHO.',
+      'Garantida a conformidade de segurança e corrigidas referências da palavra-passe de acesso local para "GEAPIFE" na documentação do projeto.'
+    ]
+  },
   {
     version: 'v3.7.43',
     date: '03/09/2026',
     tag: 'Associação Automática de Consultas de Conversão Proibida ao Tipo DCP no GEAPINHO',
-    isLatest: true,
     changes: [
       'Configurado o GEAPINHO para associar imediatamente qualquer pergunta sobre "equipamentos de conversão", "radares de conversão proibida", "manobra proibida" ou "movimento proibido" à tecnologia DCP (Detector de Conversão Proibida).',
       'Estruturada resposta explicativa e precisa detalhando o total de faixas/equipamentos DCP em operação e em implantação/projetados nos contratos vigentes.',

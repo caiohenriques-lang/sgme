@@ -97,7 +97,7 @@ export async function sendChatMessage({
   records,
   filters,
   activeTab,
-}: SendMessageParams): Promise<{ text: string; actions?: AIAction[] }> {
+}: SendMessageParams): Promise<{ text: string; actions?: AIAction[]; source: 'gemini' | 'local' }> {
   const lowerMsg = message.toLowerCase();
   
   // Regra de priorização: Se o usuário NÃO pediu expressamente contratos antigos (ex: 2585, 2586, 2587, "contratos antigos", "histórico antigo", "todos os contratos"),
@@ -443,9 +443,16 @@ export async function sendChatMessage({
     totalRegistrosDisponiveis: targetRecords.length,
   };
 
+  // 1. Antes de tentar fazer fetch, verifica se a cota local já está marcada como esgotada
   if (isAIQuotaExhaustedLocally()) {
-    markAIQuotaExhausted();
-    throw new Error('A cota de tokens da IA do GEAPINHO está temporariamente esgotada.');
+    console.log('[GEAPINHO] Cota esgotada localmente. Ativando Modo local diretamente.');
+    const { generateLocalFallbackResponse } = await import('./localAiFallback');
+    const localRes = generateLocalFallbackResponse(message, records, filters, history);
+    return {
+      text: localRes.text,
+      actions: localRes.actions || [],
+      source: 'local',
+    };
   }
 
   let response: Response;
@@ -468,9 +475,14 @@ export async function sendChatMessage({
     });
   } catch (networkErr: any) {
     clearTimeout(timeoutId);
-    console.warn('Backend de IA indisponível ou demorado, acionando motor analítico ultrarrápido:', networkErr);
+    console.warn('[GEAPINHO] Backend de IA indisponível ou demorado (timeout/rede). Ativando Modo local:', networkErr);
     const { generateLocalFallbackResponse } = await import('./localAiFallback');
-    return generateLocalFallbackResponse(message, records, filters, history);
+    const localRes = generateLocalFallbackResponse(message, records, filters, history);
+    return {
+      text: localRes.text,
+      actions: localRes.actions || [],
+      source: 'local',
+    };
   } finally {
     clearTimeout(timeoutId);
   }
@@ -484,25 +496,45 @@ export async function sendChatMessage({
       /resource_exhausted|cota|quota|rate limit|too many requests/i.test(errString);
 
     if (isQuota) {
-      console.warn('Cota de tokens do Gemini esgotada. Ocultando GEAPINHO da interface.');
+      console.warn('[GEAPINHO] Cota de tokens do Gemini esgotada (429/RESOURCE_EXHAUSTED). Marcando localmente e usando fallback.');
       const waitMs = errorData.retryAfter ? Math.max(errorData.retryAfter - Date.now(), 60000) : 60 * 60 * 1000;
       markAIQuotaExhausted(waitMs);
-      throw new Error('A cota de tokens da IA do GEAPINHO esgotou. O assistente foi ocultado automaticamente.');
-    }
-
-    // Se a chave Gemini não estiver configurada no ambiente ou houver erro 500/timeout, responde imediatamente com o motor local embutido
-    if (errString.includes('GEMINI_API_KEY') || response.status === 500 || response.status === 504) {
-      console.warn('GEMINI_API_KEY não configurada ou instabilidade no servidor. Utilizando motor analítico local GEAPI.');
+      
       const { generateLocalFallbackResponse } = await import('./localAiFallback');
-      return generateLocalFallbackResponse(message, records, filters, history);
+      const localRes = generateLocalFallbackResponse(message, records, filters, history);
+      return {
+        text: localRes.text,
+        actions: localRes.actions || [],
+        source: 'local',
+      };
     }
 
-    throw new Error(errorData.error || `Erro ${response.status}: Falha ao comunicar com o Assistente de IA`);
+    // Se houver qualquer outro tipo de erro de servidor ou indisponibilidade, usa fallback local direto sem expor erro ao usuário
+    console.warn('[GEAPINHO] Servidor retornou erro ou indisponibilidade. Usando Modo local.', errString);
+    const { generateLocalFallbackResponse } = await import('./localAiFallback');
+    const localRes = generateLocalFallbackResponse(message, records, filters, history);
+    return {
+      text: localRes.text,
+      actions: localRes.actions || [],
+      source: 'local',
+    };
   }
 
-  const data = await response.json();
-  return {
-    text: data.text || 'Desculpe, não consegui processar a resposta.',
-    actions: data.actions || [],
-  };
+  try {
+    const data = await response.json();
+    return {
+      text: data.text || 'Desculpe, não consegui processar a resposta.',
+      actions: data.actions || [],
+      source: 'gemini',
+    };
+  } catch (parseErr) {
+    console.error('[GEAPINHO] Erro ao parsear resposta do backend. Usando Modo local.', parseErr);
+    const { generateLocalFallbackResponse } = await import('./localAiFallback');
+    const localRes = generateLocalFallbackResponse(message, records, filters, history);
+    return {
+      text: localRes.text,
+      actions: localRes.actions || [],
+      source: 'local',
+    };
+  }
 }
