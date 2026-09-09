@@ -26,7 +26,7 @@ export const Header: React.FC<HeaderProps> = ({
           
           {/* Top Right: Timbre / Logo Image */}
           <div className="flex items-center justify-center md:justify-end gap-2.5 shrink-0 w-full md:w-auto order-first md:order-last flex-wrap">
-            <div className="bg-white p-1 rounded-lg border border-slate-200/80 shadow-2xs flex items-center justify-center">
+            <div className="flex items-center justify-center">
               <img
                 src="/logo_pbh_bhtrans.png"
                 alt="Timbre Oficial BHTRANS Prefeitura de Belo Horizonte"

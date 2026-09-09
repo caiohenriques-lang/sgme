@@ -45,8 +45,7 @@ export const FooterLegend: React.FC<FooterLegendProps> = ({
 
         {/* Footer Brand, Actions (Versão, Atualizar) & Developer Info */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-400 text-[11px] pt-1">
-          <div className="flex items-center justify-center sm:justify-start gap-2 text-center sm:text-left">
-            <SpeedLimit50Icon className="w-3.5 h-3.5 shrink-0" />
+          <div className="flex items-center justify-center sm:justify-start text-center sm:text-left">
             <span>
               <strong>GEAPI</strong> — Gerência de Análise e Processamento de Infrações | Prefeitura de Belo Horizonte
             </span>
