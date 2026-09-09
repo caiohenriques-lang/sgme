@@ -12,25 +12,25 @@
   "categories": ["utilities", "productivity", "government"],
   "icons": [
     {
-      "src": "/icons/geapi-app-192-v3745.png",
+      "src": "/icons/geapi-app-192-v3745b.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any"
     },
     {
-      "src": "/icons/geapi-maskable-192-v3745.png",
+      "src": "/icons/geapi-maskable-192-v3745b.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "maskable"
     },
     {
-      "src": "/icons/geapi-app-512-v3745.png",
+      "src": "/icons/geapi-app-512-v3745b.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any"
     },
     {
-      "src": "/icons/geapi-maskable-512-v3745.png",
+      "src": "/icons/geapi-maskable-512-v3745b.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "maskable"
