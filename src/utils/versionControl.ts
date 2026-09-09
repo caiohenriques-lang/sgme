@@ -6,15 +6,26 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.44';
+export const APP_VERSION = 'v3.7.45';
 export const BUILD_DATE = '09/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.45',
+    date: '09/09/2026',
+    tag: 'Sincronização PWA, Ativos de Mídia e Otimização de Cache Offline',
+    isLatest: true,
+    changes: [
+      'Configurado e verificado o manifesto de instalação PWA (manifest.json) com suporte multi-plataforma e resoluções completas (any e maskable).',
+      'Sincronizados e limpos todos os 42 novos ativos de imagem e ícones na pasta "/public", removendo arquivos de rascunho redundantes.',
+      'Aprimorado o Service Worker (sw.js) com cache otimizado das novas imagens, favicon e ativos estáticos da Identidade Digital.',
+      'Sustentada a Identidade Digital GEAPI no cabeçalho do portal, garantindo excelente experiência visual e renderização impecável.'
+    ]
+  },
+  {
     version: 'v3.7.44',
     date: '09/09/2026',
     tag: 'Modo Local Permanente e Unificação das Regras do GEAPINHO',
-    isLatest: true,
     changes: [
       'Garantida a disponibilidade permanente do GEAPINHO na interface do usuário, impedindo a ocultação do botão flutuante ou modal em caso de cota esgotada (HTTP 429).',
       'Configurado o assistente para alternar instantaneamente para o motor analítico local em caso de erros de rede, cota de API do Gemini esgotada ou indisponibilidades gerais.',

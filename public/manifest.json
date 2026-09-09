@@ -1,33 +1,45 @@
 {
-  "short_name": "GEAPI FE",
-  "name": "GEAPI FE - Fiscalização Eletrônica BHTRANS",
-  "description": "Sistema da Gerência de Análise e Processamento de Infrações - BHTRANS PBH",
+  "short_name": "GEAPI",
+  "name": "GERÊNCIA DE ANÁLISE E PROCESSAMENTO DE INFRAÇÕES - GEAPI",
+  "description": "Portal de Monitoramento e Gestão da Fiscalização Eletrônica da GEAPI.",
   "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#ffffff",
-  "theme_color": "#2563eb",
+  "theme_color": "#26282B",
   "categories": ["utilities", "productivity", "government"],
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/icons/geapi-app-192-v3745.png",
       "type": "image/png",
       "sizes": "192x192",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/icons/geapi-maskable-192-v3745.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/geapi-app-512-v3745.png",
       "type": "image/png",
       "sizes": "512x512",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/geapi-maskable-512-v3745.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
     },
     {
       "src": "/icon.svg",
       "type": "image/svg+xml",
       "sizes": "any",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }

@@ -1,18 +1,27 @@
-// Service Worker para GEAPI FE - PWA
-const CACHE_NAME = 'geapi-fe-cache-v2';
+// Service Worker para GEAPI - PWA
+const CACHE_NAME = 'geapi-cache-v3-7-45';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
   '/icon.svg',
-  '/icon-192.png',
-  '/icon-512.png',
+  '/favicon.ico',
+  '/favicon-16x16.png',
+  '/favicon-32x32.png',
+  '/favicon-48x48.png',
+  '/favicon-64x64.png',
+  '/favicon.png',
+  '/icons/geapi-app-192-v3745.png',
+  '/icons/geapi-app-512-v3745.png',
+  '/icons/geapi-maskable-192-v3745.png',
+  '/icons/geapi-maskable-512-v3745.png',
   '/apple-touch-icon.png',
   '/apple-touch-icon-180x180.png',
   '/apple-touch-icon-167x167.png',
   '/apple-touch-icon-152x152.png',
   '/apple-touch-icon-120x120.png',
-  '/favicon.png',
+  '/apple-touch-icon-precomposed.png',
+  '/icons/geapi-symbol-96.png',
   '/logo_pbh_bhtrans.png',
 ];
 

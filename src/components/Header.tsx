@@ -1,7 +1,6 @@
 import React from 'react';
 import { ActiveTab } from '../types';
 import { Map, BarChart3, Table, Printer, FileSignature, AlertTriangle, Layers, LayoutGrid, Bot, Sparkles, Scale } from 'lucide-react';
-import { SpeedRadarIcon } from './SpeedRadarIcon';
 
 interface HeaderProps {
   activeTab: ActiveTab;
@@ -39,13 +38,18 @@ export const Header: React.FC<HeaderProps> = ({
 
 
           {/* Titles & Branding */}
-          <div className="flex items-start gap-3 order-last md:order-first">
-            <div className="p-0.5 rounded-xl shrink-0 mt-0.5">
-              <SpeedRadarIcon className="w-8 h-8 sm:w-9 sm:h-9" />
+          <div className="flex items-center gap-4 order-last md:order-first">
+            <div className="rounded-xl shrink-0">
+              <img
+                src="/icon.svg"
+                alt="Identidade Digital GEAPI"
+                className="w-[50px] h-[50px] md:w-[64px] md:h-[64px] object-contain rounded-xl"
+                referrerPolicy="no-referrer"
+              />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900">
+                <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 leading-tight">
                   GERÊNCIA DE ANÁLISE E PROCESSAMENTO DE INFRAÇÕES - GEAPI
                 </h1>
               </div>

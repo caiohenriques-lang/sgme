@@ -1,0 +1,212 @@
+[
+  {
+    "path": "android-chrome-192x192.png",
+    "bytes": 24517,
+    "sha256": "b6f9fb3c377edf63c1546bb032aa5fbef309842ff0c56c94a868056414902131"
+  },
+  {
+    "path": "android-chrome-512x512.png",
+    "bytes": 184866,
+    "sha256": "2d83e9e867dc932b83bf864f8c8d4e22370f424673b5df1b95f0cbabfc5e9d0e"
+  },
+  {
+    "path": "apple-touch-icon-120x120.png",
+    "bytes": 10103,
+    "sha256": "0194868f5d083c085dd22e9e7e62e0b2bd28756e8cc5bbfffde3587861370ffc"
+  },
+  {
+    "path": "apple-touch-icon-152x152.png",
+    "bytes": 15618,
+    "sha256": "a7c7ffabae5169e6903b1d2abd3d1414448940edc74fd6e3235aaaf4041097c8"
+  },
+  {
+    "path": "apple-touch-icon-167x167.png",
+    "bytes": 18908,
+    "sha256": "1d1827f761ec1fc3ae66b5f85bd22ed722e1e2513aab0109d27c46e66a2569f8"
+  },
+  {
+    "path": "apple-touch-icon-180x180.png",
+    "bytes": 21883,
+    "sha256": "2ab7cb1b2ddb9c6170a2c85dece0405b53f7936b1ec5c2560b1ab159210807a1"
+  },
+  {
+    "path": "apple-touch-icon-precomposed.png",
+    "bytes": 21883,
+    "sha256": "2ab7cb1b2ddb9c6170a2c85dece0405b53f7936b1ec5c2560b1ab159210807a1"
+  },
+  {
+    "path": "apple-touch-icon.png",
+    "bytes": 21883,
+    "sha256": "2ab7cb1b2ddb9c6170a2c85dece0405b53f7936b1ec5c2560b1ab159210807a1"
+  },
+  {
+    "path": "browserconfig.xml",
+    "bytes": 222,
+    "sha256": "61117d11260aad9f234e5fc12d7f55b6681d33300da0d9d7c74841eba64046fd"
+  },
+  {
+    "path": "favicon-16x16.png",
+    "bytes": 467,
+    "sha256": "1ae3d03346c4dd4aa110a6b768073c8e58ec06768c68a41a70556835ac576151"
+  },
+  {
+    "path": "favicon-32x32.png",
+    "bytes": 1240,
+    "sha256": "49758e60349b788e617d4959e9b0feb0891e42411eee91a9aa4d80df6ce48054"
+  },
+  {
+    "path": "favicon-48x48.png",
+    "bytes": 2261,
+    "sha256": "f2f48d03dec3641167771698ab429e5880bb7bfc014d3eb85727f539d0d7dac6"
+  },
+  {
+    "path": "favicon-64x64.png",
+    "bytes": 3379,
+    "sha256": "65f490542adaaa7fbc974bf88e9bbdc4e894fe5c647b702715020d9e230c2645"
+  },
+  {
+    "path": "favicon.ico",
+    "bytes": 66571,
+    "sha256": "7e180076d3c3d07f5c5bd65cf23183ec81acb6ca84b7ae3340ad16bdf1d671cb"
+  },
+  {
+    "path": "favicon.png",
+    "bytes": 3379,
+    "sha256": "65f490542adaaa7fbc974bf88e9bbdc4e894fe5c647b702715020d9e230c2645"
+  },
+  {
+    "path": "icon-192.png",
+    "bytes": 24517,
+    "sha256": "b6f9fb3c377edf63c1546bb032aa5fbef309842ff0c56c94a868056414902131"
+  },
+  {
+    "path": "icon-512.png",
+    "bytes": 184866,
+    "sha256": "2d83e9e867dc932b83bf864f8c8d4e22370f424673b5df1b95f0cbabfc5e9d0e"
+  },
+  {
+    "path": "icon-maskable-192.png",
+    "bytes": 14844,
+    "sha256": "7ab2ad1a0322c1aae424ce137fad272d8ada89bff36de3f8a38bff42a126f125"
+  },
+  {
+    "path": "icon-maskable-512.png",
+    "bytes": 118826,
+    "sha256": "82cb42307d1ddd65309d5a916f462716dccd1736bdf7b08f22aed29e35b13cc5"
+  },
+  {
+    "path": "icon.svg",
+    "bytes": 896,
+    "sha256": "80d3363b1eb88952684a0140f2035b9d390240bd3dd237e8285f1c2b4fc83466"
+  },
+  {
+    "path": "icons/geapi-1024.png",
+    "bytes": 608354,
+    "sha256": "435f9d3a1bdba94ea34d340e916fd137d47ffbdf96e12e850f4e3af65c0e6ff2"
+  },
+  {
+    "path": "icons/geapi-128.png",
+    "bytes": 11426,
+    "sha256": "e794a873eba357df0842de943f25a3ad611c0d8271633f909fa61db8926627cd"
+  },
+  {
+    "path": "icons/geapi-144.png",
+    "bytes": 14030,
+    "sha256": "fb7f7d266b1a0049de10502765b8540486db7a59291a2d6c90543ebfb7c529dd"
+  },
+  {
+    "path": "icons/geapi-152.png",
+    "bytes": 15618,
+    "sha256": "a7c7ffabae5169e6903b1d2abd3d1414448940edc74fd6e3235aaaf4041097c8"
+  },
+  {
+    "path": "icons/geapi-167.png",
+    "bytes": 18908,
+    "sha256": "1d1827f761ec1fc3ae66b5f85bd22ed722e1e2513aab0109d27c46e66a2569f8"
+  },
+  {
+    "path": "icons/geapi-180.png",
+    "bytes": 21883,
+    "sha256": "2ab7cb1b2ddb9c6170a2c85dece0405b53f7936b1ec5c2560b1ab159210807a1"
+  },
+  {
+    "path": "icons/geapi-192.png",
+    "bytes": 24517,
+    "sha256": "b6f9fb3c377edf63c1546bb032aa5fbef309842ff0c56c94a868056414902131"
+  },
+  {
+    "path": "icons/geapi-256.png",
+    "bytes": 46562,
+    "sha256": "c869427c3ad3122ab31eae40950a82dd833e4042f09666a49a08b9e971e25f60"
+  },
+  {
+    "path": "icons/geapi-384.png",
+    "bytes": 111071,
+    "sha256": "dac57c2c0d3d39770586326e9f283e6eb687ed43d27b80a68f3a0d04f8d93d26"
+  },
+  {
+    "path": "icons/geapi-48.png",
+    "bytes": 2675,
+    "sha256": "c05531c99bfb40f8e17106aef02ce0abb10ab337174ad93cf5b5760a98ffd6d0"
+  },
+  {
+    "path": "icons/geapi-512.png",
+    "bytes": 184866,
+    "sha256": "2d83e9e867dc932b83bf864f8c8d4e22370f424673b5df1b95f0cbabfc5e9d0e"
+  },
+  {
+    "path": "icons/geapi-64.png",
+    "bytes": 4103,
+    "sha256": "89fcda136fa2b3af72f6f9b96eb0dd847f2deebd23c45c2deb0e19f8cf900d0d"
+  },
+  {
+    "path": "icons/geapi-72.png",
+    "bytes": 4773,
+    "sha256": "cc2af4ab9c5441426d896ebabc4fe75ede3296040737f215c826d648139c5403"
+  },
+  {
+    "path": "icons/geapi-96.png",
+    "bytes": 7182,
+    "sha256": "b7c4aa2976b02cdf732a2fbace0291781067c7cab9320f13498ed71fe6c08b4f"
+  },
+  {
+    "path": "icons/geapi-maskable-1024.png",
+    "bytes": 412101,
+    "sha256": "7cfd0582f28eb94798d66644531e7cd208304ac316fa981243d8102868abdc80"
+  },
+  {
+    "path": "icons/geapi-maskable-192.png",
+    "bytes": 14844,
+    "sha256": "7ab2ad1a0322c1aae424ce137fad272d8ada89bff36de3f8a38bff42a126f125"
+  },
+  {
+    "path": "icons/geapi-maskable-512.png",
+    "bytes": 118826,
+    "sha256": "82cb42307d1ddd65309d5a916f462716dccd1736bdf7b08f22aed29e35b13cc5"
+  },
+  {
+    "path": "icons/geapi-symbol-192.png",
+    "bytes": 22128,
+    "sha256": "fe608deed8b157207c7dc6096453b251f97cf24d71fa65dc3a1b8e065c920040"
+  },
+  {
+    "path": "icons/geapi-symbol-48.png",
+    "bytes": 2261,
+    "sha256": "f2f48d03dec3641167771698ab429e5880bb7bfc014d3eb85727f539d0d7dac6"
+  },
+  {
+    "path": "icons/geapi-symbol-512.png",
+    "bytes": 123775,
+    "sha256": "927d524b34b3a1993b3676d2283f43d921a3ad7efe16fa4964b678ae07aa3ce2"
+  },
+  {
+    "path": "icons/geapi-symbol-96.png",
+    "bytes": 6307,
+    "sha256": "4bba99718a24a886099802bdc38044edf6abca49a7ecfaff74a63d1e35fd51b6"
+  },
+  {
+    "path": "mstile-150x150.png",
+    "bytes": 15195,
+    "sha256": "fc092da8ba87cdc6679043be37c6fa3f05a6d9fd501dbfa42600547f8923828f"
+  }
+]
