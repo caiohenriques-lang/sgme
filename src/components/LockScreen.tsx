@@ -70,10 +70,10 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlock }) => {
             </span>
             
             <div className="space-y-1 mt-1">
-              <p className="text-[clamp(10.5px,2.6vw,14.5px)] sm:text-[14.5px] font-semibold tracking-tight text-slate-600 uppercase block text-center whitespace-nowrap">
+              <p className="text-[clamp(10.5px,2.6vw,14.5px)] sm:text-[14.5px] font-bold tracking-tight text-slate-800 uppercase block text-center whitespace-nowrap">
                 GERÊNCIA DE ANÁLISE E PROCESSAMENTO DE INFRAÇÕES
               </p>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-none">
+              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight leading-none">
                 GEAPI
               </h1>
             </div>
