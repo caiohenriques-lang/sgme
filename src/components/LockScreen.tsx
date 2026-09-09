@@ -64,15 +64,21 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlock }) => {
           </div>
 
           <div>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-[11px] font-bold tracking-wider uppercase mb-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-[11px] font-bold tracking-wider uppercase mb-3">
               <Lock className="w-3.5 h-3.5 text-amber-600" />
               <span>Acesso Restrito · GEAPI</span>
             </span>
             
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight leading-tight">
-              GERÊNCIA DE ANÁLISE E PROCESSAMENTO DE INFRAÇÕES — GEAPI
-            </h1>
-            <p className="text-sm font-semibold text-slate-700 mt-1">
+            <div className="space-y-1 mt-1">
+              <p className="text-[clamp(10.5px,2.6vw,14.5px)] sm:text-[14.5px] font-semibold tracking-tight text-slate-600 uppercase block text-center whitespace-nowrap">
+                GERÊNCIA DE ANÁLISE E PROCESSAMENTO DE INFRAÇÕES
+              </p>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-none">
+                GEAPI
+              </h1>
+            </div>
+
+            <p className="text-xs sm:text-sm font-semibold text-slate-700 mt-2">
               Fiscalização Eletrônica
             </p>
           </div>
