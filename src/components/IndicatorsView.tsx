@@ -1000,13 +1000,13 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
     <div className="space-y-6 pb-8 min-w-0">
       
       {/* Top Banner with Full Report Export Option */}
-      <div className="bg-slate-900 text-white rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-md border border-slate-800">
+      <div className="bg-white text-slate-900 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs border border-slate-200">
         <div>
-          <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-            <BarChart2 className="w-5 h-5 text-blue-400" />
+          <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+            <BarChart2 className="w-5 h-5 text-blue-600" />
             Painel Executivo de Indicadores
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5">
             Consolidação estatística, contratos, tipos, evolução cronológica e corredores ({filteredByChartRecords.length} equipamentos)
           </p>
         </div>
@@ -1016,12 +1016,12 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
             id="btn-export-indicators-pdf"
             onClick={handleExportIndicatorsPDF}
             disabled={isExportingPDF}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 disabled:opacity-75 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:opacity-75 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
             title="Exportar toda a aba de indicadores em PDF oficial timbrado"
           >
             {isExportingPDF ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin text-blue-200" />
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
                 <span>Gerando Relatório...</span>
               </>
             ) : (
@@ -1034,7 +1034,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
 
           <label
             id="label-include-equipment-list-pdf"
-            className="flex items-center gap-1.5 text-[11px] text-slate-300 hover:text-white cursor-pointer select-none transition-colors"
+            className="flex items-center gap-1.5 text-[11px] text-slate-500 hover:text-slate-800 cursor-pointer select-none transition-colors"
           >
             <input
               id="checkbox-include-equipment-list-pdf"

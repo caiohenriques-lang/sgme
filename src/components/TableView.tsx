@@ -85,13 +85,13 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
     <div className="bg-white rounded-2xl border border-slate-200 shadow-md overflow-hidden pb-4 w-full max-w-full">
       
       {/* Table Header Bar */}
-      <div className="bg-slate-900 text-white p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-slate-50 border-b border-slate-200/80 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 className="font-bold text-base text-white flex items-center gap-2">
-            <TableIcon className="w-5 h-5 text-blue-400" />
+          <h3 className="font-bold text-base text-slate-900 flex items-center gap-2">
+            <TableIcon className="w-5 h-5 text-blue-600" />
             Lista Completa de Equipamentos
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5">
             Compilado detalhado de todos os registros da planilha com filtros aplicados ({records.length} itens)
           </p>
         </div>
@@ -99,7 +99,7 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
         <div className="flex items-center gap-3">
           <button
             onClick={handleExportAllPDF}
-            className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors shadow-sm cursor-pointer"
+            className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors shadow-sm cursor-pointer"
           >
             <FileDown className="w-4 h-4" />
             <span>Exportar Lista em PDF</span>
@@ -108,7 +108,7 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
       </div>
 
       {/* Table Controls */}
-      <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-600">
+      <div className="bg-white/80 px-4 py-3 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-600">
         <div>
           Página <strong className="text-slate-900">{currentPage}</strong> de <strong className="text-slate-900">{totalPages}</strong> (Exibindo {paginatedRecords.length} de {records.length} registros)
         </div>

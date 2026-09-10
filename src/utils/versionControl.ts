@@ -6,15 +6,35 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.55';
+export const APP_VERSION = 'v3.7.57';
 export const BUILD_DATE = '10/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.57',
+    date: '10/09/2026',
+    tag: 'Harmonização do Painel Executivo de Indicadores',
+    isLatest: true,
+    changes: [
+      'Removido o banner escuro (slate-900) da seção "Painel Executivo de Indicadores" na aba de Indicadores, substituindo-o por um layout claro institucional (white) integrado.',
+      'Ajustadas as fontes, ícones e subtextos para cinza escuro e azul corporativo de alto contraste.',
+      'Otimizados os botões e caixas de seleção de exportação do painel para o esquema cromático claro e limpo do portal.'
+    ]
+  },
+  {
+    version: 'v3.7.56',
+    date: '10/09/2026',
+    tag: 'Aba Lista Completa de Equipamentos Reestilizada',
+    changes: [
+      'Removido o cabeçalho escuro (slate-900) da aba "Lista Completa de Equipamentos" (TableView), substituindo-o por um fundo claro institucional (slate-50).',
+      'Harmonizado o título e o ícone de tabela para azul corporativo, trazendo coesão cromática absoluta em relação às demais abas claras do portal.',
+      'Ajustada a barra de paginação e os controles de tabela para um fundo branco minimalista, deixando a interface leve e elegante.'
+    ]
+  },
+  {
     version: 'v3.7.55',
     date: '10/09/2026',
     tag: 'Otimização do Comportamento Inicial da Legenda',
-    isLatest: true,
     changes: [
       'Simplificado o título da seção de "Legenda dos Contratos e Detectores" para apenas "Legenda", mantendo o rodapé mais limpo.',
       'Ajustado o comportamento padrão inicial da legenda para começar recolhida (fechada), otimizando o espaço útil de tela nas primeiras visitas.'
