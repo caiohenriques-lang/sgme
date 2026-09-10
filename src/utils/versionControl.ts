@@ -6,15 +6,24 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.50';
+export const APP_VERSION = 'v3.7.51';
 export const BUILD_DATE = '10/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.51',
+    date: '10/09/2026',
+    tag: 'Remoção da Tag Redundante "Mesmo Ponto" nos Popups do Mapa',
+    isLatest: true,
+    changes: [
+      'Removida a etiqueta/card "Mesmo Ponto" do cabeçalho da seção de equipamentos co-localizados no popup do mapa.',
+      'A informação de contagem e ícone ("N equipamentos neste ponto:") agora é exibida de forma direta e limpa sem elementos redundantes.'
+    ]
+  },
+  {
     version: 'v3.7.50',
     date: '10/09/2026',
     tag: 'Seleção em Toda a Linha nos Filtros e Otimização da Largura do Modal',
-    isLatest: true,
     changes: [
       'Ajustada a interação dos filtros múltiplos (tipo, contratos, regionais, bairros, etc.): o clique em qualquer parte da linha (nome da opção, área em branco ou caixa) agora seleciona e desseleciona a checkbox instantaneamente.',
       'Corrigido o comportamento em que o clique no texto/espaço em branco do rótulo gerava um duplo acionamento no navegador, garantindo resposta imediata e intuitiva.',

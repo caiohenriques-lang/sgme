@@ -339,7 +339,7 @@ export const MapView: React.FC<MapViewProps> = ({ records, filters, onSelectReco
           <!-- Quadro de Equipamentos Co-localizados (ABAIXO do botão "Ver Ficha Completa", ordenado em ordem crescente) -->
           ${isCoLocated ? `
             <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 7px 9px; margin-top: 8px;">
-              <div style="display: flex; align-items: center; justify-content: space-between; font-size: 10.5px; font-weight: 700; color: #334155; margin-bottom: 5px;">
+              <div style="display: flex; align-items: center; font-size: 10.5px; font-weight: 700; color: #334155; margin-bottom: 5px;">
                 <span style="display: flex; align-items: center; gap: 4px;">
                   <svg style="width: 13px; height: 13px; color: #2563eb; shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
@@ -348,7 +348,6 @@ export const MapView: React.FC<MapViewProps> = ({ records, filters, onSelectReco
                   </svg>
                   ${groupRecords.length} equipamentos neste ponto:
                 </span>
-                <span style="background-color: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 9px; padding: 1px 5px; border-radius: 4px; font-weight: 700;">Mesmo Ponto</span>
               </div>
               <div style="display: flex; flex-wrap: wrap; gap: 4px;">
                 ${groupRecords.map((r, i) => {
