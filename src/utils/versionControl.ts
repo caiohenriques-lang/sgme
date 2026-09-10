@@ -6,15 +6,24 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.51';
+export const APP_VERSION = 'v3.7.52';
 export const BUILD_DATE = '10/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.52',
+    date: '10/09/2026',
+    tag: 'Aumento da Logo Oficial PBH / BHTRANS no Ambiente Web',
+    isLatest: true,
+    changes: [
+      'Aumentada a escala do logotipo oficial institucional BHTRANS / Prefeitura de Belo Horizonte na tela inicial de bloqueio (LockScreen) em mais de 65% (de h-10/sm:h-12 para h-16/sm:h-20/md:h-[82px]), garantindo máxima nitidez e imponência institucional.',
+      'Ampliadas as dimensões da logo no cabeçalho principal do portal (Header) para telas maiores (de md:h-14 para md:h-16/lg:h-[68px]), otimizando a presença da marca em resoluções web e desktop.'
+    ]
+  },
+  {
     version: 'v3.7.51',
     date: '10/09/2026',
     tag: 'Remoção da Tag Redundante "Mesmo Ponto" nos Popups do Mapa',
-    isLatest: true,
     changes: [
       'Removida a etiqueta/card "Mesmo Ponto" do cabeçalho da seção de equipamentos co-localizados no popup do mapa.',
       'A informação de contagem e ícone ("N equipamentos neste ponto:") agora é exibida de forma direta e limpa sem elementos redundantes.'

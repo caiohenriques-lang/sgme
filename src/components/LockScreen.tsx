@@ -39,11 +39,11 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlock }) => {
     <div className="min-h-screen bg-slate-100/80 text-slate-900 flex flex-col items-center justify-between p-4 sm:p-6 relative select-none">
       
       {/* Top Institutional Header */}
-      <div className="w-full max-w-md flex justify-center pt-2">
+      <div className="w-full max-w-lg flex justify-center pt-2 sm:pt-4 pb-2">
         <img
           src="/logo_pbh_bhtrans.png"
           alt="Logotipo Oficial BHTRANS Prefeitura de Belo Horizonte"
-          className="h-10 sm:h-12 w-auto object-contain"
+          className="h-16 sm:h-20 md:h-[82px] w-auto object-contain drop-shadow-xs"
           referrerPolicy="no-referrer"
         />
       </div>
