@@ -196,16 +196,15 @@ const MultiSelectCheckboxDropdown: React.FC<MultiSelectCheckboxDropdownProps> = 
                 return (
                   <label
                     key={opt}
-                    onClick={() => handleToggle(opt)}
-                    className={`flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors ${
+                    className={`flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors select-none ${
                       isSelected ? 'bg-blue-50 text-blue-900 font-semibold' : 'hover:bg-slate-100 text-slate-700'
                     }`}
                   >
                     <input
                       type="checkbox"
                       checked={isSelected}
-                      onChange={() => {}} // tratado no label onClick
-                      className="rounded text-blue-600 focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer"
+                      onChange={() => handleToggle(opt)}
+                      className="rounded text-blue-600 focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer shrink-0"
                     />
                     <span className={`flex-1 truncate ${monoFont ? 'font-mono' : ''}`}>{opt}</span>
                     {isSelected && <Check className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
@@ -443,18 +442,17 @@ const ContratoMultiSelectDropdown: React.FC<ContratoMultiSelectDropdownProps> = 
                 return (
                   <label
                     key={opt}
-                    onClick={() => handleToggle(opt)}
-                    className={`flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg cursor-pointer transition-colors border ${
+                    className={`flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg cursor-pointer transition-colors border select-none ${
                       isSelected
                         ? 'bg-blue-50 border-blue-200 text-blue-950 font-semibold'
                         : 'hover:bg-slate-50 border-transparent text-slate-700'
                     }`}
                   >
-                    <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
                       <input
                         type="checkbox"
                         checked={isSelected}
-                        onChange={() => {}}
+                        onChange={() => handleToggle(opt)}
                         className="rounded text-blue-600 focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer shrink-0"
                       />
                       <span className="truncate font-mono">Contrato {opt}</span>

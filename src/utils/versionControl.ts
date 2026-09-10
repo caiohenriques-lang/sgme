@@ -6,15 +6,68 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.45';
-export const BUILD_DATE = '09/09/2026';
+export const APP_VERSION = 'v3.7.50';
+export const BUILD_DATE = '10/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v3.7.50',
+    date: '10/09/2026',
+    tag: 'Seleção em Toda a Linha nos Filtros e Otimização da Largura do Modal',
+    isLatest: true,
+    changes: [
+      'Ajustada a interação dos filtros múltiplos (tipo, contratos, regionais, bairros, etc.): o clique em qualquer parte da linha (nome da opção, área em branco ou caixa) agora seleciona e desseleciona a checkbox instantaneamente.',
+      'Corrigido o comportamento em que o clique no texto/espaço em branco do rótulo gerava um duplo acionamento no navegador, garantindo resposta imediata e intuitiva.',
+      'Otimizada a largura horizontal máxima do modal de detalhes de max-w-3xl para max-w-2xl, tornando a janela mais compacta, equilibrada e elegante sem quebrar linhas nos cabeçalhos e seções.'
+    ]
+  },
+  {
+    version: 'v3.7.49',
+    date: '10/09/2026',
+    tag: 'Remoção de Link no Título do Modal e Limpeza do Aviso de Origem de Dados',
+    changes: [
+      'Removido o hyperlink do código do equipamento no título do modal de detalhes, mantendo-o como texto estático em destaque sem interferir nos links técnicos internos das seções de dados.',
+      'Eliminado o bloco de aviso técnico redundante ("Exibindo dados do equipamento obtidos da planilha de origem. ID: ...") do corpo do modal, proporcionando uma visualização mais direta, limpa e profissional das fichas.'
+    ]
+  },
+  {
+    version: 'v3.7.48',
+    date: '10/09/2026',
+    tag: 'Ordenação Crescente, Destaque da Situação e Reposicionamento nos Popups do Mapa',
+    changes: [
+      'Implementada ordenação crescente (alfanumérica natural) dos equipamentos co-localizados nos chips dos popups do mapa e no modal de detalhes.',
+      'Reposicionado o quadro de equipamentos co-localizados para ficar posicionado abaixo do botão "Ver Ficha Completa", priorizando as informações do equipamento principal.',
+      'Substituído o ícone de lupa emoji no botão "Ver Ficha Completa" por uma lupa vetorial SVG em branco nítido, perfeitamente harmônica com o fundo azul institucional.',
+      'Adicionado destaque visual colorido para a Situação em todos os popups do mapa (Em operação em verde, Relocação em roxo, Implantação em laranja/âmbar e Desligado em vermelho), idêntico ao padrão adotado no modal e tabelas.',
+      'Harmonizada a paleta de cores do quadro de co-localizados e chips com o padrão claro e elegante do portal GEAPI.'
+    ]
+  },
+  {
+    version: 'v3.7.47',
+    date: '10/09/2026',
+    tag: 'Harmonização Visual e Estrutural do Modal de Equipamentos com o Portal',
+    changes: [
+      'Alinhado integralmente o esquema de cores e a estrutura do modal de detalhes (EquipmentDetailModal) à identidade visual institucional clara do portal GEAPI.',
+      'Substituído o ícone dissonante pelo ícone oficial da GEAPI (/icon.svg) em moldura institucional com bordas sutis.',
+      'Refatorado o cabeçalho do modal para fundo claro (bg-white), tipografia contrastante em ardósia escura (slate-900), badge de tipo em azul suave e botões de ação consistentes.',
+      'Padronizados a barra de navegação de equipamentos co-localizados, as divisórias de seções e o rodapé com botão de fechar consistente com o sistema de design.'
+    ]
+  },
+  {
+    version: 'v3.7.46',
+    date: '10/09/2026',
+    tag: 'Navegação entre Equipamentos Co-localizados na Mesma Coordenada',
+    changes: [
+      'Implementada detecção automática de equipamentos sobrepostos que compartilham a exata mesma coordenada geográfica na base de dados.',
+      'Desenvolvida barra amigável de navegação no topo do modal de detalhes (EquipmentDetailModal) com ícone de camadas (Layers), contagem de equipamentos, paginação rápida e chips seletivos de CÓDIGO (TIPO).',
+      'Permitida a alternância instantânea e fluida entre todos os equipamentos do mesmo ponto geográfico sem necessidade de fechar a tela, voltar ao mapa ou filtrar a tabela.',
+      'Aprimorado o popup dos marcadores no mapa (MapView) para sinalizar pontos com múltiplos equipamentos e fornecer atalhos diretos para cada ficha, mantendo os pinos do mapa limpos sem contadores.'
+    ]
+  },
   {
     version: 'v3.7.45',
     date: '09/09/2026',
     tag: 'Sincronização PWA, Ativos de Mídia e Otimização de Cache Offline',
-    isLatest: true,
     changes: [
       'Configurado e verificado o manifesto de instalação PWA (manifest.json) com suporte multi-plataforma e resoluções completas (any e maskable).',
       'Sincronizados e limpos todos os 42 novos ativos de imagem e ícones na pasta "/public", removendo arquivos de rascunho redundantes.',

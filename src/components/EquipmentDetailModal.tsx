@@ -1,23 +1,131 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { EquipmentRecord } from '../types';
 import { ALL_SHEET_HEADERS } from '../services/dataService';
 import { exportSingleRecordPDF } from '../utils/pdfExport';
-import { X, FileDown, MapPin, Building, Calendar, Layers, Tag, ExternalLink, Copy, Check } from 'lucide-react';
-import { SpeedRadarIcon } from './SpeedRadarIcon';
+import { X, FileDown, MapPin, Building, Calendar, Layers, Tag, ExternalLink, Copy, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface EquipmentDetailModalProps {
   record: EquipmentRecord | null;
   onClose: () => void;
+  allRecords?: EquipmentRecord[];
+  onSelectRecord?: (record: EquipmentRecord) => void;
 }
 
-export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ record, onClose }) => {
+export function getCoLocatedRecords(
+  target: EquipmentRecord | null,
+  allList: EquipmentRecord[] = []
+): EquipmentRecord[] {
+  if (!target) return [];
+
+  // Check if target has valid parsed numerical coordinates
+  const targetHasCoords =
+    target.hasValidCoord &&
+    typeof target.lat === 'number' &&
+    typeof target.lng === 'number' &&
+    !isNaN(target.lat) &&
+    !isNaN(target.lng);
+
+  const cleanTargetRaw = (target.COORD_LAT_LONG || '')
+    .trim()
+    .replace(/\s+/g, '')
+    .toLowerCase();
+
+  const isRawValid =
+    cleanTargetRaw &&
+    cleanTargetRaw !== '-' &&
+    cleanTargetRaw !== '0,0' &&
+    cleanTargetRaw !== '0.0,0.0';
+
+  if (!targetHasCoords && !isRawValid) {
+    return [target];
+  }
+
+  const results = allList.filter((r) => {
+    if (r.id === target.id) return true;
+
+    // Numerical coordinate match within 0.00002 degrees (~2 meters)
+    if (
+      targetHasCoords &&
+      r.hasValidCoord &&
+      typeof r.lat === 'number' &&
+      typeof r.lng === 'number'
+    ) {
+      const latDiff = Math.abs(r.lat - target.lat!);
+      const lngDiff = Math.abs(r.lng - target.lng!);
+      if (latDiff < 0.00002 && lngDiff < 0.00002) {
+        return true;
+      }
+    }
+
+    // Exact string match on raw coordinates
+    if (isRawValid && r.COORD_LAT_LONG) {
+      const rRaw = r.COORD_LAT_LONG.trim().replace(/\s+/g, '').toLowerCase();
+      if (rRaw === cleanTargetRaw) {
+        return true;
+      }
+    }
+
+    return false;
+  });
+
+  if (!results.some((m) => m.id === target.id)) {
+    results.unshift(target);
+  }
+
+  // Sort by CÓDIGO in ascending order (natural alphanumeric)
+  results.sort((a, b) =>
+    (a.CÓDIGO || '').trim().localeCompare((b.CÓDIGO || '').trim(), undefined, {
+      numeric: true,
+      sensitivity: 'base',
+    })
+  );
+
+  return results;
+}
+
+export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
+  record,
+  onClose,
+  allRecords = [],
+  onSelectRecord,
+}) => {
+  const [currentRecord, setCurrentRecord] = useState<EquipmentRecord | null>(record);
   const [copiedCoord, setCopiedCoord] = useState(false);
   const [copiedSerial, setCopiedSerial] = useState(false);
 
-  if (!record) return null;
+  // Sync internal currentRecord when prop record changes (e.g. opened from map/table)
+  useEffect(() => {
+    setCurrentRecord(record);
+  }, [record]);
+
+  // Find all records that share the EXACT same coordinate
+  const coLocatedRecords = useMemo(() => {
+    return getCoLocatedRecords(currentRecord, allRecords);
+  }, [currentRecord, allRecords]);
+
+  if (!currentRecord) return null;
+
+  const currentIndex = coLocatedRecords.findIndex((r) => r.id === currentRecord.id);
+
+  const handleSelectCoLocated = (item: EquipmentRecord) => {
+    setCurrentRecord(item);
+    onSelectRecord?.(item);
+  };
+
+  const handlePrevRecord = () => {
+    if (currentIndex > 0) {
+      handleSelectCoLocated(coLocatedRecords[currentIndex - 1]);
+    }
+  };
+
+  const handleNextRecord = () => {
+    if (currentIndex < coLocatedRecords.length - 1) {
+      handleSelectCoLocated(coLocatedRecords[currentIndex + 1]);
+    }
+  };
 
   const handleExportPDF = () => {
-    exportSingleRecordPDF(record);
+    exportSingleRecordPDF(currentRecord);
   };
 
   const handleCopyCoordinates = (coordText: string) => {
@@ -95,45 +203,37 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
     },
   ];
 
-  const isCEV = (record.TIPO || '').toUpperCase().trim() === 'CEV';
+  const isCEV = (currentRecord.TIPO || '').toUpperCase().trim() === 'CEV';
   const cevLevantamentoUrl =
     'https://prefeitura.pbh.gov.br/bhtrans/informacoes/transportes/veiculos/fiscalizacao-eletronica/controladores-eletronicos-de-velocidade/levantamentos-tecnicos';
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-3xl overflow-hidden my-8 max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden my-6 sm:my-8 max-h-[90vh] flex flex-col">
         
-        {/* Modal Header */}
-        <div className="bg-slate-900 text-white p-5 flex items-center justify-between border-b border-slate-800 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="p-0.5 shrink-0">
-              <SpeedRadarIcon className="w-7 h-7" />
+        {/* Modal Header - Consistent with Portal Design System */}
+        <div className="bg-white text-slate-900 px-5 sm:px-6 py-4 flex items-center justify-between border-b border-slate-200 shrink-0 shadow-2xs">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl shrink-0 border border-slate-200/90 bg-white p-1 flex items-center justify-center shadow-2xs">
+              <img
+                src="/icon.svg"
+                alt="GEAPI FE"
+                className="w-full h-full object-contain rounded-lg"
+                referrerPolicy="no-referrer"
+              />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-bold text-lg text-white flex items-center gap-1.5">
+                <h3 className="font-bold text-base sm:text-lg text-slate-900 flex items-center gap-1.5 leading-tight">
                   <span>Equipamento:</span>
-                  {isCEV && record.CÓDIGO ? (
-                    <a
-                      href={cevLevantamentoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors"
-                      title="Consultar Levantamentos Técnicos de Controladores Eletrônicos de Velocidade (PBH / BHTRANS)"
-                    >
-                      <span>{record.CÓDIGO}</span>
-                      <ExternalLink className="w-4 h-4 text-blue-400 shrink-0" />
-                    </a>
-                  ) : (
-                    <span>{record.CÓDIGO || 'Sem Código'}</span>
-                  )}
+                  <span className="text-slate-900 font-bold">{currentRecord.CÓDIGO || 'Sem Código'}</span>
                 </h3>
-                <span className="text-xs bg-blue-500/20 text-blue-300 font-semibold px-2.5 py-0.5 rounded-full border border-blue-400/30">
-                  {record.TIPO || 'N/A'}
+                <span className="text-xs bg-blue-50 text-blue-700 font-bold px-2.5 py-0.5 rounded-full border border-blue-200">
+                  {currentRecord.TIPO || 'N/A'}
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Contrato {record.CONTRATO || 'N/A'} • {record.CONTRATADA || 'Empresa N/A'}
+              <p className="text-xs text-slate-500 mt-0.5 font-medium">
+                Contrato {currentRecord.CONTRATO || 'N/A'} • {currentRecord.CONTRATADA || 'Empresa N/A'}
               </p>
             </div>
           </div>
@@ -141,7 +241,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
           <div className="flex items-center gap-2">
             <button
               onClick={handleExportPDF}
-              className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors shadow-sm"
+              className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold px-3 py-2 rounded-xl transition-colors shadow-2xs cursor-pointer"
               title="Gerar PDF detalhado deste registro"
             >
               <FileDown className="w-4 h-4" />
@@ -149,48 +249,101 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
             </button>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
+              className="text-slate-400 hover:text-slate-700 p-1.5 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
+              title="Fechar janela"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Modal Body - Scrollable */}
-        <div className="p-6 overflow-y-auto space-y-6 flex-1 text-slate-800 text-xs sm:text-sm">
-          
-          {/* Quick Notice */}
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between text-xs text-slate-600">
-            <span>Exibindo dados do equipamento obtidos da planilha de origem.</span>
-            <span className="text-slate-500 font-mono text-[10px]">ID: {record.id}</span>
-          </div>
+        {/* Co-located Equipments Navigation Bar (same exact coordinate) */}
+        {coLocatedRecords.length > 1 && (
+          <div className="bg-slate-50/90 border-b border-slate-200 px-5 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs shrink-0 select-none">
+            <div className="flex items-center gap-2 text-slate-700 font-semibold">
+              <Layers className="w-4 h-4 text-blue-600 shrink-0" />
+              <span>
+                {coLocatedRecords.length} equipamentos neste ponto ({currentIndex + 1} de {coLocatedRecords.length})
+              </span>
+            </div>
 
+            <div className="flex items-center gap-1.5 overflow-x-auto max-w-full py-0.5">
+              <button
+                type="button"
+                onClick={handlePrevRecord}
+                disabled={currentIndex <= 0}
+                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white hover:bg-slate-100 active:bg-slate-200 text-slate-700 disabled:opacity-40 disabled:pointer-events-none transition-all shadow-2xs shrink-0 cursor-pointer"
+                title="Equipamento anterior no mesmo ponto"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span>Anterior</span>
+              </button>
+
+              <div className="flex items-center gap-1.5 overflow-x-auto shrink-0 max-w-[280px] sm:max-w-[420px] py-0.5">
+                {coLocatedRecords.map((item, idx) => {
+                  const isActive = item.id === currentRecord.id;
+                  const label = `${item.CÓDIGO || 'Sem Cód.'} (${item.TIPO || 'N/A'})`;
+                  return (
+                    <button
+                      key={item.id || idx}
+                      type="button"
+                      onClick={() => handleSelectCoLocated(item)}
+                      className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all shadow-2xs shrink-0 cursor-pointer ${
+                        isActive
+                          ? 'bg-blue-600 text-white border border-blue-600 shadow-2xs'
+                          : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                      }`}
+                      title={`Alternar para ${label}`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                type="button"
+                onClick={handleNextRecord}
+                disabled={currentIndex >= coLocatedRecords.length - 1}
+                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white hover:bg-slate-100 active:bg-slate-200 text-slate-700 disabled:opacity-40 disabled:pointer-events-none transition-all shadow-2xs shrink-0 cursor-pointer"
+                title="Próximo equipamento no mesmo ponto"
+              >
+                <span>Próximo</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Body - Scrollable */}
+        <div key={currentRecord.id} className="p-6 overflow-y-auto space-y-6 flex-1 text-slate-800 text-xs sm:text-sm animate-in fade-in-50 duration-150">
+          
           {/* Grouped Fields - Only non-empty fields rendered */}
           {(() => {
             const getFieldValue = (header: string) => {
               if (header === 'REG. OBJ' || header === 'Registro do Objeto') {
                 const reg =
-                  record['REG. OBJ'] ||
-                  record.rawFields?.['REG. OBJ'] ||
-                  record.rawFields?.['REG. OBJ.'] ||
-                  (record as any)['REG. OBJ.'] ||
-                  (record as any)['REG. OBJ'] ||
+                  currentRecord['REG. OBJ'] ||
+                  currentRecord.rawFields?.['REG. OBJ'] ||
+                  currentRecord.rawFields?.['REG. OBJ.'] ||
+                  (currentRecord as any)['REG. OBJ.'] ||
+                  (currentRecord as any)['REG. OBJ'] ||
                   '';
                 return String(reg).trim();
               }
               if (header === 'Plano de Operação') {
                 const po =
-                  record['Plano de Operação'] ||
-                  record.rawFields?.['Plano de Operação'] ||
-                  record.rawFields?.['Plano de Operacao'] ||
-                  record.rawFields?.['PLANO DE OPERAÇÃO'] ||
-                  record.rawFields?.['PLANO DE OPERACAO'] ||
-                  (record as any)['Plano de Operação'] ||
+                  currentRecord['Plano de Operação'] ||
+                  currentRecord.rawFields?.['Plano de Operação'] ||
+                  currentRecord.rawFields?.['Plano de Operacao'] ||
+                  currentRecord.rawFields?.['PLANO DE OPERAÇÃO'] ||
+                  currentRecord.rawFields?.['PLANO DE OPERACAO'] ||
+                  (currentRecord as any)['Plano de Operação'] ||
                   '';
                 return String(po).trim();
               }
-              const raw = record.rawFields ? record.rawFields[header] : undefined;
-              const direct = (record as any)[header];
+              const raw = currentRecord.rawFields ? currentRecord.rawFields[header] : undefined;
+              const direct = (currentRecord as any)[header];
               let val = raw !== undefined && raw !== null ? String(raw).trim() : (direct !== undefined && direct !== null ? String(direct).trim() : '');
               if (val.toUpperCase().includes('#VALUE')) {
                 val = 'Em implantação';
@@ -201,7 +354,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
             const renderedSections = sections.map((sec, idx) => {
               const Icon = sec.icon;
               const validFields = sec.fields.filter((header) => {
-                if (header === 'REG. OBJ' && (record.TIPO || '').toUpperCase().trim() === 'CEV') {
+                if (header === 'REG. OBJ' && (currentRecord.TIPO || '').toUpperCase().trim() === 'CEV') {
                   return false;
                 }
                 const val = getFieldValue(header);
@@ -241,7 +394,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
                       const isRegObj = header === 'REG. OBJ' || header === 'Registro do Objeto' || labelText === 'REGISTRO DE OBJETO';
                       const inmetroUrl = isRegObj && value ? `https://registro.inmetro.gov.br/consulta/detalhe.aspx?pag=1&NumeroRegistro=${encodeURIComponent(value.trim())}` : null;
 
-                      const isCEV = (record.TIPO || '').toUpperCase().trim() === 'CEV';
+                      const isCEV = (currentRecord.TIPO || '').toUpperCase().trim() === 'CEV';
                       const isCodigo = header === 'CÓDIGO' || header === 'Código' || labelText === 'CÓDIGO';
                       const cevCodigoUrl = isCEV && isCodigo && value && value !== '-' ? cevLevantamentoUrl : null;
 
@@ -397,11 +550,11 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
         </div>
 
         {/* Modal Footer */}
-        <div className="bg-slate-50 px-6 py-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500 shrink-0">
-          <span>GEAPI — Gerência de Análise e Processamento de Infrações</span>
+        <div className="bg-slate-50 px-5 sm:px-6 py-3.5 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500 shrink-0">
+          <span className="font-medium text-slate-500">GEAPI — Gerência de Análise e Processamento de Infrações</span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-medium rounded-lg transition-colors"
+            className="px-4 py-1.5 bg-white hover:bg-slate-100 active:bg-slate-200 text-slate-700 font-semibold border border-slate-200 rounded-lg transition-colors shadow-2xs cursor-pointer"
           >
             Fechar
           </button>
@@ -411,3 +564,4 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({ reco
     </div>
   );
 };
+

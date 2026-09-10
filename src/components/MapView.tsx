@@ -103,6 +103,32 @@ export const isValidLatLng = (lat?: any, lng?: any): lat is number => {
   return isValidCoordNumber(lat) && isValidCoordNumber(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180 && (lat !== 0 || lng !== 0);
 };
 
+export const getSituacaoBadgeHtml = (situacaoRaw?: string): string => {
+  const sit = (situacaoRaw || '').trim();
+  if (!sit || sit === '-') {
+    return `<span style="display: inline-block; padding: 1px 7px; font-size: 10px; font-weight: 600; border-radius: 9999px; background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">Não informada</span>`;
+  }
+  const lower = sit.toLowerCase();
+
+  // Relocação (Roxo institucional)
+  if (lower.includes('relocação') || lower.includes('relocacao')) {
+    return `<span style="display: inline-block; padding: 1px 7.5px; font-size: 10px; font-weight: 700; border-radius: 9999px; background-color: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe;">${sit}</span>`;
+  }
+
+  // Em operação / Operação (Verdinho esmeralda institucional)
+  if (lower.includes('em operação') || lower.includes('em operacao') || lower.includes('operação') || lower.includes('operacao')) {
+    return `<span style="display: inline-block; padding: 1px 7.5px; font-size: 10px; font-weight: 700; border-radius: 9999px; background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0;">${sit}</span>`;
+  }
+
+  // Desligado / Inoperante / Desativado (Vermelho / Rosa institucional)
+  if (lower.includes('desligado') || lower.includes('inoperante') || lower.includes('desativado')) {
+    return `<span style="display: inline-block; padding: 1px 7.5px; font-size: 10px; font-weight: 700; border-radius: 9999px; background-color: #ffe4e6; color: #9f1239; border: 1px solid #fecdd3;">${sit}</span>`;
+  }
+
+  // Implantação / Projetado / Outros (Laranja / Âmbar institucional)
+  return `<span style="display: inline-block; padding: 1px 7.5px; font-size: 10px; font-weight: 700; border-radius: 9999px; background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a;">${sit}</span>`;
+};
+
 export const MapView: React.FC<MapViewProps> = ({ records, filters, onSelectRecord }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -178,17 +204,40 @@ export const MapView: React.FC<MapViewProps> = ({ records, filters, onSelectReco
 
     const bounds = L.latLngBounds([]);
 
+    // Group records sharing exact same coordinate (rounded to 5 decimals ~ 1 meter)
+    const coordMap = new Map<string, EquipmentRecord[]>();
     validRecords.forEach((record) => {
       if (!isValidLatLng(record.lat, record.lng)) return;
+      const key = `${record.lat!.toFixed(5)},${record.lng!.toFixed(5)}`;
+      if (!coordMap.has(key)) {
+        coordMap.set(key, []);
+      }
+      coordMap.get(key)!.push(record);
+    });
 
-      const lat = record.lat!;
-      const lng = record.lng!;
+    coordMap.forEach((groupRecords) => {
+      // Sort in ascending order by CÓDIGO (natural alphanumeric: e.g. KBH00021, KBH00022, KBH00023)
+      groupRecords.sort((a, b) => {
+        const codA = (a.CÓDIGO || '').trim();
+        const codB = (b.CÓDIGO || '').trim();
+        return codA.localeCompare(codB, undefined, { numeric: true, sensitivity: 'base' });
+      });
 
-      const color = getTypeColor(record.TIPO);
-      const rawTipo = (record.TIPO || '').trim();
+      const primaryRecord = groupRecords[0];
+      const lat = primaryRecord.lat!;
+      const lng = primaryRecord.lng!;
+      const isCoLocated = groupRecords.length > 1;
+
+      const color = getTypeColor(primaryRecord.TIPO);
+      const rawTipo = (primaryRecord.TIPO || '').trim();
       const displayTipo = rawTipo || 'EQUIP';
 
-      // Create custom HTML marker icon with TIPO written inside
+      // Title tooltip
+      const tooltipText = isCoLocated
+        ? `${groupRecords.length} equipamentos neste ponto: ${groupRecords.map((r) => `${r.CÓDIGO || ''} (${r.TIPO || ''})`).join(', ')} - ${primaryRecord['ENDEREÇO COMPLETO'] || ''}`
+        : `${primaryRecord.CÓDIGO || ''} (${displayTipo}) - ${primaryRecord['ENDEREÇO COMPLETO'] || ''}`;
+
+      // Create custom HTML marker icon with TIPO written inside (strictly NO counter badge on pin)
       const customIcon = L.divIcon({
         className: 'custom-leaflet-marker-clean',
         html: `
@@ -214,7 +263,7 @@ export const MapView: React.FC<MapViewProps> = ({ records, filters, onSelectReco
             white-space: nowrap;
             cursor: pointer;
             box-sizing: border-box;
-          " title="${record.CÓDIGO || ''} (${displayTipo}) - ${record['ENDEREÇO COMPLETO'] || ''}">
+          " title="${tooltipText}">
             <span style="display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1;">${displayTipo}</span>
           </div>
         `,
@@ -225,56 +274,139 @@ export const MapView: React.FC<MapViewProps> = ({ records, filters, onSelectReco
 
       const marker = L.marker([lat, lng], { icon: customIcon });
 
-      // Popup Content
+      // Popup Content - Alinhado aos padrões institucionais claros do portal GEAPI
       const popupDiv = document.createElement('div');
       popupDiv.className = 'p-1 text-slate-900 max-w-xs';
       popupDiv.innerHTML = `
-        <div style="font-family: system-ui, sans-serif; font-size: 12px; line-height: 1.4;">
-          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
-            <strong style="color: #0f172a; font-size: 13px;">${record.CÓDIGO || 'Sem Código'}</strong>
-            <span style="background-color: ${color}15; color: ${color}; border: 1px solid ${color}40; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 9999px;">
-              ${record.TIPO || 'TIPO N/A'}
+        <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 12px; line-height: 1.4; color: #0f172a; min-width: 220px;">
+          
+          <!-- Cabeçalho: Código e Badge de Tipo -->
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px;">
+            <strong style="color: #0f172a; font-size: 13.5px; font-weight: 800; letter-spacing: -0.2px;">${primaryRecord.CÓDIGO || 'Sem Código'}</strong>
+            <span style="background-color: ${color}15; color: ${color}; border: 1px solid ${color}40; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 9999px;">
+              ${primaryRecord.TIPO || 'TIPO N/A'}
             </span>
           </div>
-          <div style="margin-bottom: 4px; color: #334155; font-weight: 600;">
-            📍 ${record['ENDEREÇO COMPLETO'] || 'Sem endereço'}
+
+          <!-- Endereço -->
+          <div style="margin-bottom: 6px; color: #334155; font-size: 11.5px; font-weight: 600; line-height: 1.35;">
+            📍 ${primaryRecord['ENDEREÇO COMPLETO'] || 'Sem endereço'}
           </div>
-          <div style="font-size: 11px; color: #64748b; margin-bottom: ${record['Data de Desligamento'] ? '4px' : '8px'};">
-            Contrato: <strong>${record.CONTRATO || '-'}</strong> | Faixas: <strong>${record.FAIXAS}</strong> | Situação: <strong>${record.Situação || '-'}</strong>
+
+          <!-- Informações de Contrato e Faixas -->
+          <div style="font-size: 11px; color: #64748b; margin-bottom: 4px;">
+            Contrato: <strong style="color: #1e293b;">${primaryRecord.CONTRATO || '-'}</strong> | Faixas: <strong style="color: #1e293b;">${primaryRecord.FAIXAS || '-'}</strong>
           </div>
-          ${record['Data de Desligamento'] ? `
-            <div style="font-size: 11px; color: #dc2626; background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 4px; padding: 2px 6px; margin-bottom: 8px; font-weight: 500;">
-              Data de Desligamento: <strong>${record['Data de Desligamento']}</strong>
+
+          <!-- Destaque visual da Situação (Verdinho, Roxo, Laranja/Âmbar, Rosa/Vermelho) -->
+          <div style="font-size: 11px; margin-bottom: ${primaryRecord['Data de Desligamento'] ? '5px' : '8px'}; display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
+            <span style="color: #64748b; font-weight: 600;">Situação:</span>
+            ${getSituacaoBadgeHtml(primaryRecord.Situação)}
+          </div>
+
+          <!-- Data de Desligamento (se houver) -->
+          ${primaryRecord['Data de Desligamento'] ? `
+            <div style="font-size: 10.5px; color: #dc2626; background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 3px 7px; margin-bottom: 8px; font-weight: 600;">
+              Data de Desligamento: <strong>${primaryRecord['Data de Desligamento']}</strong>
             </div>
           ` : ''}
-          <button id="btn-detail-${record.id}" style="
+
+          <!-- Botão Ver Ficha Completa (com Lupa Vetorial SVG branca nítida e harmônica) -->
+          <button id="btn-detail-${primaryRecord.id}" style="
             width: 100%;
             background-color: #2563eb;
             color: #ffffff;
             border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 600;
+            padding: 7px 12px;
+            border-radius: 7px;
+            font-size: 11.5px;
+            font-weight: 700;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 4px;
+            gap: 6px;
+            box-shadow: 0 1px 2px rgba(37, 99, 235, 0.25);
+            transition: background-color 0.15s ease;
           ">
-            <span>🔍 Ver Todos os Dados (Ficha Completa)</span>
+            <svg style="width: 13.5px; height: 13.5px; color: #ffffff; shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <span>${isCoLocated ? `Ver Ficha Completa (${groupRecords.length} Equipamentos)` : 'Ver Ficha Completa'}</span>
           </button>
+
+          <!-- Quadro de Equipamentos Co-localizados (ABAIXO do botão "Ver Ficha Completa", ordenado em ordem crescente) -->
+          ${isCoLocated ? `
+            <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 7px 9px; margin-top: 8px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; font-size: 10.5px; font-weight: 700; color: #334155; margin-bottom: 5px;">
+                <span style="display: flex; align-items: center; gap: 4px;">
+                  <svg style="width: 13px; height: 13px; color: #2563eb; shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                    <polyline points="2 17 12 22 22 17"></polyline>
+                    <polyline points="2 12 12 17 22 12"></polyline>
+                  </svg>
+                  ${groupRecords.length} equipamentos neste ponto:
+                </span>
+                <span style="background-color: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 9px; padding: 1px 5px; border-radius: 4px; font-weight: 700;">Mesmo Ponto</span>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                ${groupRecords.map((r, i) => {
+                  const isPrimary = r.id === primaryRecord.id;
+                  return `
+                    <button id="btn-popup-chip-${primaryRecord.id}-${i}" style="
+                      background-color: ${isPrimary ? '#2563eb' : '#ffffff'};
+                      color: ${isPrimary ? '#ffffff' : '#1e293b'};
+                      border: 1px solid ${isPrimary ? '#1d4ed8' : '#cbd5e1'};
+                      font-size: 10px;
+                      font-weight: 700;
+                      padding: 2.5px 6.5px;
+                      border-radius: 5px;
+                      cursor: pointer;
+                      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+                      transition: all 0.15s;
+                    " title="Abrir ficha de ${r.CÓDIGO || 'Sem Cód.'} (${r.TIPO || 'N/A'})">
+                      ${r.CÓDIGO || 'Sem Cód.'} (${r.TIPO || 'N/A'})
+                    </button>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          ` : ''}
+
         </div>
       `;
 
       marker.bindPopup(popupDiv);
 
       marker.on('popupopen', () => {
-        const btn = document.getElementById(`btn-detail-${record.id}`);
+        const btn = document.getElementById(`btn-detail-${primaryRecord.id}`);
         if (btn) {
+          btn.onmouseenter = () => { btn.style.backgroundColor = '#1d4ed8'; };
+          btn.onmouseleave = () => { btn.style.backgroundColor = '#2563eb'; };
           btn.onclick = () => {
-            onSelectRecord(record);
+            onSelectRecord(primaryRecord);
           };
+        }
+        if (isCoLocated) {
+          groupRecords.forEach((r, idx) => {
+            const chipBtn = document.getElementById(`btn-popup-chip-${primaryRecord.id}-${idx}`);
+            if (chipBtn) {
+              if (r.id !== primaryRecord.id) {
+                chipBtn.onmouseenter = () => {
+                  chipBtn.style.backgroundColor = '#f1f5f9';
+                  chipBtn.style.borderColor = '#94a3b8';
+                };
+                chipBtn.onmouseleave = () => {
+                  chipBtn.style.backgroundColor = '#ffffff';
+                  chipBtn.style.borderColor = '#cbd5e1';
+                };
+              }
+              chipBtn.onclick = () => {
+                onSelectRecord(r);
+              };
+            }
+          });
         }
       });
 

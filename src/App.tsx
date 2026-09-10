@@ -588,6 +588,8 @@ export default function App() {
       {/* Modals and Overlays */}
       <EquipmentDetailModal
         record={selectedRecord}
+        allRecords={records}
+        onSelectRecord={(rec) => setSelectedRecord(rec)}
         onClose={() => setSelectedRecord(null)}
       />
 
