@@ -6,15 +6,44 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.52';
+export const APP_VERSION = 'v3.7.55';
 export const BUILD_DATE = '10/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.55',
+    date: '10/09/2026',
+    tag: 'Otimização do Comportamento Inicial da Legenda',
+    isLatest: true,
+    changes: [
+      'Simplificado o título da seção de "Legenda dos Contratos e Detectores" para apenas "Legenda", mantendo o rodapé mais limpo.',
+      'Ajustado o comportamento padrão inicial da legenda para começar recolhida (fechada), otimizando o espaço útil de tela nas primeiras visitas.'
+    ]
+  },
+  {
+    version: 'v3.7.54',
+    date: '10/09/2026',
+    tag: 'Caixa de Legenda do Rodapé 100% Recolhível',
+    changes: [
+      'Adicionado suporte a recolhimento dinâmico (collapsible) no card de legenda dos contratos e detectores no rodapé.',
+      'Implementado estado React local persistido automaticamente no localStorage para lembrar a preferência de exibição/recolhimento do usuário.',
+      'Adicionado indicador visual com ícone de seta interativo (Chevron) com rotação suave e animações de transição fluida.'
+    ]
+  },
+  {
+    version: 'v3.7.53',
+    date: '10/09/2026',
+    tag: 'Harmonização Cromática e Reestilização Clara do Rodapé',
+    changes: [
+      'Totalmente reformulado o design do rodapé do portal (FooterLegend) para adotar a identidade visual clara, limpa e oficial adotada nas demais seções da GEAPI.',
+      'Substituídos os fundos escuros do rodapé e da caixa de legenda por tons elegantes de cinza claro (slate-50) e branco (white) com bordas suaves e sombras refinadas.',
+      'Reestilizado o modal de histórico de controle de versões com um tema inteiramente claro, trazendo timeline minimalista azul-celeste e botões institucionais polidos.'
+    ]
+  },
+  {
     version: 'v3.7.52',
     date: '10/09/2026',
     tag: 'Aumento da Logo Oficial PBH / BHTRANS no Ambiente Web',
-    isLatest: true,
     changes: [
       'Aumentada a escala do logotipo oficial institucional BHTRANS / Prefeitura de Belo Horizonte na tela inicial de bloqueio (LockScreen) em mais de 65% (de h-10/sm:h-12 para h-16/sm:h-20/md:h-[82px]), garantindo máxima nitidez e imponência institucional.',
       'Ampliadas as dimensões da logo no cabeçalho principal do portal (Header) para telas maiores (de md:h-14 para md:h-16/lg:h-[68px]), otimizando a presença da marca em resoluções web e desktop.'
