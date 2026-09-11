@@ -6,15 +6,24 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.57';
-export const BUILD_DATE = '10/09/2026';
+export const APP_VERSION = 'v3.7.58';
+export const BUILD_DATE = '11/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v3.7.58',
+    date: '11/09/2026',
+    tag: 'Destaque Sutil no Botão de Legenda do Rodapé',
+    isLatest: true,
+    changes: [
+      'Estilizado o botão de expandir/recolher a legenda no rodapé como um micro-badge pílula com borda suave e fundo sutil.',
+      'Aumentado levemente o peso visual e adicionado efeito hover com destaque em azul corporativo ao interagir com o botão.'
+    ]
+  },
   {
     version: 'v3.7.57',
     date: '10/09/2026',
     tag: 'Harmonização do Painel Executivo de Indicadores',
-    isLatest: true,
     changes: [
       'Removido o banner escuro (slate-900) da seção "Painel Executivo de Indicadores" na aba de Indicadores, substituindo-o por um layout claro institucional (white) integrado.',
       'Ajustadas as fontes, ícones e subtextos para cinza escuro e azul corporativo de alto contraste.',

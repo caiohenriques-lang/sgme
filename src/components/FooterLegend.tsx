@@ -39,18 +39,18 @@ export const FooterLegend: React.FC<FooterLegendProps> = ({
         <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden transition-all duration-200">
           <button 
             onClick={handleToggleLegend}
-            className="w-full flex items-center justify-between p-3 text-left hover:bg-slate-50/50 transition-colors cursor-pointer select-none"
+            className="w-full flex items-center justify-between p-2.5 sm:p-3 text-left hover:bg-slate-50 transition-colors cursor-pointer select-none group"
             aria-expanded={isLegendExpanded}
           >
-            <div className="flex items-center gap-1.5 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+            <div className="flex items-center gap-1.5 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
               <Info className="w-3.5 h-3.5 text-blue-600 shrink-0" />
               <span>Legenda</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-slate-400 font-medium normal-case">
+            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-slate-100 group-hover:bg-blue-50 text-slate-600 group-hover:text-blue-700 border border-slate-200/80 group-hover:border-blue-200/80 transition-colors">
+              <span className="text-[10.5px] font-semibold normal-case">
                 {isLegendExpanded ? 'Recolher' : 'Expandir'}
               </span>
-              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${isLegendExpanded ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-3.5 h-3.5 text-slate-500 group-hover:text-blue-600 transition-transform duration-200 ${isLegendExpanded ? 'rotate-180' : ''}`} />
             </div>
           </button>
 
