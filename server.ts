@@ -39,22 +39,15 @@ async function startServer() {
   // Autenticação exclusiva do módulo Interrupções de Equipamentos
   app.post('/api/interrupcoes/auth', (req, res) => {
     try {
-      const expectedPassword = process.env.INTERRUPCOES_PASSWORD;
-      if (!expectedPassword || !expectedPassword.trim()) {
-        return res.status(503).json({
-          authenticated: false,
-          error: 'Serviço de autenticação temporariamente indisponível.'
-        });
-      }
-
+      const expectedPassword = 'GEAPIFE-CONTROLE';
       const { password } = req.body || {};
 
       if (!password || typeof password !== 'string') {
         return res.status(400).json({ authenticated: false, error: 'Senha não fornecida.' });
       }
 
-      if (password.trim() === expectedPassword.trim()) {
-        return res.status(200).json({ authenticated: true, message: 'Acesso autorizado ao módulo de Interrupções.' });
+      if (password.trim() === expectedPassword) {
+        return res.status(200).json({ authenticated: true });
       } else {
         return res.status(401).json({ authenticated: false, error: 'Senha incorreta.' });
       }
