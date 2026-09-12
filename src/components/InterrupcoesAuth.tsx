@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Lock, ShieldAlert, KeyRound, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Lock, ShieldAlert, KeyRound, Loader2, AlertCircle, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
 interface InterrupcoesAuthProps {
   onSuccess: () => void;
@@ -11,6 +11,7 @@ export const InterrupcoesAuth: React.FC<InterrupcoesAuthProps> = ({
   onFailure,
 }) => {
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -84,10 +85,10 @@ export const InterrupcoesAuth: React.FC<InterrupcoesAuthProps> = ({
               Senha de Autorização
             </label>
             <div className="relative">
-              <KeyRound className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <KeyRound className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 id="interrupcoes-password-input"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
@@ -96,8 +97,21 @@ export const InterrupcoesAuth: React.FC<InterrupcoesAuthProps> = ({
                 placeholder="Digite a senha..."
                 autoFocus
                 disabled={loading}
-                className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 focus:bg-white transition-all disabled:opacity-60"
+                className="w-full pl-10 pr-10 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 focus:bg-white transition-all disabled:opacity-60"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                disabled={loading}
+                aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 focus:text-slate-600 focus:outline-none transition-colors rounded-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4.5 h-4.5" />
+                ) : (
+                  <Eye className="w-4.5 h-4.5" />
+                )}
+              </button>
             </div>
           </div>
 

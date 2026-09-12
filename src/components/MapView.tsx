@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { EquipmentRecord, FilterState } from '../types';
@@ -133,12 +133,22 @@ export const MapView: React.FC<MapViewProps> = ({ records, filters, onSelectReco
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
+  const isInitialViewSettledRef = useRef<boolean>(false);
+  const prevFiltersKeyRef = useRef<string>('');
+  const onSelectRecordRef = useRef(onSelectRecord);
+
+  useEffect(() => {
+    onSelectRecordRef.current = onSelectRecord;
+  });
   
   const [isExportingPdf, setIsExportingPdf] = useState<boolean>(false);
   const [showLegend, setShowLegend] = useState<boolean>(false);
 
   // Filter records that actually have valid coordinates
-  const validRecords = records.filter((r) => r.hasValidCoord && isValidLatLng(r.lat, r.lng));
+  const validRecords = useMemo(
+    () => records.filter((r) => r.hasValidCoord && isValidLatLng(r.lat, r.lng)),
+    [records]
+  );
 
   const handleExportPdf = async () => {
     if (isExportingPdf) return;
@@ -173,10 +183,11 @@ export const MapView: React.FC<MapViewProps> = ({ records, filters, onSelectReco
 
     // Initialize Leaflet map if not created yet
     if (!mapInstanceRef.current) {
-      // Default center: Belo Horizonte, MG (-19.92, -43.94)
+      // Centro padrão: Belo Horizonte, MG (-19.92, -43.94)
+      // Zoom inicial consolidado: 14 (referência visual aproximada)
       const map = L.map(mapContainerRef.current, {
         center: [-19.92, -43.94],
-        zoom: 12,
+        zoom: 14,
         zoomControl: true,
       });
 
@@ -384,7 +395,7 @@ export const MapView: React.FC<MapViewProps> = ({ records, filters, onSelectReco
           btn.onmouseenter = () => { btn.style.backgroundColor = '#1d4ed8'; };
           btn.onmouseleave = () => { btn.style.backgroundColor = '#2563eb'; };
           btn.onclick = () => {
-            onSelectRecord(primaryRecord);
+            onSelectRecordRef.current(primaryRecord);
           };
         }
         if (isCoLocated) {
@@ -402,7 +413,7 @@ export const MapView: React.FC<MapViewProps> = ({ records, filters, onSelectReco
                 };
               }
               chipBtn.onclick = () => {
-                onSelectRecord(r);
+                onSelectRecordRef.current(r);
               };
             }
           });
@@ -414,13 +425,25 @@ export const MapView: React.FC<MapViewProps> = ({ records, filters, onSelectReco
     });
 
     if (validRecords.length > 0 && bounds.isValid()) {
-      if (bounds.getNorthEast().equals(bounds.getSouthWest())) {
-        map.setView(bounds.getCenter(), 16);
-      } else {
-        map.fitBounds(bounds, { padding: [35, 35], maxZoom: 16 });
+      const currentFiltersKey = JSON.stringify(filters || {});
+
+      if (!isInitialViewSettledRef.current) {
+        isInitialViewSettledRef.current = true;
+        prevFiltersKeyRef.current = currentFiltersKey;
+        // Na abertura inicial, garante visualização com o centro de BH e zoom 14
+        map.setView([-19.92, -43.94], 14);
+        map.invalidateSize();
+      } else if (currentFiltersKey !== prevFiltersKeyRef.current) {
+        // Usuário aplicou/modificou filtros que justificam fitBounds
+        prevFiltersKeyRef.current = currentFiltersKey;
+        if (bounds.getNorthEast().equals(bounds.getSouthWest())) {
+          map.setView(bounds.getCenter(), 16);
+        } else {
+          map.fitBounds(bounds, { padding: [35, 35], maxZoom: 16 });
+        }
       }
     }
-  }, [validRecords, onSelectRecord]);
+  }, [validRecords, filters]);
 
   return (
     <div className="relative isolate z-0 w-full h-[calc(100vh-230px)] min-h-[520px] bg-slate-100 rounded-xl overflow-hidden border border-slate-200 shadow-md">

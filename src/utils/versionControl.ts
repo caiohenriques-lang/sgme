@@ -6,15 +6,25 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.60';
+export const APP_VERSION = 'v3.7.61';
 export const BUILD_DATE = '12/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.61',
+    date: '12/09/2026',
+    tag: 'Usabilidade na Autenticação: Alternância de Visualização da Senha de Autorização',
+    isLatest: true,
+    changes: [
+      'Visualizar / Ocultar Senha: Adicionado botão interativo com ícones dinâmicos Eye e EyeOff alinhado à direita no campo de Senha de Autorização do módulo de Interrupções.',
+      'Acessibilidade e Usabilidade: Rótulos aria-label dinâmicos ("Mostrar senha" / "Ocultar senha"), botão com type="button" evitando submit acidental e padding lateral adequado.',
+      'Preservação de Estado: O valor digitado permanece intacto ao alternar entre visível e oculto, mantendo padrão mascarado inicial e suporte a tecla Enter.'
+    ]
+  },
+  {
     version: 'v3.7.60',
     date: '12/09/2026',
     tag: 'Consolidação Geral: Header Estável, Autenticação Refinada, Layout 58/42 e Correção do Geapinho',
-    isLatest: true,
     changes: [
       'Estabilidade do Header: Removidos listeners JS e oscilação visual de scroll; cabeçalho institucional em fluxo normal e barra de módulos com fixação nativa (sticky top-0).',
       'Refinamento da Autenticação de Interrupções: Removido redirecionamento automático forçado em caso de senha incorreta ou falhas de rede, permitindo nova tentativa ou navegação manual pelo usuário.',

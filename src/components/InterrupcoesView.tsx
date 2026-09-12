@@ -56,11 +56,16 @@ const renderCustomPieLabel = ({
     <text
       x={x}
       y={y}
-      fill="#1e293b"
+      fill="#ffffff"
       textAnchor="middle"
       dominantBaseline="central"
       fontSize={12}
-      fontWeight={700}
+      fontWeight={600}
+      style={{
+        filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.35))',
+        textShadow: '0 1px 2px rgba(0,0,0,0.35)',
+      }}
+      className="pointer-events-none select-none"
     >
       {percentualFormatted}
     </text>
@@ -97,7 +102,7 @@ export const InterrupcoesView: React.FC = () => {
     key: SortInoperantesKey;
     direction: 'asc' | 'desc';
   }>({ key: 'dataParada', direction: 'desc' });
-  const rowsPerPageInoperantes = 18;
+  const rowsPerPageInoperantes = 17;
 
   const [searchMensal, setSearchMensal] = useState('');
   const [pageMensal, setPageMensal] = useState(1);
@@ -410,8 +415,8 @@ export const InterrupcoesView: React.FC = () => {
         {/* Coluna Esquerda: Equipamentos Inoperantes Temporariamente (7 colunas lg, ~58%) */}
         <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col h-full overflow-hidden">
           {/* Header da Tabela */}
-          <div className="p-3 sm:p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
-            <div>
+          <div className="px-4 py-3 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50/50">
+            <div className="min-w-0">
               <h3 className="font-bold text-sm sm:text-base text-slate-900 leading-tight">
                 Equipamentos Inoperantes Temporariamente
               </h3>
@@ -419,22 +424,10 @@ export const InterrupcoesView: React.FC = () => {
                 Equipamentos com parada registrada e aguardando retorno ({sortedInoperantes.length} registros)
               </p>
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              {/* Botão Exportar CSV */}
-              <button
-                type="button"
-                onClick={handleExportInoperantesCSV}
-                disabled={sortedInoperantes.length === 0}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-800 border border-emerald-300/80 rounded-lg text-xs font-semibold shadow-2xs transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Exportar equipamentos inoperantes para CSV (compatível com Excel)"
-              >
-                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
-                <span>Exportar CSV</span>
-              </button>
-
+            <div className="flex items-center gap-2.5 flex-col sm:flex-row w-full md:w-auto shrink-0">
               {/* Input Busca */}
-              <div className="relative min-w-[150px]">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <div className="relative w-full sm:w-56 md:w-64">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
                   placeholder="Buscar..."
@@ -443,9 +436,21 @@ export const InterrupcoesView: React.FC = () => {
                     setSearchInoperantes(e.target.value);
                     setPageInoperantes(1);
                   }}
-                  className="w-full pl-9 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-800"
+                  className="w-full h-9 pl-9 pr-3 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-800 placeholder:text-slate-400 transition-all"
                 />
               </div>
+
+              {/* Botão Exportar CSV */}
+              <button
+                type="button"
+                onClick={handleExportInoperantesCSV}
+                disabled={sortedInoperantes.length === 0}
+                className="w-full sm:w-auto h-9 inline-flex items-center justify-center gap-1.5 px-3 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-800 border border-emerald-300/80 rounded-lg text-xs font-semibold shadow-2xs transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                title="Exportar equipamentos inoperantes para CSV (compatível com Excel)"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                <span>Exportar CSV</span>
+              </button>
             </div>
           </div>
 
