@@ -6,15 +6,39 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.58';
-export const BUILD_DATE = '11/09/2026';
+export const APP_VERSION = 'v3.7.60';
+export const BUILD_DATE = '12/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v3.7.60',
+    date: '12/09/2026',
+    tag: 'Consolidação Geral: Header Estável, Autenticação Refinada, Layout 58/42 e Correção do Geapinho',
+    isLatest: true,
+    changes: [
+      'Estabilidade do Header: Removidos listeners JS e oscilação visual de scroll; cabeçalho institucional em fluxo normal e barra de módulos com fixação nativa (sticky top-0).',
+      'Refinamento da Autenticação de Interrupções: Removido redirecionamento automático forçado em caso de senha incorreta ou falhas de rede, permitindo nova tentativa ou navegação manual pelo usuário.',
+      'Novo Layout Proporcional 58/42 (7/5 colunas): Ajustada a aba de Interrupções para 58% na tabela principal e 42% no painel analítico direito, com alinhamento vertical contínuo (items-stretch / flex-1) eliminando vácuos inferiores.',
+      'Card de Resumo Compacto: Reduzido o volume do card superior de Interrupções com dimensões enxutas integradas à interface.',
+      'Paginação Otimizada: Tabela de inoperantes configurada para 22 registros por página; tabelas de matriz mensal e histórico geral ajustadas para 10 registros por página.',
+      'Correção de Hitbox e Hover do Geapinho: Isolamento de ponteiro com pointer-events-none no wrapper e tooltip absoluto, eliminando área invisível e acionamentos acidentais.'
+    ]
+  },
+  {
+    version: 'v3.7.59',
+    date: '11/09/2026',
+    tag: 'Evolução Controlada: Cabeçalho Retrátil, Proteção de Acesso e Layout de Interrupções',
+    changes: [
+      'Cabeçalho Principal Retrátil: Implementado recolhimento suave da barra institucional ao rolar a página para baixo, mantendo fixa no topo a barra de módulos.',
+      'Proteção Exclusiva da Aba Interrupções: Adicionada autenticação via senha (backend /api/interrupcoes/auth e sessionStorage) com redirecionamento para o Mapa em caso de falha.',
+      'Reorganização da Tela de Interrupções: Ajustada a tabela de inoperantes para 10 linhas por página e criada a coluna de Painel Analítico à direita (Tabela de Acumulado, Gráfico de Pizza e Gráfico de Barras por Tipo).',
+      'Indicador Visual de Cadeado: Adicionado ícone dinâmico de cadeado (trancado/destrancado) na aba Interrupções do cabeçalho desktop e menu mobile.'
+    ]
+  },
   {
     version: 'v3.7.58',
     date: '11/09/2026',
     tag: 'Destaque Sutil no Botão de Legenda do Rodapé',
-    isLatest: true,
     changes: [
       'Estilizado o botão de expandir/recolher a legenda no rodapé como um micro-badge pílula com borda suave e fundo sutil.',
       'Aumentado levemente o peso visual e adicionado efeito hover com destaque em azul corporativo ao interagir com o botão.'

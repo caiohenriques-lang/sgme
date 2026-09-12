@@ -36,6 +36,33 @@ async function startServer() {
     res.json({ status: 'ok', service: 'GEAPI Radar Portal' });
   });
 
+  // Autenticação exclusiva do módulo Interrupções de Equipamentos
+  app.post('/api/interrupcoes/auth', (req, res) => {
+    try {
+      const expectedPassword = process.env.INTERRUPCOES_PASSWORD;
+      if (!expectedPassword || !expectedPassword.trim()) {
+        return res.status(503).json({
+          authenticated: false,
+          error: 'Serviço de autenticação temporariamente indisponível.'
+        });
+      }
+
+      const { password } = req.body || {};
+
+      if (!password || typeof password !== 'string') {
+        return res.status(400).json({ authenticated: false, error: 'Senha não fornecida.' });
+      }
+
+      if (password.trim() === expectedPassword.trim()) {
+        return res.status(200).json({ authenticated: true, message: 'Acesso autorizado ao módulo de Interrupções.' });
+      } else {
+        return res.status(401).json({ authenticated: false, error: 'Senha incorreta.' });
+      }
+    } catch (err) {
+      return res.status(500).json({ authenticated: false, error: 'Erro interno na validação de acesso.' });
+    }
+  });
+
   // AI Status check (determina se o GEAPINHO está ativo ou deve ser ocultado por falta de cota/token)
   app.get('/api/gemini/status', (req, res) => {
     const apiKey = process.env.GEMINI_API_KEY;

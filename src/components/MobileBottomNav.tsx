@@ -1,17 +1,19 @@
 import React from 'react';
 import { ActiveTab } from '../types';
-import { Map, BarChart3, Table, Printer, FileSignature, AlertTriangle, Layers, LayoutGrid, Scale } from 'lucide-react';
+import { Map, BarChart3, Table, Printer, FileSignature, AlertTriangle, Layers, LayoutGrid, Scale, Lock, Unlock } from 'lucide-react';
 
 interface MobileBottomNavProps {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
   totalRecords: number;
   coordRecords: number;
+  isInterrupcoesAuthorized?: boolean;
 }
 
 export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   activeTab,
   setActiveTab,
+  isInterrupcoesAuthorized = false,
 }) => {
   return (
     <nav
@@ -92,7 +94,14 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
             : 'text-slate-600 font-medium hover:text-amber-700 hover:bg-slate-100/80'
         }`}
       >
-        <AlertTriangle className={`w-4 h-4 sm:w-5 sm:h-5 ${activeTab === 'interrupcoes' ? 'text-amber-700' : 'text-amber-600'}`} />
+        <div className="relative flex items-center justify-center">
+          <AlertTriangle className={`w-4 h-4 sm:w-5 sm:h-5 ${activeTab === 'interrupcoes' ? 'text-amber-700' : 'text-amber-600'}`} />
+          {!isInterrupcoesAuthorized ? (
+            <Lock className="w-2.5 h-2.5 text-amber-600 absolute -top-1 -right-1" />
+          ) : (
+            <Unlock className="w-2.5 h-2.5 text-emerald-600 absolute -top-1 -right-1" />
+          )}
+        </div>
         <span className="text-[9.5px] font-bold mt-0.5 tracking-tight truncate max-w-full">Interrupções</span>
       </button>
 

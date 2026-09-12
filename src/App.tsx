@@ -8,6 +8,7 @@ import { IndicatorsView } from './components/IndicatorsView';
 import { TableView } from './components/TableView';
 import { GestaoContratualView } from './components/GestaoContratualView';
 import { InterrupcoesView } from './components/InterrupcoesView';
+import { InterrupcoesAuth } from './components/InterrupcoesAuth';
 import { BHDigitalView } from './components/BHDigitalView';
 import { LegislacaoView } from './components/LegislacaoView';
 import { OutrosView } from './components/OutrosView';
@@ -79,6 +80,9 @@ export default function App() {
   const [lastUpdated, setLastUpdated] = useState<Date | undefined>(undefined);
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('mapa');
+  const [isInterrupcoesAuthorized, setIsInterrupcoesAuthorized] = useState<boolean>(
+    () => sessionStorage.getItem('geapi_interrupcoes_auth') === 'GEAPI_INTERRUPCOES_AUTHORIZED'
+  );
   const [filters, setFilters] = useState<FilterState>(initialFilters);
   const [resetSignal, setResetSignal] = useState<number>(0);
   
@@ -453,6 +457,7 @@ export default function App() {
         onRefresh={loadData}
         lastUpdated={lastUpdated}
         onOpenAI={showAIControls ? () => setIsAIAssistantOpen(true) : undefined}
+        isInterrupcoesAuthorized={isInterrupcoesAuthorized}
       />
 
       {/* Filter Bar - Hidden in Gestão Contratual, Interrupções, BHDIGITAL, Legislação, Outros and Relatórios */}
@@ -538,9 +543,16 @@ export default function App() {
               <GestaoContratualView records={records} lastUpdated={lastUpdated} />
             )}
 
-            {/* Tab 5: Interrupções de Equipamentos (EQUIPAMENTOS OFF) */}
+            {/* Tab 5: Interrupções de Equipamentos (EQUIPAMENTOS OFF) - Proteção Exclusiva */}
             {activeTab === 'interrupcoes' && (
-              <InterrupcoesView />
+              isInterrupcoesAuthorized ? (
+                <InterrupcoesView />
+              ) : (
+                <InterrupcoesAuth
+                  onSuccess={() => setIsInterrupcoesAuthorized(true)}
+                  onFailure={() => setActiveTab('mapa')}
+                />
+              )
             )}
 
             {/* Tab 6: BHDIGITAL */}
@@ -580,6 +592,7 @@ export default function App() {
         setActiveTab={setActiveTab}
         totalRecords={records.length}
         coordRecords={coordCount}
+        isInterrupcoesAuthorized={isInterrupcoesAuthorized}
       />
 
       {/* Smartphone (Android & iOS) PWA Add to Home Screen Prompt */}

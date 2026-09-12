@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActiveTab } from '../types';
-import { Map, BarChart3, Table, Printer, FileSignature, AlertTriangle, Layers, LayoutGrid, Bot, Sparkles, Scale } from 'lucide-react';
+import { Map, BarChart3, Table, Printer, FileSignature, AlertTriangle, Layers, LayoutGrid, Scale, Lock, Unlock } from 'lucide-react';
 
 interface HeaderProps {
   activeTab: ActiveTab;
@@ -12,59 +12,64 @@ interface HeaderProps {
   onOpenVercelGuide?: () => void;
   onOpenAI?: () => void;
   lastUpdated?: Date;
+  isInterrupcoesAuthorized?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   activeTab,
   setActiveTab,
-  onOpenAI,
+  isInterrupcoesAuthorized = false,
 }) => {
   return (
-    <header className="bg-white text-slate-900 shadow-xs border-b border-slate-200 relative md:sticky md:top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          
-          {/* Top Right: Timbre / Logo Image */}
-          <div className="flex items-center justify-center md:justify-end gap-2.5 shrink-0 w-full md:w-auto order-first md:order-last flex-wrap">
-            <div className="flex items-center justify-center">
-              <img
-                src="/logo_pbh_bhtrans.png"
-                alt="Timbre Oficial BHTRANS Prefeitura de Belo Horizonte"
-                className="h-11 sm:h-14 md:h-16 lg:h-[68px] w-auto object-contain transition-all"
-                referrerPolicy="no-referrer"
-              />
-            </div>
-          </div>
-
-
-          {/* Titles & Branding */}
-          <div className="flex items-center gap-4 order-last md:order-first">
-            <div className="rounded-xl shrink-0">
-              <img
-                src="/icon.svg"
-                alt="Identidade Digital GEAPI"
-                className="w-[50px] h-[50px] md:w-[64px] md:h-[64px] object-contain rounded-xl"
-                referrerPolicy="no-referrer"
-              />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 leading-tight">
-                  GERÊNCIA DE ANÁLISE E PROCESSAMENTO DE INFRAÇÕES - GEAPI
-                </h1>
+    <>
+      {/* 1. Cabeçalho Institucional - Fluxo normal da página, sai naturalmente com a rolagem */}
+      <div className="bg-white text-slate-900 border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            
+            {/* Top Right: Timbre / Logo Image */}
+            <div className="flex items-center justify-center md:justify-end gap-2.5 shrink-0 w-full md:w-auto order-first md:order-last flex-wrap">
+              <div className="flex items-center justify-center">
+                <img
+                  src="/logo_pbh_bhtrans.png"
+                  alt="Timbre Oficial BHTRANS Prefeitura de Belo Horizonte"
+                  className="h-11 sm:h-14 md:h-16 lg:h-[68px] w-auto object-contain transition-all"
+                  referrerPolicy="no-referrer"
+                />
               </div>
-              <p className="text-xs sm:text-sm font-semibold text-slate-800 mt-0.5">
-                Fiscalização Eletrônica
-              </p>
-              <p className="text-[11px] text-slate-500 font-normal mt-0.5">
-                Desenvolvido por Caio Henriques de O. L. Cordeiro
-              </p>
+            </div>
+
+            {/* Titles & Branding */}
+            <div className="flex items-center gap-4 order-last md:order-first">
+              <div className="rounded-xl shrink-0">
+                <img
+                  src="/icon.svg"
+                  alt="Identidade Digital GEAPI"
+                  className="w-[50px] h-[50px] md:w-[64px] md:h-[64px] object-contain rounded-xl"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 leading-tight">
+                    GERÊNCIA DE ANÁLISE E PROCESSAMENTO DE INFRAÇÕES - GEAPI
+                  </h1>
+                </div>
+                <p className="text-xs sm:text-sm font-semibold text-slate-800 mt-0.5">
+                  Fiscalização Eletrônica
+                </p>
+                <p className="text-[11px] text-slate-500 font-normal mt-0.5">
+                  Desenvolvido por Caio Henriques de O. L. Cordeiro
+                </p>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Navigation Tabs Bar - Desktop Only (9 equal columns, 2 lines, centered, no scroll, 1px larger & bold) */}
-        <div className="mt-3 pt-2.5 border-t border-slate-100">
+      {/* 2. Barra dos Módulos - Fixa no topo durante a rolagem (sticky top-0) */}
+      <header className="bg-white/95 backdrop-blur-xs text-slate-900 shadow-xs border-b border-slate-200/90 sticky top-0 z-40 transition-none">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
           <nav className="hidden md:grid grid-cols-9 w-full gap-1.5 p-1.5 rounded-2xl bg-slate-100/90 border border-slate-200/90 shadow-2xs">
             
             {/* 1. Gestão Contratual - Vermelho-Escuro */}
@@ -145,7 +150,7 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </button>
 
-            {/* 6. Interrupções de Equipamentos - Amarelo/Âmbar */}
+            {/* 6. Interrupções de Equipamentos - Amarelo/Âmbar com indicador de cadeado */}
             <button
               onClick={() => setActiveTab('interrupcoes')}
               className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center group ${
@@ -154,7 +159,14 @@ export const Header: React.FC<HeaderProps> = ({
                   : 'bg-white/80 border-slate-200/80 text-slate-700 hover:bg-amber-50 hover:border-amber-400 hover:text-amber-900 shadow-2xs'
               }`}
             >
-              <AlertTriangle className={`w-4 h-4 shrink-0 mb-0.5 transition-colors ${activeTab === 'interrupcoes' ? 'text-white' : 'text-amber-500 group-hover:text-amber-600'}`} />
+              <div className="flex items-center gap-1 mb-0.5">
+                <AlertTriangle className={`w-4 h-4 shrink-0 transition-colors ${activeTab === 'interrupcoes' ? 'text-white' : 'text-amber-500 group-hover:text-amber-600'}`} />
+                {!isInterrupcoesAuthorized ? (
+                  <Lock className={`w-3 h-3 shrink-0 ${activeTab === 'interrupcoes' ? 'text-white' : 'text-amber-600'}`} title="Módulo protegido por senha" />
+                ) : (
+                  <Unlock className={`w-3 h-3 shrink-0 ${activeTab === 'interrupcoes' ? 'text-amber-200' : 'text-emerald-600'}`} title="Módulo autorizado na sessão" />
+                )}
+              </div>
               <div className="flex flex-col items-center text-[12px] font-bold leading-tight">
                 <span>Interrupções de</span>
                 <span>Equipamentos</span>
@@ -207,8 +219,8 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </nav>
         </div>
-
-      </div>
-    </header>
+      </header>
+    </>
   );
 };
+

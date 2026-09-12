@@ -97,7 +97,7 @@ export const InterrupcoesView: React.FC = () => {
     key: SortInoperantesKey;
     direction: 'asc' | 'desc';
   }>({ key: 'dataParada', direction: 'desc' });
-  const rowsPerPageInoperantes = 15;
+  const rowsPerPageInoperantes = 18;
 
   const [searchMensal, setSearchMensal] = useState('');
   const [pageMensal, setPageMensal] = useState(1);
@@ -105,7 +105,7 @@ export const InterrupcoesView: React.FC = () => {
     key: string;
     direction: 'asc' | 'desc';
   }>({ key: 'totalGeral', direction: 'desc' });
-  const rowsPerPageMensal = 20;
+  const rowsPerPageMensal = 10;
 
   const [searchHistorico, setSearchHistorico] = useState('');
   const [filterMotivoHistorico, setFilterMotivoHistorico] = useState('TODOS');
@@ -114,7 +114,7 @@ export const InterrupcoesView: React.FC = () => {
     key: SortHistoricoKey;
     direction: 'asc' | 'desc';
   }>({ key: 'dataParada', direction: 'desc' });
-  const rowsPerPageHistorico = 25;
+  const rowsPerPageHistorico = 10;
 
   useEffect(() => {
     fetchInterrupcoesData().then((data) => {
@@ -380,42 +380,42 @@ export const InterrupcoesView: React.FC = () => {
 
   return (
     <div className="space-y-8 pb-12">
-      {/* Header Banner */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Header Banner - Versão Compacta */}
+      <div className="bg-white border border-slate-200 rounded-xl px-3.5 py-2 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
-            <span className="w-3 h-3 rounded-full bg-amber-500 animate-pulse"></span>
-            Painel de Interrupções de Equipamentos
+          <h2 className="text-xs sm:text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse shrink-0"></span>
+            <span>Painel de Interrupções de Equipamentos</span>
           </h2>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-[10px] sm:text-[11px] text-slate-500 mt-0.5 leading-normal">
             Monitoramento de inoperâncias temporárias, histórico mensal acumulado e motivos de parada dos contratos de fiscalização eletrônica.
           </p>
         </div>
-        <div className="flex items-center gap-3 self-start md:self-auto">
-          <div className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-center min-w-[130px]">
-            <span className="text-[11px] font-medium text-slate-500 block">Total de Interrupções</span>
-            <span className="text-lg font-bold text-slate-900">{contratoSummary.totalGeral}</span>
+        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+          <div className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-center min-w-[95px]">
+            <span className="text-[10px] font-medium text-slate-500 block leading-tight">Total Interrupções</span>
+            <span className="text-sm font-bold text-slate-900 leading-tight">{contratoSummary.totalGeral}</span>
           </div>
-          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 text-center min-w-[130px]">
-            <span className="text-[11px] font-medium text-amber-700 block">Inoperantes Hoje</span>
-            <span className="text-lg font-bold text-amber-800">{inoperantesList.length}</span>
+          <div className="bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1 text-center min-w-[95px]">
+            <span className="text-[10px] font-medium text-amber-700 block leading-tight">Inoperantes Hoje</span>
+            <span className="text-sm font-bold text-amber-800 leading-tight">{inoperantesList.length}</span>
           </div>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* SEÇÃO 01: Equipamentos Inoperantes + Acumulado por Contrato               */}
+      {/* SEÇÃO 01: Equipamentos Inoperantes (Esquerda) + Painel Analítico (Direita) */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Coluna Esquerda: Equipamentos Inoperantes Temporariamente (7 colunas lg) */}
-        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        {/* Coluna Esquerda: Equipamentos Inoperantes Temporariamente (7 colunas lg, ~58%) */}
+        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col h-full overflow-hidden">
           {/* Header da Tabela */}
-          <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
+          <div className="p-3 sm:p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
             <div>
-              <h3 className="font-bold text-base text-slate-900">
+              <h3 className="font-bold text-sm sm:text-base text-slate-900 leading-tight">
                 Equipamentos Inoperantes Temporariamente
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 mt-0.5">
                 Equipamentos com parada registrada e aguardando retorno ({sortedInoperantes.length} registros)
               </p>
             </div>
@@ -433,11 +433,11 @@ export const InterrupcoesView: React.FC = () => {
               </button>
 
               {/* Input Busca */}
-              <div className="relative min-w-[160px] sm:min-w-[190px]">
+              <div className="relative min-w-[150px]">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Buscar equipamento..."
+                  placeholder="Buscar..."
                   value={searchInoperantes}
                   onChange={(e) => {
                     setSearchInoperantes(e.target.value);
@@ -450,7 +450,7 @@ export const InterrupcoesView: React.FC = () => {
           </div>
 
           {/* Tabela de Inoperantes */}
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto flex-1">
             <table className="w-full text-xs">
               <thead className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
                 <tr>
@@ -532,7 +532,7 @@ export const InterrupcoesView: React.FC = () => {
                     title="Clique para ordenar por Data da Parada"
                   >
                     <div className="inline-flex items-center justify-center gap-1">
-                      <span>DATA DA PARADA</span>
+                      <span>DATA PARADA</span>
                       {sortInoperantes.key === 'dataParada' ? (
                         sortInoperantes.direction === 'asc' ? (
                           <ArrowUp className="w-3.5 h-3.5 text-amber-600 font-bold" />
@@ -567,7 +567,7 @@ export const InterrupcoesView: React.FC = () => {
                           {row.tipo}
                         </span>
                       </td>
-                      <td className="py-2.5 px-3 text-center text-slate-700 max-w-[220px] truncate" title={row.motivo}>
+                      <td className="py-2.5 px-3 text-center text-slate-700 max-w-[200px] truncate" title={row.motivo}>
                         {row.motivo}
                       </td>
                       <td className="py-2.5 px-3 text-center whitespace-nowrap font-mono text-amber-700 font-semibold">
@@ -615,60 +615,60 @@ export const InterrupcoesView: React.FC = () => {
           </div>
         </div>
 
-        {/* Coluna Direita: Acumulado de Interrupções por Contrato (Tabela + Pizza) (5 colunas lg) */}
-        <div className="lg:col-span-5 space-y-6">
+        {/* Coluna Direita: Painel Analítico de Indicadores (5 colunas lg, ~42%) */}
+        <div className="lg:col-span-5 flex flex-col gap-5">
           {/* Card Tabela: Acumulado por Contrato */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="p-4 border-b border-slate-100 bg-slate-50/50">
-              <h3 className="font-bold text-sm sm:text-base text-slate-900 text-center">
+            <div className="p-3 sm:p-3.5 border-b border-slate-100 bg-slate-50/50">
+              <h3 className="font-bold text-xs sm:text-sm text-slate-900 text-center">
                 Acumulado de Interrupções por Contrato
               </h3>
             </div>
             <table className="w-full text-xs">
               <thead className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
                 <tr>
-                  <th className="py-2.5 px-4 text-center">Contrato</th>
-                  <th className="py-2.5 px-4 text-center">Quantidade</th>
+                  <th className="py-2 px-3 text-center">Contrato</th>
+                  <th className="py-2 px-3 text-center">Quantidade</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-800">
                 {contratoSummary.items.map((item) => (
                   <tr key={item.contrato} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-2.5 px-4 font-semibold text-slate-900 text-center">
+                    <td className="py-2 px-3 font-semibold text-slate-900 text-center">
                       <div className="inline-flex items-center justify-center gap-2">
                         <span
-                          className="w-3 h-3 rounded-full shrink-0"
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
                           style={{ backgroundColor: item.color }}
                         ></span>
                         <span>{item.contrato}</span>
                       </div>
                     </td>
-                    <td className="py-2.5 px-4 text-center font-mono font-bold text-slate-800">
+                    <td className="py-2 px-3 text-center font-mono font-bold text-slate-800">
                       {item.quantidade}
                     </td>
                   </tr>
                 ))}
                 {/* Linha Total Geral */}
                 <tr className="bg-slate-50/80 font-bold text-slate-900 border-t border-slate-200">
-                  <td className="py-2.5 px-4 text-center">Total geral</td>
-                  <td className="py-2.5 px-4 text-center font-mono text-sm">
+                  <td className="py-2 px-3 text-center">Total geral</td>
+                  <td className="py-2 px-3 text-center font-mono text-xs sm:text-sm">
                     {contratoSummary.totalGeral}
                   </td>
                 </tr>
               </tbody>
             </table>
-            <div className="p-2.5 border-t border-slate-100 text-center text-xs text-slate-500">
+            <div className="p-2 border-t border-slate-100 text-center text-[11px] text-slate-500">
               1 - 3 / 3
             </div>
           </div>
 
           {/* Card Gráfico Pizza: % Acumulado por Contrato */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 sm:p-5">
-            <h3 className="font-bold text-xs sm:text-sm text-slate-900 mb-3 text-center sm:text-left">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-3.5 sm:p-4">
+            <h3 className="font-bold text-xs text-slate-900 mb-2.5 text-center sm:text-left">
               % Acumulado de Interrupções de Equipamentos por Contrato
             </h3>
-            <div className="w-full h-56 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <div className="w-48 h-48 relative">
+            <div className="w-full h-48 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <div className="w-40 h-40 relative">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -677,7 +677,7 @@ export const InterrupcoesView: React.FC = () => {
                       nameKey="contrato"
                       cx="50%"
                       cy="50%"
-                      outerRadius={80}
+                      outerRadius={70}
                       labelLine={false}
                       label={renderCustomPieLabel}
                       stroke="#ffffff"
@@ -698,11 +698,11 @@ export const InterrupcoesView: React.FC = () => {
               </div>
 
               {/* Legenda do Gráfico de Pizza */}
-              <div className="flex flex-col gap-2.5 text-xs text-slate-700 font-medium">
+              <div className="flex flex-col gap-2 text-xs text-slate-700 font-medium">
                 {contratoSummary.items.map((item) => (
                   <div key={item.contrato} className="flex items-center gap-2">
                     <span
-                      className="w-3.5 h-3.5 rounded-full inline-block"
+                      className="w-3 h-3 rounded-full inline-block"
                       style={{ backgroundColor: item.color }}
                     ></span>
                     <span>{item.contrato}</span>
@@ -711,6 +711,49 @@ export const InterrupcoesView: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* Card Gráfico de Barras: Quantidade por Tipo de Equipamentos */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-3.5 sm:p-4">
+            <h3 className="font-bold text-xs sm:text-sm text-slate-900 text-center mb-3">
+              Quantidade de Interrupções por Tipo de Equipamentos
+            </h3>
+            <div className="w-full h-60">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={tipoSummary}
+                  margin={{ top: 15, right: 15, left: -10, bottom: 15 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis
+                    dataKey="tipo"
+                    tick={{ fontSize: 11, fill: '#334155', fontWeight: 600 }}
+                    axisLine={{ stroke: '#cbd5e1' }}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    domain={[0, 200]}
+                    ticks={[0, 50, 100, 150, 200]}
+                    tick={{ fontSize: 10, fill: '#64748b' }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    formatter={(val: any) => [`${val} interrupções`, 'Quantidade']}
+                    cursor={{ fill: '#f8fafc' }}
+                  />
+                  <Bar
+                    dataKey="quantidade"
+                    fill="#059669"
+                    radius={[3, 3, 0, 0]}
+                    maxBarSize={54}
+                  >
+                    <LabelList dataKey="quantidade" content={renderBarCustomLabel} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -901,51 +944,9 @@ export const InterrupcoesView: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* SEÇÃO 03: Quantidade por Tipo + Relatório Histórico Geral                 */}
+      {/* SEÇÃO 03: Relatório Histórico Geral de Paradas e Retornos                 */}
       {/* ========================================================================= */}
       <div className="space-y-6">
-        {/* Gráfico de Barras: Quantidade por Tipo de Equipamentos */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 sm:p-6">
-          <h3 className="font-bold text-base sm:text-lg text-slate-900 text-center mb-6">
-            Quantidade de Interrupções por Tipo de Equipamentos
-          </h3>
-          <div className="w-full h-72 sm:h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={tipoSummary}
-                margin={{ top: 20, right: 30, left: 10, bottom: 20 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis
-                  dataKey="tipo"
-                  tick={{ fontSize: 12, fill: '#334155', fontWeight: 600 }}
-                  axisLine={{ stroke: '#cbd5e1' }}
-                  tickLine={false}
-                />
-                <YAxis
-                  domain={[0, 200]}
-                  ticks={[0, 50, 100, 150, 200]}
-                  tick={{ fontSize: 11, fill: '#64748b' }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <Tooltip
-                  formatter={(val: any) => [`${val} interrupções`, 'Quantidade']}
-                  cursor={{ fill: '#f8fafc' }}
-                />
-                <Bar
-                  dataKey="quantidade"
-                  fill="#059669"
-                  radius={[3, 3, 0, 0]}
-                  maxBarSize={90}
-                >
-                  <LabelList dataKey="quantidade" content={renderBarCustomLabel} />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
         {/* Tabela: Relatório Histórico de Parada e Retorno de Equipamentos */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col overflow-hidden">
           <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50/50">
