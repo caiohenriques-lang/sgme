@@ -1196,11 +1196,11 @@ export const InterrupcoesView: React.FC = () => {
                       <td className="py-2.5 px-3 text-center whitespace-nowrap font-mono text-slate-700">
                         {row.oficioRetorno || '-'}
                       </td>
-                      <td className="py-2.5 px-3 text-center whitespace-nowrap font-mono font-semibold">
+                      <td className="py-2.5 px-3 text-center whitespace-nowrap font-mono">
                         {row.dataRetorno ? (
-                          <span className="text-emerald-700">{row.dataRetorno}</span>
+                          <span className="text-slate-600">{row.dataRetorno}</span>
                         ) : (
-                          <span className="text-amber-600 italic">Em aberto</span>
+                          <span className="text-amber-600 italic font-semibold">Em aberto</span>
                         )}
                       </td>
                     </tr>
