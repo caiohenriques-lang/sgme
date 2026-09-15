@@ -17,7 +17,6 @@ import { ReportView } from './components/ReportView';
 import { FooterLegend } from './components/FooterLegend';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { VercelGuideModal } from './components/VercelGuideModal';
-import { LockScreen } from './components/LockScreen';
 import { SmartphoneInstallPrompt } from './components/SmartphoneInstallPrompt';
 import { AIAssistantModal } from './components/AIAssistantModal';
 import { AIAssistantButton } from './components/AIAssistantButton';
@@ -69,10 +68,6 @@ export default function App() {
   useEffect(() => {
     document.title = "GEAPI-FE";
   }, []);
-
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return sessionStorage.getItem('geapi_portal_auth') === 'GEAPIFE_AUTHORIZED';
-  });
 
   const [records, setRecords] = useState<EquipmentRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -439,10 +434,6 @@ export default function App() {
     setFilters(emptyFilters);
     setResetSignal((prev) => prev + 1);
   };
-
-  if (!isAuthenticated) {
-    return <LockScreen onUnlock={() => setIsAuthenticated(true)} />;
-  }
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col text-slate-900 font-sans antialiased">

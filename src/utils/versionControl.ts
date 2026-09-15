@@ -6,15 +6,25 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.61';
-export const BUILD_DATE = '12/09/2026';
+export const APP_VERSION = 'v3.7.62';
+export const BUILD_DATE = '15/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v3.7.62',
+    date: '15/09/2026',
+    tag: 'Remoção da Autenticação Inicial do Portal: Acesso Direto com Proteção Preservada em Interrupções',
+    isLatest: true,
+    changes: [
+      'Acesso Direto ao Portal: Removida definitivamente a tela de autenticação inicial (LockScreen) e validação por palavra-passe geral, permitindo entrada imediata na aplicação.',
+      'Limpeza Estrutural: Excluído o componente LockScreen.tsx e descontinuada a chave de sessão geapi_portal_auth, eliminando código morto e simplificando a inicialização do sistema.',
+      'Preservação Integral de Interrupções: Mantida intacta a proteção de acesso exclusiva da aba Interrupções de Equipamentos (InterrupcoesAuth.tsx, geapi_interrupcoes_auth e validação segura no backend).'
+    ]
+  },
   {
     version: 'v3.7.61',
     date: '12/09/2026',
     tag: 'Usabilidade na Autenticação: Alternância de Visualização da Senha de Autorização',
-    isLatest: true,
     changes: [
       'Visualizar / Ocultar Senha: Adicionado botão interativo com ícones dinâmicos Eye e EyeOff alinhado à direita no campo de Senha de Autorização do módulo de Interrupções.',
       'Acessibilidade e Usabilidade: Rótulos aria-label dinâmicos ("Mostrar senha" / "Ocultar senha"), botão com type="button" evitando submit acidental e padding lateral adequado.',
