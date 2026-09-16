@@ -329,19 +329,19 @@ export const LegislacaoView: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Banner Principal no Tema #F5DEB3 (Wheat / Trigo) */}
-      <div className="bg-white rounded-2xl border border-[#DEB887]/80 shadow-xs overflow-hidden">
-        <div className="p-4 sm:p-6 bg-gradient-to-r from-[#3e2715] via-[#59391e] to-[#784d28] text-white">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-start sm:items-center gap-3.5">
-              <div className="p-3 bg-[#F5DEB3] border border-[#DEB887] rounded-2xl text-[#45270c] shrink-0 shadow-xs">
-                <Scale className="w-7 h-7" />
+      {/* Cabeçalho Claro, Minimalista e Institucional */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        <div className="px-4 py-3 sm:px-5 sm:py-3.5 bg-white border-b border-slate-100">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 sm:p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 shrink-0">
+                <Scale className="w-5 h-5 sm:w-5 sm:h-5" />
               </div>
               <div>
-                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                <h2 className="text-base sm:text-lg font-bold tracking-tight text-slate-900">
                   Legislação Vigente
                 </h2>
-                <p className="text-xs sm:text-sm text-[#F5DEB3]/90 font-medium mt-1">
+                <p className="text-xs sm:text-sm text-slate-500 font-normal mt-0.5">
                   Normas, resoluções e portarias.
                 </p>
               </div>
@@ -350,7 +350,7 @@ export const LegislacaoView: React.FC = () => {
         </div>
 
         {/* Barra de Filtros e Busca Dinâmica */}
-        <div className="p-3 sm:p-4 bg-slate-50 border-t border-[#DEB887]/40 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="p-3 sm:p-4 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3">
           {/* Tabs de Filtro de Categoria Unificadas */}
           <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
             <button

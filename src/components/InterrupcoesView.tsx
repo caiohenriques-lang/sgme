@@ -26,6 +26,7 @@ import {
   Loader2,
   Download,
   FileSpreadsheet,
+  X,
 } from 'lucide-react';
 import {
   InterrupcaoRecord,
@@ -373,7 +374,7 @@ export const InterrupcoesView: React.FC = () => {
         <Loader2 className="w-10 h-10 text-blue-600 animate-spin mx-auto" />
         <div>
           <h3 className="text-base font-bold text-slate-800">
-            Carregando dados da aba Interrupções...
+            Carregando dados da aba Controle de Ofícios...
           </h3>
           <p className="text-xs text-slate-500 mt-1">
             Buscando dados de interrupções e inoperâncias no Google Sheets...
@@ -390,7 +391,7 @@ export const InterrupcoesView: React.FC = () => {
         <div>
           <h2 className="text-xs sm:text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse shrink-0"></span>
-            <span>Painel de Interrupções de Equipamentos</span>
+            <span>Painel de Controle de Ofícios</span>
           </h2>
           <p className="text-[10px] sm:text-[11px] text-slate-500 mt-0.5 leading-normal">
             Monitoramento de inoperâncias temporárias, histórico mensal acumulado e motivos de parada dos contratos de fiscalização eletrônica.
@@ -996,7 +997,7 @@ export const InterrupcoesView: React.FC = () => {
               </div>
 
               {/* Busca Geral */}
-              <div className="relative min-w-[200px]">
+              <div className="relative w-full sm:w-64 lg:w-72 shrink-0 min-w-[260px]">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
@@ -1006,8 +1007,21 @@ export const InterrupcoesView: React.FC = () => {
                     setSearchHistorico(e.target.value);
                     setPageHistorico(1);
                   }}
-                  className="w-full pl-9 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800"
+                  className="w-full pl-9 pr-8 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800"
                 />
+                {searchHistorico && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchHistorico('');
+                      setPageHistorico(1);
+                    }}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer p-0.5"
+                    title="Limpar busca"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             </div>
           </div>

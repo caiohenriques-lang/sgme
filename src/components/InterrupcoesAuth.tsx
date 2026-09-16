@@ -67,10 +67,10 @@ export const InterrupcoesAuth: React.FC<InterrupcoesAuthProps> = ({
               <span>Acesso Restrito</span>
             </div>
             <h2 className="text-xl font-bold text-slate-900 tracking-tight">
-              Interrupções de Equipamentos
+              Controle de Ofícios
             </h2>
             <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
-              Módulo com controle restrito de inoperâncias temporárias. Digite a senha para acessar o painel.
+              Módulo com controle restrito de inoperâncias temporárias e ofícios de equipamentos. Digite a senha para acessar o painel.
             </p>
           </div>
         </div>

@@ -32,7 +32,7 @@ export const FooterLegend: React.FC<FooterLegendProps> = ({
   };
 
   return (
-    <footer className="bg-slate-50 text-slate-600 border-t border-slate-200/80 py-4 pb-20 sm:pb-4 mt-8 text-xs">
+    <footer className="bg-slate-50 text-slate-600 border-t border-slate-200/80 py-4 pb-20 sm:pb-4 mt-3 sm:mt-4 text-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-3">
         
         {/* Collapsible Required Legend Box */}

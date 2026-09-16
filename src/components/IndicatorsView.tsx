@@ -2266,24 +2266,28 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
       </div>
 
       {/* MIRROR LIST BELOW EVERYTHING (LISTA DE EQUIPAMENTOS) */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-md overflow-hidden pt-1 mt-8">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden mt-8">
         
         {/* Header bar of mirror list */}
-        <div className="bg-slate-900 text-white p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h3 className="font-bold text-base text-white flex items-center gap-2">
-              <TableIcon className="w-5 h-5 text-blue-400" />
-              Lista de Equipamentos
-            </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Exibindo os {filteredByChartRecords.length} equipamentos filtrados
-            </p>
+        <div className="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
+              <TableIcon className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="font-bold text-base sm:text-lg text-slate-900">
+                Lista de Equipamentos
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Exibindo os {filteredByChartRecords.length} equipamentos filtrados
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
             <button
               onClick={handleExportMirrorPDF}
-              className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors shadow-xs"
+              className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors cursor-pointer shadow-2xs"
             >
               <FileDown className="w-4 h-4" />
               <span>Exportar PDF</span>

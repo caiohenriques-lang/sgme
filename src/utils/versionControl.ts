@@ -6,15 +6,82 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.62';
-export const BUILD_DATE = '15/09/2026';
+export const APP_VERSION = 'v3.7.68';
+export const BUILD_DATE = '16/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v3.7.68',
+    date: '16/09/2026',
+    tag: 'Harmonização da Lista de Equipamentos e Refinamento de Campos de Busca',
+    isLatest: true,
+    changes: [
+      'Harmonização Visual da Lista de Equipamentos (Indicadores): Remoção do cabeçalho dark antigo e substituição por padrão claro e institucional (bg-white, border border-slate-200, ícone azul em container bg-blue-50 e título text-slate-900).',
+      'Refino do Botão Exportar PDF: Botão de exportação atualizado para padrão azul institucional integrado (bg-blue-600, hover:bg-blue-700, text-white e cantos rounded-lg).',
+      'Correção do Campo de Busca no Relatório Histórico (Controle de Ofícios/Interrupções): Expansão da largura para lg:w-72 (288px) com min-w-[260px] e shrink-0 no desktop, garantindo visualização integral do placeholder "Buscar código ou logradouro...".',
+      'Preservação Total de Funcionalidades: Filtros de motivos, buscas, paginação, exportações em PDF e CSV e dados analíticos 100% mantidos e responsivos.'
+    ]
+  },
+  {
+    version: 'v3.7.67',
+    date: '16/09/2026',
+    tag: 'Linha de Tendência no BHDIGITAL e Refino Visual do Botão Exportar',
+    changes: [
+      'Linha de Tendência Analítica no Gráfico Anual: Integração de linha de tendência linear (Mínimos Quadrados) com traço tracejado suave em azul institucional (#3b82f6), pontos discretos e leitura clara no tooltip.',
+      'Preservação Total de Recursos: Barras anuais, rótulos de valores, seleção interativa por ano, eixos X e Y e comportamento responsivo 100% mantidos.',
+      'Refino Visual do Botão Exportar: Botão de exportação da tabela de logradouros atualizado para estilo verde clarinho (bg-emerald-50, border-emerald-200, text-emerald-700, hover:bg-emerald-100), elegante e institucional.',
+      'Harmonia de Layout: Perfeito alinhamento entre busca e exportação, ícone coordenado em verde esmeralda e integridade absoluta de todas as métricas.'
+    ]
+  },
+  {
+    version: 'v3.7.66',
+    date: '16/09/2026',
+    tag: 'Refinamento de Proporções do BHDIGITAL e Compactação do Layout Global',
+    changes: [
+      'Otimização de Proporção no BHDIGITAL: Segunda linha reestruturada em grid de 12 colunas no desktop, alocando ~42% (lg:col-span-5) para "Nº de Solicitações por Ano" e ~58% (lg:col-span-7) para "Nº de Pedidos por Regional".',
+      'Maior Conforto Visual para as Regionais: Gráfico de pedidos por regional com área horizontal expandida, proporcionando leitura fluida das 9 regionais sem sensação de aperto nos rótulos do eixo X.',
+      'Ajuste Refinado das Barras: Largura máxima das barras calibrada para 48px com espaçamento harmônico, preservando eixos, tooltips, filtros interativos e ordenação oficial.',
+      'Compactação Global de Espaçamento Vertical: Redução centralizada do espaçamento entre o conteúdo final das abas e a legenda/rodapé no container principal (pb-3 sm:pb-4 e mt-3 sm:mt-4).',
+      'Harmonia em Todas as Telas e Abas: Espaço discreto e elegante em todos os módulos sem conteúdo colado, mantendo o GEAPINHO e a barra mobile perfeitamente calibrados.'
+    ]
+  },
+  {
+    version: 'v3.7.65',
+    date: '16/09/2026',
+    tag: 'Reorganização Analítica do BHDIGITAL e Harmonização da Legislação',
+    changes: [
+      'Nova Organização dos Indicadores BHDIGITAL: Estruturação dos elementos analíticos em duas linhas de alta legibilidade e proporção no desktop.',
+      'Primeira Linha em 3 Colunas: Situação, Solicitações por Equipamento e Pedidos Qualificados para Implantação dispostos lado a lado.',
+      'Segunda Linha em 2 Colunas: Gráficos de Nº de Solicitações por Ano e Nº de Pedidos por Regional em distribuição equilibrada 50% / 50%.',
+      'Card Independente de Atualização: Botão de recarga agora em card quadrado independente (w-12 h-12) à direita de "Tempo médio de resposta", eliminando espaçadores artificiais.',
+      'Modernização do Cabeçalho Legislação Vigente: Remoção do bloco marrom escuro e adoção de card claro e minimalista com badge âmbar sutil e tipografia institucional.'
+    ]
+  },
+  {
+    version: 'v3.7.64',
+    date: '16/09/2026',
+    tag: 'Refinamento Visual do Painel BHDIGITAL: Otimização de Espaço e Reposicionamento da Atualização',
+    changes: [
+      'Remoção do Painel Superior: Eliminado o banner redundante "Painel Gerencial BHDIGITAL", permitindo que os gráficos e indicadores subam naturalmente sem vácuos na tela.',
+      'Botão de Atualização Integrado: Ação de recarga dos dados movida para o card "Tempo médio de resposta", posicionada à direita com design discreto e elegante em formato de ícone exclusivo (RefreshCw).',
+      'Feedback de Carregamento e Acessibilidade: Ícone animado (animate-spin) durante a sincronização, proteção contra múltiplos cliques e tags title/aria-label dedicadas.',
+      'Preservação Funcional: Mantida integralmente a sincronização em tempo real com o Google Sheets, filtros interativos, cálculos estatísticos e exportação.'
+    ]
+  },
+  {
+    version: 'v3.7.63',
+    date: '16/09/2026',
+    tag: 'Atualização de Nomenclatura: Renomeação da Aba para Controle de Ofícios',
+    changes: [
+      'Renomeação da Aba: Atualizado o nome do módulo de "Interrupções de Equipamentos" para "Controle de Ofícios" no cabeçalho desktop e na barra de navegação móvel.',
+      'Ajustes Visuais no Módulo: Adequados os títulos no cabeçalho do painel interno e na tela de autorização restrita por senha.',
+      'Preservação Funcional Integral: Mantidas todas as funcionalidades de monitoramento de inoperâncias temporárias, tabelas históricas de ofícios, matriz mensal e métricas contratuais.'
+    ]
+  },
   {
     version: 'v3.7.62',
     date: '15/09/2026',
     tag: 'Remoção da Autenticação Inicial do Portal: Acesso Direto com Proteção Preservada em Interrupções',
-    isLatest: true,
     changes: [
       'Acesso Direto ao Portal: Removida definitivamente a tela de autenticação inicial (LockScreen) e validação por palavra-passe geral, permitindo entrada imediata na aplicação.',
       'Limpeza Estrutural: Excluído o componente LockScreen.tsx e descontinuada a chave de sessão geapi_portal_auth, eliminando código morto e simplificando a inicialização do sistema.',

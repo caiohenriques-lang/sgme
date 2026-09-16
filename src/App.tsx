@@ -473,7 +473,7 @@ export default function App() {
       )}
 
       {/* Main Container Content */}
-      <main className="flex-1 min-w-0 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-20 md:pb-8">
+      <main className="flex-1 min-w-0 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-3 sm:pb-4">
         
         {loading && records.length === 0 ? (
           <div className="bg-white rounded-2xl border border-slate-200 p-16 text-center space-y-4 my-8 shadow-xs">

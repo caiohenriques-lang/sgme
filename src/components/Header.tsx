@@ -150,7 +150,7 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </button>
 
-            {/* 6. Interrupções de Equipamentos - Amarelo/Âmbar com indicador de cadeado */}
+            {/* 6. Controle de Ofícios - Amarelo/Âmbar com indicador de cadeado */}
             <button
               onClick={() => setActiveTab('interrupcoes')}
               className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center group ${
@@ -168,8 +168,8 @@ export const Header: React.FC<HeaderProps> = ({
                 )}
               </div>
               <div className="flex flex-col items-center text-[12px] font-bold leading-tight">
-                <span>Interrupções de</span>
-                <span>Equipamentos</span>
+                <span>Controle de</span>
+                <span>Ofícios</span>
               </div>
             </button>
 

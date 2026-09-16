@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   ResponsiveContainer,
+  ComposedChart,
   BarChart,
   Bar,
+  Line,
   XAxis,
   YAxis,
   Tooltip,
@@ -21,7 +23,6 @@ import {
   ChevronRight,
   Download,
   Filter,
-  Layers,
   X,
 } from 'lucide-react';
 import {
@@ -204,6 +205,41 @@ export const BHDigitalView: React.FC = () => {
     return calculateBHDigitalStats(filteredRecords);
   }, [filteredRecords]);
 
+  // Dados do gráfico anual com linha de tendência calculada por regressão linear (Mínimos Quadrados)
+  const anoChartDataWithTrend = useMemo(() => {
+    const data = stats.anoSummary;
+    if (!data || data.length === 0) return [];
+
+    const n = data.length;
+    if (n <= 1) {
+      return data.map((d) => ({ ...d, tendencia: d.quantidade }));
+    }
+
+    let sumX = 0;
+    let sumY = 0;
+    let sumXY = 0;
+    let sumXX = 0;
+
+    data.forEach((d, i) => {
+      sumX += i;
+      sumY += d.quantidade;
+      sumXY += i * d.quantidade;
+      sumXX += i * i;
+    });
+
+    const denominator = n * sumXX - sumX * sumX;
+    const slope = denominator !== 0 ? (n * sumXY - sumX * sumY) / denominator : 0;
+    const intercept = (sumY - slope * sumX) / n;
+
+    return data.map((d, i) => {
+      const trendVal = Math.max(0, Math.round(slope * i + intercept));
+      return {
+        ...d,
+        tendencia: trendVal,
+      };
+    });
+  }, [stats.anoSummary]);
+
   // Filtered Logradouro Matrix Rows
   const filteredLogradouroRows = stats.logradouroRows;
 
@@ -288,67 +324,14 @@ export const BHDigitalView: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Top Bar: Title, Active Filter Badges, Limpar Filtros Button */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600 border border-blue-100">
-            <Layers className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-slate-900 tracking-tight">
-                Painel Gerencial BHDIGITAL
-              </h2>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Análise e monitoramento das solicitações de fiscalização eletrônica via BH Digital
-            </p>
-          </div>
-        </div>
-
-        {/* Action Controls */}
-        <div className="flex items-center gap-2.5 flex-wrap">
-          {/* Status de Sincronização / Última Atualização */}
-          {lastUpdated && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-600 text-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>
-                Atualizado às <strong>{lastUpdated.toLocaleTimeString('pt-BR')}</strong>
-              </span>
-            </div>
-          )}
-
-          {/* Botão Atualizar Manualmente */}
-          <button
-            onClick={() => loadData(false)}
-            disabled={loading || isRefreshing}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 rounded-lg border border-slate-200 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
-            title="Recarregar dados mais recentes da planilha Google Sheets em tempo real"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 text-blue-600 ${isRefreshing || loading ? 'animate-spin' : ''}`} />
-            <span>{isRefreshing || loading ? 'Sincronizando...' : 'Atualizar'}</span>
-          </button>
-
-          {hasActiveFilters && (
-            <button
-              onClick={handleClearFilters}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold bg-amber-400 hover:bg-amber-500 text-slate-900 rounded-lg border border-amber-500 shadow-xs transition-all cursor-pointer"
-              title="Limpar todos os filtros ativos"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Limpar Filtros</span>
-            </button>
-          )}
-        </div>
-      </div>
-
       {/* Active Filter Chips (if any selected) */}
       {hasActiveFilters && (
-        <div className="flex items-center gap-2 flex-wrap bg-blue-50/60 border border-blue-200/80 p-3 rounded-xl text-xs text-blue-900">
-          <div className="flex items-center gap-1 font-semibold text-blue-800">
-            <Filter className="w-3.5 h-3.5" />
-            <span>Filtros aplicados (clique para remover):</span>
-          </div>
+        <div className="flex items-center justify-between gap-2 flex-wrap bg-blue-50/60 border border-blue-200/80 p-3 rounded-xl text-xs text-blue-900">
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1 font-semibold text-blue-800">
+              <Filter className="w-3.5 h-3.5" />
+              <span>Filtros aplicados (clique para remover):</span>
+            </div>
           {filters.regional && (
             <button
               onClick={() => toggleFilter('regional', filters.regional!)}
@@ -407,201 +390,137 @@ export const BHDigitalView: React.FC = () => {
               <span className="font-bold text-purple-200">×</span>
             </button>
           )}
+          </div>
+          <button
+            onClick={handleClearFilters}
+            className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-amber-400 hover:bg-amber-500 text-slate-900 rounded-lg border border-amber-500 shadow-2xs transition-all cursor-pointer shrink-0 ml-auto"
+            title="Limpar todos os filtros ativos"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Limpar Filtros</span>
+          </button>
         </div>
       )}
 
       {/* ========================================================================= */}
-      {/* SEÇÃO 01 (bhd 01.png): Gráficos Gerenciais com Filtros Interativos        */}
+      {/* SEÇÃO 01: Gráficos Gerenciais com Filtros Interativos                     */}
       {/* ========================================================================= */}
       <div className="space-y-6">
         
-        {/* Linha Superior: Regional (Esquerda) + Tempo Médio & Situação (Direita) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          
-          {/* Gráfico de Barras: Número de pedidos por Regional (7 cols) */}
-          <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200 shadow-xs p-4 sm:p-5 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-bold text-sm sm:text-base text-slate-900 text-center w-full">
-                  Nº de Pedidos por Regional
-                </h3>
-              </div>
-              <p className="text-[11px] text-slate-500 text-center mb-4">
-                Clique em uma barra para filtrar por Regional
-              </p>
-            </div>
-
-            {/* Main Chart Canvas with horizontal scrolling on mobile */}
-            <div className="w-full overflow-x-auto pb-2">
-              <div className="block sm:hidden text-[10.5px] text-slate-500 font-medium text-center mb-1 bg-slate-50 py-1 rounded-lg border border-slate-200">
-                ↔ Deslize lateralmente para visualizar todas as regionais
-              </div>
-              <div className="w-full min-w-[640px] sm:min-w-0 h-72 sm:h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={stats.regionalSummary}
-                    margin={{ top: 25, right: 25, left: -5, bottom: 45 }}
-                  >
-                    <XAxis
-                      dataKey="regional"
-                      interval={0}
-                      tick={(props: any) => {
-                        const { x, y, payload } = props;
-                        const isSelected = filters.regional === payload.value;
-                        return (
-                          <g transform={`translate(${x},${y})`}>
-                            <text
-                              x={0}
-                              y={0}
-                              dy={18}
-                              textAnchor="middle"
-                              fill={isSelected ? '#2563eb' : '#334155'}
-                              fontSize={10.5}
-                              fontWeight={isSelected ? 800 : 600}
-                              className="cursor-pointer"
-                            >
-                              {payload.value}
-                            </text>
-                          </g>
-                        );
-                      }}
-                      axisLine={{ stroke: '#cbd5e1' }}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      domain={[0, (dataMax: number) => Math.max(100, Math.ceil(dataMax * 1.15))]}
-                      tick={{ fontSize: 11, fill: '#64748b' }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Tooltip
-                      formatter={(val: any) => [`${val} pedidos`, 'Quantidade']}
-                      cursor={{ fill: '#f8fafc' }}
-                    />
-                    <Bar
-                      dataKey="quantidade"
-                      fill="#64748b"
-                      radius={[2, 2, 0, 0]}
-                      maxBarSize={48}
-                      onClick={(data: any) => {
-                        if (data && data.regional) {
-                          toggleFilter('regional', data.regional);
-                        }
-                      }}
-                      className="cursor-pointer"
-                    >
-                      {stats.regionalSummary.map((entry) => (
-                        <Cell
-                          key={`reg-cell-${entry.regional}`}
-                          fill={filters.regional === entry.regional ? '#2563eb' : '#64748b'}
-                          className="hover:opacity-80 transition-opacity cursor-pointer"
-                        />
-                      ))}
-                      <LabelList dataKey="quantidade" content={renderBarCustomLabel} />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+        {/* Topo da Seção: Tempo Médio de Resposta + Card Atualizar Independente */}
+        <div className="flex items-center gap-3">
+          {/* Card: Tempo Médio de Resposta */}
+          <div className="bg-white rounded-2xl border border-slate-200 px-4 py-3 sm:py-3.5 shadow-xs flex-1 text-center">
+            <span className="text-xs sm:text-sm md:text-base font-semibold text-slate-800 leading-tight">
+              Tempo médio de resposta:{' '}
+              <strong className="text-sm sm:text-base md:text-lg font-bold text-slate-900 whitespace-nowrap">
+                {stats.tempoMedio} dias
+              </strong>
+            </span>
           </div>
 
-          {/* Coluna Direita: Banner Tempo Médio + Gráfico Situação (4 cols) */}
-          <div className="lg:col-span-4 flex flex-col gap-4">
-            
-            {/* Banner: Tempo Médio de Resposta */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-4 text-center shadow-xs">
-              <span className="text-sm sm:text-base font-semibold text-slate-800">
-                Tempo médio de resposta:{' '}
-                <strong className="text-base sm:text-lg font-bold text-slate-900">
-                  {stats.tempoMedio} dias
-                </strong>
-              </span>
-            </div>
-
-            {/* Gráfico de Pizza: Situação */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 sm:p-5 flex-1 flex flex-col items-center justify-between">
-              <h3 className="font-bold text-sm sm:text-base text-slate-900 text-center mb-1">
-                Situação
-              </h3>
-              <p className="text-[11px] text-slate-500 text-center mb-2">
-                Clique na fatia para filtrar
-              </p>
-
-              <div className="w-44 h-44 sm:w-48 sm:h-48 relative">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={stats.situacaoSummary}
-                      dataKey="quantidade"
-                      nameKey="fase"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={75}
-                      labelLine={false}
-                      label={renderCustomPieLabel}
-                      stroke="#ffffff"
-                      strokeWidth={1.5}
-                      onClick={(data: any) => {
-                        if (data && data.fase) {
-                          toggleFilter('fase', data.fase);
-                        }
-                      }}
-                      className="cursor-pointer"
-                    >
-                      {stats.situacaoSummary.map((entry) => (
-                        <Cell
-                          key={`sit-cell-${entry.fase}`}
-                          fill={entry.color}
-                          stroke={filters.fase === entry.fase ? '#0f172a' : '#ffffff'}
-                          strokeWidth={filters.fase === entry.fase ? 3 : 1.5}
-                          className="hover:opacity-85 transition-opacity cursor-pointer"
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      formatter={(val: any, name: any, item: any) => [
-                        `${val} pedidos (${item.payload.percentualFormatted})`,
-                        name,
-                      ]}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-
-              {/* Legenda Situação */}
-              <div className="flex items-center justify-center gap-4 text-xs text-slate-700 font-medium mt-2 flex-wrap">
-                {stats.situacaoSummary.map((item) => (
-                  <button
-                    key={item.fase}
-                    onClick={() => toggleFilter('fase', item.fase)}
-                    className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md cursor-pointer transition-colors ${
-                      filters.fase === item.fase ? 'bg-slate-100 font-bold ring-1 ring-slate-300' : 'hover:bg-slate-50'
-                    }`}
-                  >
-                    <span
-                      className="w-3 h-3 rounded-full shrink-0"
-                      style={{ backgroundColor: item.color }}
-                    ></span>
-                    <span>{item.fase}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-          </div>
+          {/* Card Quadrado Independente: Botão Atualizar (Apenas Ícone) */}
+          <button
+            type="button"
+            onClick={() => loadData(false)}
+            disabled={loading || isRefreshing}
+            className="w-12 h-12 shrink-0 flex items-center justify-center rounded-xl bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-200 text-slate-600 hover:text-blue-600 transition-colors shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Atualizar dados"
+            aria-label="Atualizar dados"
+          >
+            <RefreshCw
+              className={`w-5 h-5 ${
+                isRefreshing || loading ? 'animate-spin text-blue-600' : ''
+              }`}
+            />
+          </button>
         </div>
 
-        {/* Linha Inferior: 3 Gráficos lado a lado */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* PRIMEIRA LINHA: 3 Colunas (Situação, Solicitações por Equipamento, Pedidos Qualificados) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           
-          {/* 1. % de Solicitações por Tipo de Equipamento */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 sm:p-5 flex flex-col justify-between">
-            <h3 className="font-bold text-xs sm:text-sm text-slate-900 text-center mb-1">
-              % de Solicitações por Tipo de Equipamento
-            </h3>
-            <p className="text-[10px] text-slate-500 text-center mb-2">
-              Clique para filtrar por Tipo
-            </p>
+          {/* 1. Situação */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 sm:p-5 flex flex-col items-center justify-between">
+            <div>
+              <h3 className="font-bold text-xs sm:text-sm text-slate-900 text-center mb-1">
+                Situação
+              </h3>
+              <p className="text-[10px] sm:text-[11px] text-slate-500 text-center mb-2">
+                Clique na fatia para filtrar
+              </p>
+            </div>
+
+            <div className="w-full h-48 sm:h-52 relative flex items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={stats.situacaoSummary}
+                    dataKey="quantidade"
+                    nameKey="fase"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={78}
+                    labelLine={false}
+                    label={renderCustomPieLabel}
+                    stroke="#ffffff"
+                    strokeWidth={1.5}
+                    onClick={(data: any) => {
+                      if (data && data.fase) {
+                        toggleFilter('fase', data.fase);
+                      }
+                    }}
+                    className="cursor-pointer"
+                  >
+                    {stats.situacaoSummary.map((entry) => (
+                      <Cell
+                        key={`sit-cell-${entry.fase}`}
+                        fill={entry.color}
+                        stroke={filters.fase === entry.fase ? '#0f172a' : '#ffffff'}
+                        strokeWidth={filters.fase === entry.fase ? 3 : 1.5}
+                        className="hover:opacity-85 transition-opacity cursor-pointer"
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(val: any, name: any, item: any) => [
+                      `${val} pedidos (${item.payload.percentualFormatted})`,
+                      name,
+                    ]}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Legenda Situação */}
+            <div className="flex items-center justify-center gap-2 sm:gap-3 text-[11px] text-slate-700 font-medium mt-3 flex-wrap">
+              {stats.situacaoSummary.map((item) => (
+                <button
+                  key={item.fase}
+                  onClick={() => toggleFilter('fase', item.fase)}
+                  className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md cursor-pointer transition-colors ${
+                    filters.fase === item.fase ? 'bg-slate-100 font-bold ring-1 ring-slate-300' : 'hover:bg-slate-50'
+                  }`}
+                >
+                  <span
+                    className="w-2.5 h-2.5 rounded-full shrink-0"
+                    style={{ backgroundColor: item.color }}
+                  ></span>
+                  <span>{item.fase}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 2. Solicitações por Equipamento */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 sm:p-5 flex flex-col items-center justify-between">
+            <div>
+              <h3 className="font-bold text-xs sm:text-sm text-slate-900 text-center mb-1">
+                Solicitações por Equipamento
+              </h3>
+              <p className="text-[10px] sm:text-[11px] text-slate-500 text-center mb-2">
+                Clique para filtrar por Tipo
+              </p>
+            </div>
 
             <div className="w-full h-48 sm:h-52 relative flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
@@ -664,92 +583,16 @@ export const BHDigitalView: React.FC = () => {
             </div>
           </div>
 
-          {/* 2. Nº de Solicitações por Ano */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 sm:p-5 flex flex-col justify-between">
-            <h3 className="font-bold text-xs sm:text-sm text-slate-900 text-center mb-1">
-              Nº de Solicitações por Ano
-            </h3>
-            <p className="text-[10px] text-slate-500 text-center mb-2">
-              Clique para filtrar por Ano
-            </p>
-
-            <div className="w-full h-48 sm:h-52">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={stats.anoSummary}
-                  margin={{ top: 20, right: 10, left: -20, bottom: 5 }}
-                >
-                  <XAxis
-                    dataKey="ano"
-                    tick={(props: any) => {
-                      const { x, y, payload } = props;
-                      const isSelected = filters.ano === payload.value;
-                      return (
-                        <g transform={`translate(${x},${y})`}>
-                          <text
-                            x={0}
-                            y={0}
-                            dy={12}
-                            textAnchor="middle"
-                            fill={isSelected ? '#2563eb' : '#475569'}
-                            fontSize={11}
-                            fontWeight={isSelected ? 800 : 600}
-                            className="cursor-pointer"
-                          >
-                            {payload.value}
-                          </text>
-                        </g>
-                      );
-                    }}
-                    axisLine={{ stroke: '#cbd5e1' }}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    domain={[0, (dataMax: number) => Math.max(150, Math.ceil(dataMax * 1.15))]}
-                    ticks={[0, 50, 100, 150]}
-                    tick={{ fontSize: 10, fill: '#64748b' }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <Tooltip
-                    formatter={(val: any) => [`${val} pedidos`, 'Ano']}
-                    cursor={{ fill: '#f8fafc' }}
-                  />
-                  <Bar
-                    dataKey="quantidade"
-                    fill="#64748b"
-                    radius={[2, 2, 0, 0]}
-                    maxBarSize={38}
-                    onClick={(data: any) => {
-                      if (data && data.ano) {
-                        toggleFilter('ano', data.ano);
-                      }
-                    }}
-                    className="cursor-pointer"
-                  >
-                    {stats.anoSummary.map((entry) => (
-                      <Cell
-                        key={`ano-cell-${entry.ano}`}
-                        fill={filters.ano === entry.ano ? '#2563eb' : '#64748b'}
-                        className="hover:opacity-80 transition-opacity cursor-pointer"
-                      />
-                    ))}
-                    <LabelList dataKey="quantidade" content={renderBarCustomLabel} />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+          {/* 3. Pedidos Qualificados para Implantação */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 sm:p-5 flex flex-col items-center justify-between md:col-span-2 lg:col-span-1">
+            <div>
+              <h3 className="font-bold text-xs sm:text-sm text-slate-900 text-center mb-1">
+                Pedidos Qualificados para Implantação
+              </h3>
+              <p className="text-[10px] sm:text-[11px] text-slate-500 text-center mb-2">
+                Clique para filtrar por Qualificação
+              </p>
             </div>
-            <div className="h-4"></div>
-          </div>
-
-          {/* 3. % de Pedidos Qualificados para Implantação */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 sm:p-5 flex flex-col justify-between">
-            <h3 className="font-bold text-xs sm:text-sm text-slate-900 text-center mb-1">
-              % de Pedidos Qualificados para Implantação
-            </h3>
-            <p className="text-[10px] text-slate-500 text-center mb-2">
-              Clique para filtrar por Qualificação
-            </p>
 
             <div className="w-full h-48 sm:h-52 relative flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
@@ -814,6 +657,199 @@ export const BHDigitalView: React.FC = () => {
 
         </div>
 
+        {/* SEGUNDA LINHA: Grid 12 Colunas (Nº de Solicitações por Ano ~42% e Nº de Pedidos por Regional ~58%) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          {/* 1. Nº de Solicitações por Ano (5 colunas ~ 42%) */}
+          <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-xs p-4 sm:p-5 flex flex-col justify-between">
+            <div>
+              <h3 className="font-bold text-sm sm:text-base text-slate-900 text-center mb-1">
+                Nº de Solicitações por Ano
+              </h3>
+              <div className="flex items-center justify-center gap-2 mb-4 text-[11px] text-slate-500">
+                <span>Clique para filtrar por Ano</span>
+                <span className="text-slate-300">•</span>
+                <span className="inline-flex items-center gap-1.5 text-slate-500 font-medium">
+                  <span className="w-3.5 h-0 border-t-2 border-dashed border-blue-500 inline-block" />
+                  Linha de tendência
+                </span>
+              </div>
+            </div>
+
+            <div className="w-full h-72 sm:h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart
+                  data={anoChartDataWithTrend}
+                  margin={{ top: 25, right: 15, left: -15, bottom: 20 }}
+                >
+                  <XAxis
+                    dataKey="ano"
+                    tick={(props: any) => {
+                      const { x, y, payload } = props;
+                      const isSelected = filters.ano === payload.value;
+                      return (
+                        <g transform={`translate(${x},${y})`} onClick={() => toggleFilter('ano', payload.value)}>
+                          <text
+                            x={0}
+                            y={0}
+                            dy={14}
+                            textAnchor="middle"
+                            fill={isSelected ? '#2563eb' : '#475569'}
+                            fontSize={11}
+                            fontWeight={isSelected ? 800 : 600}
+                            className="cursor-pointer"
+                          >
+                            {payload.value}
+                          </text>
+                        </g>
+                      );
+                    }}
+                    axisLine={{ stroke: '#cbd5e1' }}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    domain={[0, (dataMax: number) => Math.max(150, Math.ceil(dataMax * 1.15))]}
+                    ticks={[0, 50, 100, 150]}
+                    tick={{ fontSize: 10, fill: '#64748b' }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    formatter={(val: any, name: any) => {
+                      if (name === 'Linha de Tendência' || name === 'tendencia' || name === 'Tendência') {
+                        return [`${val} pedidos`, 'Tendência'];
+                      }
+                      return [`${val} pedidos`, 'Ano'];
+                    }}
+                    cursor={{ fill: '#f8fafc' }}
+                  />
+                  <Bar
+                    dataKey="quantidade"
+                    fill="#64748b"
+                    radius={[2, 2, 0, 0]}
+                    maxBarSize={44}
+                    onClick={(data: any) => {
+                      if (data && data.ano) {
+                        toggleFilter('ano', data.ano);
+                      }
+                    }}
+                    className="cursor-pointer"
+                  >
+                    {anoChartDataWithTrend.map((entry) => (
+                      <Cell
+                        key={`ano-cell-${entry.ano}`}
+                        fill={filters.ano === entry.ano ? '#2563eb' : '#64748b'}
+                        className="hover:opacity-80 transition-opacity cursor-pointer"
+                        onClick={() => toggleFilter('ano', entry.ano)}
+                      />
+                    ))}
+                    <LabelList dataKey="quantidade" content={renderBarCustomLabel} />
+                  </Bar>
+                  <Line
+                    type="linear"
+                    dataKey="tendencia"
+                    name="Linha de Tendência"
+                    stroke="#3b82f6"
+                    strokeWidth={1.5}
+                    strokeDasharray="4 4"
+                    dot={{ r: 2.5, fill: '#3b82f6', strokeWidth: 0 }}
+                    activeDot={{ r: 4, fill: '#2563eb', strokeWidth: 0 }}
+                    isAnimationActive={true}
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* 2. Nº de Pedidos por Regional (7 colunas ~ 58%) */}
+          <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-xs p-4 sm:p-5 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="font-bold text-sm sm:text-base text-slate-900 text-center w-full">
+                  Nº de Pedidos por Regional
+                </h3>
+              </div>
+              <p className="text-[11px] text-slate-500 text-center mb-4">
+                Clique em uma barra para filtrar por Regional
+              </p>
+            </div>
+
+            {/* Main Chart Canvas with horizontal scrolling on mobile */}
+            <div className="w-full overflow-x-auto pb-2">
+              <div className="block sm:hidden text-[10.5px] text-slate-500 font-medium text-center mb-1 bg-slate-50 py-1 rounded-lg border border-slate-200">
+                ↔ Deslize lateralmente para visualizar todas as regionais
+              </div>
+              <div className="w-full min-w-[560px] sm:min-w-0 h-72 sm:h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={stats.regionalSummary}
+                    margin={{ top: 25, right: 20, left: -10, bottom: 40 }}
+                  >
+                    <XAxis
+                      dataKey="regional"
+                      interval={0}
+                      tick={(props: any) => {
+                        const { x, y, payload } = props;
+                        const isSelected = filters.regional === payload.value;
+                        return (
+                          <g transform={`translate(${x},${y})`}>
+                            <text
+                              x={0}
+                              y={0}
+                              dy={16}
+                              textAnchor="middle"
+                              fill={isSelected ? '#2563eb' : '#334155'}
+                              fontSize={11}
+                              fontWeight={isSelected ? 800 : 600}
+                              className="cursor-pointer"
+                            >
+                              {payload.value}
+                            </text>
+                          </g>
+                        );
+                      }}
+                      axisLine={{ stroke: '#cbd5e1' }}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      domain={[0, (dataMax: number) => Math.max(100, Math.ceil(dataMax * 1.15))]}
+                      tick={{ fontSize: 11, fill: '#64748b' }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      formatter={(val: any) => [`${val} pedidos`, 'Quantidade']}
+                      cursor={{ fill: '#f8fafc' }}
+                    />
+                    <Bar
+                      dataKey="quantidade"
+                      fill="#64748b"
+                      radius={[2, 2, 0, 0]}
+                      maxBarSize={48}
+                      onClick={(data: any) => {
+                        if (data && data.regional) {
+                          toggleFilter('regional', data.regional);
+                        }
+                      }}
+                      className="cursor-pointer"
+                    >
+                      {stats.regionalSummary.map((entry) => (
+                        <Cell
+                          key={`reg-cell-${entry.regional}`}
+                          fill={filters.regional === entry.regional ? '#2563eb' : '#64748b'}
+                          className="hover:opacity-80 transition-opacity cursor-pointer"
+                        />
+                      ))}
+                      <LabelList dataKey="quantidade" content={renderBarCustomLabel} />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
       </div>
 
       {/* ========================================================================= */}
@@ -862,10 +898,10 @@ export const BHDigitalView: React.FC = () => {
             {/* Export CSV */}
             <button
               onClick={handleExportCSV}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer shadow-2xs"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300 rounded-lg transition-colors cursor-pointer shadow-2xs"
               title="Exportar dados para CSV"
             >
-              <Download className="w-3.5 h-3.5 text-slate-500" />
+              <Download className="w-3.5 h-3.5 text-emerald-600" />
               <span className="hidden sm:inline">Exportar</span>
             </button>
           </div>

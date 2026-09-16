@@ -85,7 +85,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         <span className="text-[9.5px] font-bold mt-0.5 tracking-tight truncate max-w-full">Relatórios</span>
       </button>
 
-      {/* Tab 6: Interrupções */}
+      {/* Tab 6: Controle de Ofícios */}
       <button
         onClick={() => setActiveTab('interrupcoes')}
         className={`flex-1 min-w-[48px] flex flex-col items-center justify-center py-1 px-0.5 rounded-lg transition-all duration-150 min-h-[44px] cursor-pointer ${
@@ -102,7 +102,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
             <Unlock className="w-2.5 h-2.5 text-emerald-600 absolute -top-1 -right-1" />
           )}
         </div>
-        <span className="text-[9.5px] font-bold mt-0.5 tracking-tight truncate max-w-full">Interrupções</span>
+        <span className="text-[9.5px] font-bold mt-0.5 tracking-tight truncate max-w-full">Controle de Ofícios</span>
       </button>
 
       {/* Tab 7: BHDIGITAL */}
