@@ -88,21 +88,23 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       {/* Tab 6: Controle de Ofícios */}
       <button
         onClick={() => setActiveTab('interrupcoes')}
-        className={`flex-1 min-w-[48px] flex flex-col items-center justify-center py-1 px-0.5 rounded-lg transition-all duration-150 min-h-[44px] cursor-pointer ${
+        className={`relative flex-1 min-w-[48px] flex flex-col items-center justify-center py-1 px-0.5 rounded-lg transition-all duration-150 min-h-[44px] cursor-pointer ${
           activeTab === 'interrupcoes'
             ? 'text-amber-700 font-bold bg-amber-100/90 border border-amber-300/80 shadow-2xs'
             : 'text-slate-600 font-medium hover:text-amber-700 hover:bg-slate-100/80'
         }`}
       >
-        <div className="relative flex items-center justify-center">
-          <AlertTriangle className={`w-4 h-4 sm:w-5 sm:h-5 ${activeTab === 'interrupcoes' ? 'text-amber-700' : 'text-amber-600'}`} />
+        <AlertTriangle className={`w-4 h-4 sm:w-5 sm:h-5 ${activeTab === 'interrupcoes' ? 'text-amber-700' : 'text-amber-600'}`} />
+        <span className="text-[9.5px] font-bold mt-0.5 tracking-tight truncate max-w-full">Controle de Ofícios</span>
+
+        {/* Selo do Cadeado no Canto Inferior Direito */}
+        <div className="absolute bottom-0.5 right-0.5 flex items-center justify-center">
           {!isInterrupcoesAuthorized ? (
-            <Lock className="w-2.5 h-2.5 text-amber-600 absolute -top-1 -right-1" />
+            <Lock className={`w-2.5 h-2.5 ${activeTab === 'interrupcoes' ? 'text-amber-800' : 'text-amber-600'}`} title="Módulo protegido por senha" />
           ) : (
-            <Unlock className="w-2.5 h-2.5 text-emerald-600 absolute -top-1 -right-1" />
+            <Unlock className={`w-2.5 h-2.5 ${activeTab === 'interrupcoes' ? 'text-emerald-800' : 'text-emerald-600'}`} title="Módulo autorizado na sessão" />
           )}
         </div>
-        <span className="text-[9.5px] font-bold mt-0.5 tracking-tight truncate max-w-full">Controle de Ofícios</span>
       </button>
 
       {/* Tab 7: BHDIGITAL */}

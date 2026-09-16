@@ -153,23 +153,25 @@ export const Header: React.FC<HeaderProps> = ({
             {/* 6. Controle de Ofícios - Amarelo/Âmbar com indicador de cadeado */}
             <button
               onClick={() => setActiveTab('interrupcoes')}
-              className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center group ${
+              className={`relative flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center group ${
                 activeTab === 'interrupcoes'
                   ? 'bg-amber-600 border-amber-600 text-white shadow-sm ring-2 ring-amber-500/30'
                   : 'bg-white/80 border-slate-200/80 text-slate-700 hover:bg-amber-50 hover:border-amber-400 hover:text-amber-900 shadow-2xs'
               }`}
             >
-              <div className="flex items-center gap-1 mb-0.5">
-                <AlertTriangle className={`w-4 h-4 shrink-0 transition-colors ${activeTab === 'interrupcoes' ? 'text-white' : 'text-amber-500 group-hover:text-amber-600'}`} />
-                {!isInterrupcoesAuthorized ? (
-                  <Lock className={`w-3 h-3 shrink-0 ${activeTab === 'interrupcoes' ? 'text-white' : 'text-amber-600'}`} title="Módulo protegido por senha" />
-                ) : (
-                  <Unlock className={`w-3 h-3 shrink-0 ${activeTab === 'interrupcoes' ? 'text-amber-200' : 'text-emerald-600'}`} title="Módulo autorizado na sessão" />
-                )}
-              </div>
+              <AlertTriangle className={`w-4 h-4 shrink-0 mb-0.5 transition-colors ${activeTab === 'interrupcoes' ? 'text-white' : 'text-amber-500 group-hover:text-amber-600'}`} />
               <div className="flex flex-col items-center text-[12px] font-bold leading-tight">
                 <span>Controle de</span>
                 <span>Ofícios</span>
+              </div>
+
+              {/* Selo do Cadeado no Canto Inferior Direito */}
+              <div className="absolute bottom-1 right-1 flex items-center justify-center">
+                {!isInterrupcoesAuthorized ? (
+                  <Lock className={`w-3 h-3 ${activeTab === 'interrupcoes' ? 'text-amber-100' : 'text-amber-600'}`} title="Módulo protegido por senha" />
+                ) : (
+                  <Unlock className={`w-3 h-3 ${activeTab === 'interrupcoes' ? 'text-emerald-200' : 'text-emerald-600'}`} title="Módulo autorizado na sessão" />
+                )}
               </div>
             </button>
 
