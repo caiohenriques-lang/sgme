@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActiveTab } from '../types';
-import { Map, BarChart3, Table, Printer, FileSignature, AlertTriangle, Layers, LayoutGrid, Scale, Lock, Unlock } from 'lucide-react';
+import { Map, BarChart3, Table, Printer, FileSignature, AlertTriangle, Layers, LayoutGrid, Scale, Lock, Unlock, PanelsTopLeft } from 'lucide-react';
 
 interface MobileBottomNavProps {
   activeTab: ActiveTab;
@@ -131,7 +131,18 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         <span className="text-[9.5px] font-bold mt-0.5 tracking-tight truncate max-w-full">Legislação</span>
       </button>
 
-      {/* Tab 9: OUTROS */}
+      {/* Tab 9: SISTEMAS */}
+      <button
+        onClick={() => { window.location.href = 'https://geapife-sistemas.vercel.app/'; }}
+        title="Acessar Sistemas"
+        aria-label="Acessar Sistemas"
+        className="flex-1 min-w-[48px] flex flex-col items-center justify-center py-1 px-0.5 rounded-lg transition-all duration-150 min-h-[44px] cursor-pointer text-slate-600 font-medium hover:text-indigo-800 hover:bg-slate-100/80"
+      >
+        <PanelsTopLeft className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-700" />
+        <span className="text-[9.5px] font-bold mt-0.5 tracking-tight truncate max-w-full">Sistemas</span>
+      </button>
+
+      {/* Tab 10: OUTROS */}
       <button
         onClick={() => setActiveTab('outros')}
         className={`flex-1 min-w-[48px] flex flex-col items-center justify-center py-1 px-0.5 rounded-lg transition-all duration-150 min-h-[44px] cursor-pointer ${

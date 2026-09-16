@@ -6,15 +6,26 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.68';
+export const APP_VERSION = 'v3.7.69';
 export const BUILD_DATE = '16/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.69',
+    date: '16/09/2026',
+    tag: 'Integração do Portal de Sistemas à Navegação GEAPI',
+    isLatest: true,
+    changes: [
+      'Nova Aba de Navegação SISTEMAS: Inserida no menu de navegação do Header desktop e na barra inferior mobile (MobileBottomNav) posicionada estrategicamente entre "Legislação" e "OUTROS".',
+      'Navegação e Redirecionamento Direto: Configurado o clique na aba para navegar na mesma página do navegador para https://geapife-sistemas.vercel.app/ sem abrir nova guia e sem criar views ou rotas internas.',
+      'Identidade Visual Coesa: Ícone PanelsTopLeft da biblioteca lucide-react em tom índigo suave, acompanhado de padronização rigorosa de altura, bordas, espaçamento e tipografia no grid desktop (grid-cols-10).',
+      'Preservação Total do Sistema: Acessibilidade configurada (title e aria-label) com manutenção integral das demais 9 abas do portal e seus recursos analíticos.'
+    ]
+  },
+  {
     version: 'v3.7.68',
     date: '16/09/2026',
     tag: 'Harmonização da Lista de Equipamentos e Refinamento de Campos de Busca',
-    isLatest: true,
     changes: [
       'Harmonização Visual da Lista de Equipamentos (Indicadores): Remoção do cabeçalho dark antigo e substituição por padrão claro e institucional (bg-white, border border-slate-200, ícone azul em container bg-blue-50 e título text-slate-900).',
       'Refino do Botão Exportar PDF: Botão de exportação atualizado para padrão azul institucional integrado (bg-blue-600, hover:bg-blue-700, text-white e cantos rounded-lg).',

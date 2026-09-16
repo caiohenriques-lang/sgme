@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActiveTab } from '../types';
-import { Map, BarChart3, Table, Printer, FileSignature, AlertTriangle, Layers, LayoutGrid, Scale, Lock, Unlock } from 'lucide-react';
+import { Map, BarChart3, Table, Printer, FileSignature, AlertTriangle, Layers, LayoutGrid, Scale, Lock, Unlock, PanelsTopLeft } from 'lucide-react';
 
 interface HeaderProps {
   activeTab: ActiveTab;
@@ -70,7 +70,7 @@ export const Header: React.FC<HeaderProps> = ({
       {/* 2. Barra dos Módulos - Fixa no topo durante a rolagem (sticky top-0) */}
       <header className="bg-white/95 backdrop-blur-xs text-slate-900 shadow-xs border-b border-slate-200/90 sticky top-0 z-40 transition-none">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-          <nav className="hidden md:grid grid-cols-9 w-full gap-1.5 p-1.5 rounded-2xl bg-slate-100/90 border border-slate-200/90 shadow-2xs">
+          <nav className="hidden md:grid grid-cols-10 w-full gap-1.5 p-1.5 rounded-2xl bg-slate-100/90 border border-slate-200/90 shadow-2xs">
             
             {/* 1. Gestão Contratual - Vermelho-Escuro */}
             <button
@@ -203,7 +203,20 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </button>
 
-            {/* 9. OUTROS - Verde Escuro */}
+            {/* 9. SISTEMAS - Indigo / Portal de Sistemas */}
+            <button
+              onClick={() => { window.location.href = 'https://geapife-sistemas.vercel.app/'; }}
+              title="Acessar Sistemas"
+              aria-label="Acessar Sistemas"
+              className="flex flex-col items-center justify-center py-2 px-1 rounded-xl border border-slate-200/80 bg-white/80 text-slate-700 hover:bg-indigo-50 hover:border-indigo-400 hover:text-indigo-900 transition-all duration-150 cursor-pointer min-h-[52px] text-center group shadow-2xs"
+            >
+              <PanelsTopLeft className="w-4 h-4 shrink-0 mb-0.5 text-indigo-600 group-hover:text-indigo-800 transition-colors" />
+              <div className="flex flex-col items-center text-[12px] font-bold leading-tight">
+                <span>SISTEMAS</span>
+              </div>
+            </button>
+
+            {/* 10. OUTROS - Verde Escuro */}
             <button
               onClick={() => setActiveTab('outros')}
               className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center group ${
