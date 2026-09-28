@@ -97,6 +97,8 @@ export const InterrupcoesView: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
 
   // Filters, Search and Sorting states
+  const [selectedCt, setSelectedCt] = useState<string>('TODOS');
+
   const [searchInoperantes, setSearchInoperantes] = useState('');
   const [pageInoperantes, setPageInoperantes] = useState(1);
   const [sortInoperantes, setSortInoperantes] = useState<{
@@ -115,12 +117,79 @@ export const InterrupcoesView: React.FC = () => {
 
   const [searchHistorico, setSearchHistorico] = useState('');
   const [filterMotivoHistorico, setFilterMotivoHistorico] = useState('TODOS');
+  const [filterMesAno, setFilterMesAno] = useState('TODOS');
+  const [filterEmAberto, setFilterEmAberto] = useState(false);
   const [pageHistorico, setPageHistorico] = useState(1);
   const [sortHistorico, setSortHistorico] = useState<{
     key: SortHistoricoKey;
     direction: 'asc' | 'desc';
   }>({ key: 'dataParada', direction: 'desc' });
   const rowsPerPageHistorico = 10;
+
+  // Lista dinâmica de CTs gerada a partir dos registros existentes
+  const ctsDisponiveis = useMemo(() => {
+    const set = new Set<string>();
+    records.forEach((r) => {
+      if (r.ct && r.ct.trim()) set.add(r.ct.trim());
+    });
+    return Array.from(set).sort((a, b) =>
+      a.localeCompare(b, 'pt-BR', { numeric: true, sensitivity: 'base' })
+    );
+  }, [records]);
+
+  // Lista dinâmica de Mês/Ano gerada exclusivamente a partir da Data de Parada, ordenada do mais recente ao mais antigo
+  const mesesDisponiveis = useMemo(() => {
+    const MESES_NOMES: Record<string, string> = {
+      '01': 'Janeiro',
+      '02': 'Fevereiro',
+      '03': 'Março',
+      '04': 'Abril',
+      '05': 'Maio',
+      '06': 'Junho',
+      '07': 'Julho',
+      '08': 'Agosto',
+      '09': 'Setembro',
+      '10': 'Outubro',
+      '11': 'Novembro',
+      '12': 'Dezembro',
+    };
+
+    const map = new Map<string, { value: string; label: string; year: number; month: number }>();
+    records.forEach((r) => {
+      if (!r.dataParada) return;
+      const parts = r.dataParada.split('/');
+      if (parts.length === 3) {
+        const monthStr = parts[1].padStart(2, '0');
+        const yearStr = parts[2].trim();
+        const monthNum = parseInt(monthStr, 10);
+        const yearNum = parseInt(yearStr, 10);
+        if (monthNum >= 1 && monthNum <= 12 && yearNum > 2000) {
+          const key = `${monthStr}/${yearStr}`;
+          if (!map.has(key)) {
+            const monthName = MESES_NOMES[monthStr] || monthStr;
+            map.set(key, {
+              value: key,
+              label: `${monthName}/${yearStr}`,
+              year: yearNum,
+              month: monthNum,
+            });
+          }
+        }
+      }
+    });
+
+    return Array.from(map.values()).sort((a, b) => {
+      if (a.year !== b.year) return b.year - a.year;
+      return b.month - a.month;
+    });
+  }, [records]);
+
+  const handleSelectCt = (ct: string) => {
+    setSelectedCt(ct);
+    setPageInoperantes(1);
+    setPageMensal(1);
+    setPageHistorico(1);
+  };
 
   useEffect(() => {
     fetchInterrupcoesData().then((data) => {
@@ -156,8 +225,12 @@ export const InterrupcoesView: React.FC = () => {
 
   // 1. Calculations for Section 01
   const inoperantesList = useMemo(() => {
-    return records.filter((r) => CONTRATOS_ATIVOS.includes(r.ct) && r.isInoperante);
-  }, [records]);
+    return records.filter((r) => {
+      const matchActive = CONTRATOS_ATIVOS.includes(r.ct);
+      const matchCt = selectedCt === 'TODOS' || r.ct === selectedCt;
+      return matchActive && matchCt && r.isInoperante;
+    });
+  }, [records, selectedCt]);
 
   const filteredInoperantes = useMemo(() => {
     if (!searchInoperantes) return inoperantesList;
@@ -219,8 +292,12 @@ export const InterrupcoesView: React.FC = () => {
 
   // 2. Calculations for Section 02 (Monthly Matrix)
   const mensalData = useMemo(() => {
-    return calculateMensalMatrix(records);
-  }, [records]);
+    const targetRecords =
+      selectedCt === 'TODOS'
+        ? records
+        : records.filter((r) => r.ct === selectedCt);
+    return calculateMensalMatrix(targetRecords);
+  }, [records, selectedCt]);
 
   const filteredMensalRows = useMemo(() => {
     if (!searchMensal) return mensalData.rows;
@@ -266,30 +343,78 @@ export const InterrupcoesView: React.FC = () => {
 
   const motivosDisponiveis = useMemo(() => {
     const set = new Set<string>();
-    historicoGeral.forEach((r) => {
+    const base =
+      selectedCt === 'TODOS'
+        ? historicoGeral
+        : historicoGeral.filter((r) => r.ct === selectedCt);
+    base.forEach((r) => {
       if (r.motivo) set.add(r.motivo);
     });
     return Array.from(set).sort();
-  }, [historicoGeral]);
+  }, [historicoGeral, selectedCt]);
+
+  useEffect(() => {
+    if (filterMotivoHistorico !== 'TODOS' && !motivosDisponiveis.includes(filterMotivoHistorico)) {
+      setFilterMotivoHistorico('TODOS');
+    }
+  }, [motivosDisponiveis, filterMotivoHistorico]);
 
   const filteredHistorico = useMemo(() => {
     return historicoGeral.filter((r) => {
+      // 1. Filtro CT (Compartilhado)
+      if (selectedCt !== 'TODOS' && r.ct !== selectedCt) {
+        return false;
+      }
+      // 2. Filtro Motivo
       if (filterMotivoHistorico !== 'TODOS' && r.motivo !== filterMotivoHistorico) {
         return false;
       }
+      // 3. Filtro Mês/Ano (baseado exclusivamente na Data de Parada)
+      if (filterMesAno !== 'TODOS') {
+        if (!r.dataParada) return false;
+        const parts = r.dataParada.split('/');
+        if (parts.length !== 3) return false;
+        const recordMesAno = `${parts[1].padStart(2, '0')}/${parts[2].trim()}`;
+        if (recordMesAno !== filterMesAno) return false;
+      }
+      // 4. Filtro Em Aberto (reutiliza a regra real do módulo: isInoperante / sem data de retorno)
+      if (filterEmAberto && !r.isInoperante) {
+        return false;
+      }
+      // 5. Busca Geral em todas as 9 colunas (incluindo Data de Parada e Data de Retorno)
       if (!searchHistorico) return true;
-      const q = searchHistorico.toLowerCase();
+      const q = searchHistorico.toLowerCase().trim();
       return (
-        r.codigo.toLowerCase().includes(q) ||
-        r.motivo.toLowerCase().includes(q) ||
-        r.tipo.toLowerCase().includes(q) ||
-        r.ct.toLowerCase().includes(q) ||
-        r.oficioInicial.toLowerCase().includes(q) ||
-        r.oficioRetorno.toLowerCase().includes(q) ||
-        r.enderecoCompleto.toLowerCase().includes(q)
+        (r.ct && r.ct.toLowerCase().includes(q)) ||
+        (r.codigo && r.codigo.toLowerCase().includes(q)) ||
+        (r.tipo && r.tipo.toLowerCase().includes(q)) ||
+        (r.motivo && r.motivo.toLowerCase().includes(q)) ||
+        (r.oficioInicial && r.oficioInicial.toLowerCase().includes(q)) ||
+        (r.dataParada && r.dataParada.toLowerCase().includes(q)) ||
+        (r.oficioRetorno && r.oficioRetorno.toLowerCase().includes(q)) ||
+        (r.dataRetorno && r.dataRetorno.toLowerCase().includes(q)) ||
+        (r.enderecoCompleto && r.enderecoCompleto.toLowerCase().includes(q))
       );
     });
-  }, [historicoGeral, filterMotivoHistorico, searchHistorico]);
+  }, [historicoGeral, selectedCt, filterMotivoHistorico, filterMesAno, filterEmAberto, searchHistorico]);
+
+  const hasActiveHistoricoFilters =
+    selectedCt !== 'TODOS' ||
+    filterMotivoHistorico !== 'TODOS' ||
+    filterMesAno !== 'TODOS' ||
+    filterEmAberto ||
+    !!searchHistorico;
+
+  const handleClearHistoricoFilters = () => {
+    setSelectedCt('TODOS');
+    setFilterMotivoHistorico('TODOS');
+    setFilterMesAno('TODOS');
+    setFilterEmAberto(false);
+    setSearchHistorico('');
+    setPageInoperantes(1);
+    setPageMensal(1);
+    setPageHistorico(1);
+  };
 
   const sortedHistorico = useMemo(() => {
     return [...filteredHistorico].sort((a, b) => {
@@ -400,7 +525,11 @@ export const InterrupcoesView: React.FC = () => {
         <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
           <div className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-center min-w-[95px]">
             <span className="text-[10px] font-medium text-slate-500 block leading-tight">Total Interrupções</span>
-            <span className="text-sm font-bold text-slate-900 leading-tight">{contratoSummary.totalGeral}</span>
+            <span className="text-sm font-bold text-slate-900 leading-tight">
+              {selectedCt === 'TODOS'
+                ? contratoSummary.totalGeral
+                : records.filter((r) => r.ct === selectedCt).length}
+            </span>
           </div>
           <div className="bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1 text-center min-w-[95px]">
             <span className="text-[10px] font-medium text-amber-700 block leading-tight">Inoperantes Hoje</span>
@@ -418,8 +547,13 @@ export const InterrupcoesView: React.FC = () => {
           {/* Header da Tabela */}
           <div className="px-4 py-3 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50/50">
             <div className="min-w-0">
-              <h3 className="font-bold text-sm sm:text-base text-slate-900 leading-tight">
-                Equipamentos Inoperantes Temporariamente
+              <h3 className="font-bold text-sm sm:text-base text-slate-900 leading-tight flex items-center gap-2 flex-wrap">
+                <span>Equipamentos Inoperantes Temporariamente</span>
+                {selectedCt !== 'TODOS' && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">
+                    CT {selectedCt}
+                  </span>
+                )}
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
                 Equipamentos com parada registrada e aguardando retorno ({sortedInoperantes.length} registros)
@@ -638,22 +772,34 @@ export const InterrupcoesView: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-800">
-                {contratoSummary.items.map((item) => (
-                  <tr key={item.contrato} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-2 px-3 font-semibold text-slate-900 text-center">
-                      <div className="inline-flex items-center justify-center gap-2">
-                        <span
-                          className="w-2.5 h-2.5 rounded-full shrink-0"
-                          style={{ backgroundColor: item.color }}
-                        ></span>
-                        <span>{item.contrato}</span>
-                      </div>
-                    </td>
-                    <td className="py-2 px-3 text-center font-mono font-bold text-slate-800">
-                      {item.quantidade}
-                    </td>
-                  </tr>
-                ))}
+                {contratoSummary.items.map((item) => {
+                  const isSelected = selectedCt !== 'TODOS' && selectedCt === item.contrato;
+                  return (
+                    <tr
+                      key={item.contrato}
+                      className={`transition-colors ${
+                        isSelected
+                          ? 'bg-blue-50/80 font-bold'
+                          : 'hover:bg-slate-50'
+                      }`}
+                    >
+                      <td className="py-2 px-3 text-center">
+                        <div className="inline-flex items-center justify-center gap-2">
+                          <span
+                            className="w-2.5 h-2.5 rounded-full shrink-0"
+                            style={{ backgroundColor: item.color }}
+                          ></span>
+                          <span className={isSelected ? 'text-blue-900 font-bold' : 'font-semibold text-slate-900'}>
+                            {item.contrato}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-2 px-3 text-center font-mono font-bold text-slate-800">
+                        {item.quantidade}
+                      </td>
+                    </tr>
+                  );
+                })}
                 {/* Linha Total Geral */}
                 <tr className="bg-slate-50/80 font-bold text-slate-900 border-t border-slate-200">
                   <td className="py-2 px-3 text-center">Total geral</td>
@@ -770,8 +916,13 @@ export const InterrupcoesView: React.FC = () => {
         {/* Header com Título e Busca */}
         <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
           <div>
-            <h3 className="font-bold text-base text-slate-900">
-              Acumulado de Interrupções de Equipamentos por Mês
+            <h3 className="font-bold text-base text-slate-900 flex items-center gap-2 flex-wrap">
+              <span>Acumulado de Interrupções de Equipamentos por Mês</span>
+              {selectedCt !== 'TODOS' && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">
+                  CT {selectedCt}
+                </span>
+              )}
             </h3>
             <p className="text-xs text-slate-500">
               Matriz mensal consolidada por equipamento e tipologia ({sortedMensalRows.length} equipamentos)
@@ -965,27 +1116,52 @@ export const InterrupcoesView: React.FC = () => {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2.5">
-              {/* Botão Exportar CSV */}
+              {/* 1. Botão Exportar CSV */}
               <button
                 type="button"
                 onClick={handleExportHistoricoCSV}
                 disabled={sortedHistorico.length === 0}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-800 border border-emerald-300/80 rounded-lg text-xs font-semibold shadow-2xs transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-800 border border-emerald-300/80 rounded-lg text-xs font-semibold shadow-2xs transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
                 title="Exportar histórico de paradas e retornos para CSV (compatível com Excel)"
               >
                 <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
                 <span>Exportar CSV</span>
               </button>
 
-              {/* Filtro de Motivo */}
-              <div className="relative">
+              {/* 2. Filtro Compartilhado por CT / Contrato */}
+              <div className="relative shrink-0">
+                <select
+                  value={selectedCt}
+                  onChange={(e) => handleSelectCt(e.target.value)}
+                  className={`text-xs border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer transition-colors ${
+                    selectedCt !== 'TODOS'
+                      ? 'bg-blue-50 border-blue-300 text-blue-900 font-semibold shadow-2xs'
+                      : 'bg-white border-slate-200 text-slate-700'
+                  }`}
+                  title="Filtrar por Contrato (CT) em todas as tabelas da aba"
+                >
+                  <option value="TODOS">Todos os CTs</option>
+                  {ctsDisponiveis.map((ct) => (
+                    <option key={ct} value={ct}>
+                      {ct}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 3. Filtro de Motivo */}
+              <div className="relative shrink-0">
                 <select
                   value={filterMotivoHistorico}
                   onChange={(e) => {
                     setFilterMotivoHistorico(e.target.value);
                     setPageHistorico(1);
                   }}
-                  className="text-xs bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className={`text-xs border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer transition-colors ${
+                    filterMotivoHistorico !== 'TODOS'
+                      ? 'bg-blue-50 border-blue-300 text-blue-900 font-semibold shadow-2xs'
+                      : 'bg-white border-slate-200 text-slate-700'
+                  }`}
                 >
                   <option value="TODOS">Todos os motivos</option>
                   {motivosDisponiveis.map((m) => (
@@ -996,12 +1172,12 @@ export const InterrupcoesView: React.FC = () => {
                 </select>
               </div>
 
-              {/* Busca Geral */}
-              <div className="relative w-full sm:w-64 lg:w-72 shrink-0 min-w-[260px]">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              {/* 4. Busca Geral em todas as colunas */}
+              <div className="relative w-full sm:w-56 md:w-64 shrink-0 min-w-[210px]">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
-                  placeholder="Buscar código ou logradouro..."
+                  placeholder="Buscar em todas as colunas..."
                   value={searchHistorico}
                   onChange={(e) => {
                     setSearchHistorico(e.target.value);
@@ -1023,6 +1199,64 @@ export const InterrupcoesView: React.FC = () => {
                   </button>
                 )}
               </div>
+
+              {/* 5. Filtro Mês/Ano (baseado exclusivamente na Data de Parada) */}
+              <div className="relative shrink-0">
+                <select
+                  value={filterMesAno}
+                  onChange={(e) => {
+                    setFilterMesAno(e.target.value);
+                    setPageHistorico(1);
+                  }}
+                  className={`text-xs border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer transition-colors min-w-[150px] max-w-[180px] ${
+                    filterMesAno !== 'TODOS'
+                      ? 'bg-blue-50 border-blue-300 text-blue-900 font-semibold shadow-2xs'
+                      : 'bg-white border-slate-200 text-slate-700'
+                  }`}
+                  title="Filtrar por Mês/Ano da Data de Parada"
+                >
+                  <option value="TODOS">Todos os meses</option>
+                  {mesesDisponiveis.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 6. Checkbox Discreto "Em aberto" */}
+              <label
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg border cursor-pointer select-none transition-colors shrink-0 ${
+                  filterEmAberto
+                    ? 'bg-amber-50 border-amber-300 text-amber-900 font-semibold shadow-2xs'
+                    : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                }`}
+                title="Filtrar apenas registros de equipamentos ainda em aberto (sem data de retorno)"
+              >
+                <input
+                  type="checkbox"
+                  checked={filterEmAberto}
+                  onChange={(e) => {
+                    setFilterEmAberto(e.target.checked);
+                    setPageHistorico(1);
+                  }}
+                  className="w-3.5 h-3.5 text-blue-600 rounded border-slate-300 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer accent-blue-600"
+                />
+                <span>Em aberto</span>
+              </label>
+
+              {/* 7. Botão Limpar Filtros (exibido apenas quando há filtros ativos) */}
+              {hasActiveHistoricoFilters && (
+                <button
+                  type="button"
+                  onClick={handleClearHistoricoFilters}
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:text-red-700 bg-slate-100 hover:bg-red-50 border border-slate-200 hover:border-red-200 rounded-lg transition-colors cursor-pointer shrink-0 shadow-2xs"
+                  title="Limpar todos os filtros do Histórico"
+                >
+                  <X className="w-3.5 h-3.5 text-slate-500 hover:text-red-600" />
+                  <span>Limpar filtros</span>
+                </button>
+              )}
             </div>
           </div>
 

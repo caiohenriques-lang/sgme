@@ -6,15 +6,36 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.78';
+export const APP_VERSION = 'v3.7.80';
 export const BUILD_DATE = '28/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.80',
+    date: '28/09/2026',
+    tag: 'Filtros de Mês e Registros em Aberto no Histórico de Ofícios',
+    isLatest: true,
+    changes: [
+      'Filtro Dinâmico de Mês/Ano: Adicionado dropdown de período ("Todos os meses", "Setembro/2026", "Agosto/2026"...) gerado dinamicamente a partir das Datas de Parada dos registros históricos e ordenado cronologicamente do mais recente ao mais antigo.',
+      'Checkbox "Em aberto": Adicionado controle discreto para filtrar eventos de equipamentos ainda sem retorno, reutilizando estritamente a regra real do módulo (isInoperante / ausência de data de retorno).',
+      'Busca Geral em Todas as 9 Colunas com Suporte a Datas: O campo de busca do Histórico agora inclui explicitamente CT, Código, Tipo, Motivo, Ofício de Parada, Data de Parada, Ofício de Retorno, Data de Retorno e Endereço Completo, permitindo pesquisas literais por datas no formato DD/MM/AAAA.',
+      'Conjunção em Lógica AND e Botão Limpar Filtros: Todos os 5 filtros (CT + Motivo + Mês/Ano + Em aberto + Busca) operam cumulativamente em lógica AND, com botão discreto "Limpar filtros", reset automático de paginação para página 1 e exportação CSV abrangente de todos os registros resultantes.'
+    ]
+  },
+  {
+    version: 'v3.7.79',
+    date: '28/09/2026',
+    tag: 'Sistema de Filtros Compartilhados no Controle de Ofícios',
+    changes: [
+      'Filtro de Contrato (CT) Compartilhado: Implementado dropdown dinâmico de CT ("Todos os CTs", "2740/24", "2741/24", "2742/24"...) no cabeçalho do Relatório Histórico, integrando e sincronizando todas as tabelas do Controle de Ofícios (Equipamentos Inoperantes, Matriz Mensal e Histórico de Paradas e Retornos).',
+      'Harmonização do Cabeçalho de Filtros: Reorganizada a área de controles do Relatório Histórico na ordem conceitual [Exportar CSV] [Todos os CTs] [Todos os motivos] [Buscar em todas as colunas...], com layout responsivo e tags visuais indicativas de contrato ativo nas tabelas.',
+      'Preservação Total de Regras: Mantidas intactas as regras de negócio, ordenações, paginações, exportações CSV, gráficos analíticos (Pizza e Barras) e autenticação de segurança compartilhada com Controle de Aferições.'
+    ]
+  },
+  {
     version: 'v3.7.78',
     date: '28/09/2026',
     tag: 'Padronização do Badge de Prazo em Duas Linhas Estruturadas',
-    isLatest: true,
     changes: [
       'Padronização do Badge de Prazo em 2 Linhas: O badge da coluna "PRAZO" no Controle de Aferições passa a ser renderizado de forma estruturada e determinística em duas linhas perfeitamente centralizadas ("Vence em" / "X dias", "Vence" / "hoje", "Vencido há" / "X dias" e "-" neutro para datas vazias).',
       'Harmonia Visual e Compactação: Dimensões otimizadas (max-w-[85px] na pílula e min-w-[76px] max-w-[95px] na coluna) com leading compacto e padding suave, eliminando qualquer quebra de linha irregular e preservando o respiro da tabela.',
