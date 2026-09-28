@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActiveTab } from '../types';
-import { Map, BarChart3, Table, Printer, FileSignature, AlertTriangle, Layers, LayoutGrid, Scale, Lock, Unlock, PanelsTopLeft } from 'lucide-react';
+import { Map, BarChart3, Table, Printer, FileSignature, AlertTriangle, Layers, LayoutGrid, Scale, Lock, Unlock, PanelsTopLeft, Gauge } from 'lucide-react';
 
 interface MobileBottomNavProps {
   activeTab: ActiveTab;
@@ -59,20 +59,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         <span className="text-[9.5px] font-bold mt-0.5 tracking-tight truncate max-w-full">Indicadores</span>
       </button>
 
-      {/* Tab 4: Lista de Equipamentos */}
-      <button
-        onClick={() => setActiveTab('tabela')}
-        className={`flex-1 min-w-[48px] flex flex-col items-center justify-center py-1 px-0.5 rounded-lg transition-all duration-150 min-h-[44px] cursor-pointer ${
-          activeTab === 'tabela'
-            ? 'text-blue-700 font-bold bg-blue-100/90 border border-blue-300/80 shadow-2xs'
-            : 'text-slate-600 font-medium hover:text-blue-700 hover:bg-slate-100/80'
-        }`}
-      >
-        <Table className={`w-4 h-4 sm:w-5 sm:h-5 ${activeTab === 'tabela' ? 'text-blue-700' : 'text-blue-600'}`} />
-        <span className="text-[9.5px] font-bold mt-0.5 tracking-tight truncate max-w-full">Lista</span>
-      </button>
-
-      {/* Tab 5: Relatórios */}
+      {/* Tab 4: Relatórios */}
       <button
         onClick={() => setActiveTab('relatorios')}
         className={`flex-1 min-w-[48px] flex flex-col items-center justify-center py-1 px-0.5 rounded-lg transition-all duration-150 min-h-[44px] cursor-pointer ${
@@ -85,7 +72,42 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         <span className="text-[9.5px] font-bold mt-0.5 tracking-tight truncate max-w-full">Relatórios</span>
       </button>
 
-      {/* Tab 6: Controle de Ofícios */}
+      {/* Tab 5: Controle de Aferições */}
+      <button
+        onClick={() => setActiveTab('afericoes')}
+        className={`relative flex-1 min-w-[48px] flex flex-col items-center justify-center py-1 px-0.5 rounded-lg transition-all duration-150 min-h-[44px] cursor-pointer ${
+          activeTab === 'afericoes'
+            ? 'text-blue-700 font-bold bg-blue-100/90 border border-blue-300/80 shadow-2xs'
+            : 'text-slate-600 font-medium hover:text-blue-700 hover:bg-slate-100/80'
+        }`}
+      >
+        <Gauge className={`w-4 h-4 sm:w-5 sm:h-5 ${activeTab === 'afericoes' ? 'text-blue-700' : 'text-blue-600'}`} />
+        <span className="text-[9.5px] font-bold mt-0.5 tracking-tight truncate max-w-full">Aferições</span>
+
+        {/* Selo do Cadeado no Canto Inferior Direito */}
+        <div className="absolute bottom-0.5 right-0.5 flex items-center justify-center">
+          {!isInterrupcoesAuthorized ? (
+            <Lock className={`w-2.5 h-2.5 ${activeTab === 'afericoes' ? 'text-blue-800' : 'text-slate-400'}`} title="Módulo protegido por senha" />
+          ) : (
+            <Unlock className={`w-2.5 h-2.5 ${activeTab === 'afericoes' ? 'text-emerald-800' : 'text-emerald-600'}`} title="Módulo autorizado na sessão" />
+          )}
+        </div>
+      </button>
+
+      {/* Tab 6: Lista de Equipamentos */}
+      <button
+        onClick={() => setActiveTab('tabela')}
+        className={`flex-1 min-w-[48px] flex flex-col items-center justify-center py-1 px-0.5 rounded-lg transition-all duration-150 min-h-[44px] cursor-pointer ${
+          activeTab === 'tabela'
+            ? 'text-blue-700 font-bold bg-blue-100/90 border border-blue-300/80 shadow-2xs'
+            : 'text-slate-600 font-medium hover:text-blue-700 hover:bg-slate-100/80'
+        }`}
+      >
+        <Table className={`w-4 h-4 sm:w-5 sm:h-5 ${activeTab === 'tabela' ? 'text-blue-700' : 'text-blue-600'}`} />
+        <span className="text-[9.5px] font-bold mt-0.5 tracking-tight truncate max-w-full">Lista</span>
+      </button>
+
+      {/* Tab 7: Controle de Ofícios */}
       <button
         onClick={() => setActiveTab('interrupcoes')}
         className={`relative flex-1 min-w-[48px] flex flex-col items-center justify-center py-1 px-0.5 rounded-lg transition-all duration-150 min-h-[44px] cursor-pointer ${
@@ -107,7 +129,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         </div>
       </button>
 
-      {/* Tab 7: BHDIGITAL */}
+      {/* Tab 8: BHDIGITAL */}
       <button
         onClick={() => setActiveTab('bhdigital')}
         className={`flex-1 min-w-[48px] flex flex-col items-center justify-center py-1 px-0.5 rounded-lg transition-all duration-150 min-h-[44px] cursor-pointer ${

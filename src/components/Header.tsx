@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActiveTab } from '../types';
-import { Map, BarChart3, Table, Printer, FileSignature, AlertTriangle, Layers, LayoutGrid, Scale, Lock, Unlock, PanelsTopLeft } from 'lucide-react';
+import { Map, BarChart3, Table, Printer, FileSignature, AlertTriangle, Layers, LayoutGrid, Scale, Lock, Unlock, PanelsTopLeft, Gauge } from 'lucide-react';
 
 interface HeaderProps {
   activeTab: ActiveTab;
@@ -70,7 +70,7 @@ export const Header: React.FC<HeaderProps> = ({
       {/* 2. Barra dos Módulos - Fixa no topo durante a rolagem (sticky top-0) */}
       <header className="bg-white/95 backdrop-blur-xs text-slate-900 shadow-xs border-b border-slate-200/90 sticky top-0 z-40 transition-none">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-          <nav className="hidden md:grid grid-cols-10 w-full gap-1.5 p-1.5 rounded-2xl bg-slate-100/90 border border-slate-200/90 shadow-2xs">
+          <nav className="hidden md:grid grid-cols-11 w-full gap-1.5 p-1.5 rounded-2xl bg-slate-100/90 border border-slate-200/90 shadow-2xs">
             
             {/* 1. Gestão Contratual - Vermelho-Escuro */}
             <button
@@ -119,7 +119,47 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </button>
 
-            {/* 4. Lista de Equipamentos - Azul */}
+            {/* 4. Relatórios - Azul */}
+            <button
+              onClick={() => setActiveTab('relatorios')}
+              className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center group ${
+                activeTab === 'relatorios'
+                  ? 'bg-blue-600 border-blue-600 text-white shadow-sm ring-2 ring-blue-500/30'
+                  : 'bg-white/80 border-slate-200/80 text-slate-700 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700 shadow-2xs'
+              }`}
+            >
+              <Printer className={`w-4 h-4 shrink-0 mb-0.5 transition-colors ${activeTab === 'relatorios' ? 'text-white' : 'text-blue-600 group-hover:text-blue-700'}`} />
+              <div className="flex flex-col items-center text-[12px] font-bold leading-tight">
+                <span>Relatórios</span>
+              </div>
+            </button>
+
+            {/* 5. Controle de Aferições - Azul com indicador de cadeado */}
+            <button
+              onClick={() => setActiveTab('afericoes')}
+              className={`relative flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center group ${
+                activeTab === 'afericoes'
+                  ? 'bg-blue-600 border-blue-600 text-white shadow-sm ring-2 ring-blue-500/30'
+                  : 'bg-white/80 border-slate-200/80 text-slate-700 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700 shadow-2xs'
+              }`}
+            >
+              <Gauge className={`w-4 h-4 shrink-0 mb-0.5 transition-colors ${activeTab === 'afericoes' ? 'text-white' : 'text-blue-600 group-hover:text-blue-700'}`} />
+              <div className="flex flex-col items-center text-[12px] font-bold leading-tight">
+                <span>Controle de</span>
+                <span>Aferições</span>
+              </div>
+
+              {/* Selo do Cadeado no Canto Inferior Direito */}
+              <div className="absolute bottom-1 right-1 flex items-center justify-center">
+                {!isInterrupcoesAuthorized ? (
+                  <Lock className={`w-3 h-3 ${activeTab === 'afericoes' ? 'text-blue-200' : 'text-slate-400'}`} title="Módulo protegido por senha" />
+                ) : (
+                  <Unlock className={`w-3 h-3 ${activeTab === 'afericoes' ? 'text-emerald-200' : 'text-emerald-600'}`} title="Módulo autorizado na sessão" />
+                )}
+              </div>
+            </button>
+
+            {/* 6. Lista de Equipamentos - Azul */}
             <button
               onClick={() => setActiveTab('tabela')}
               className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center group ${
@@ -135,22 +175,7 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </button>
 
-            {/* 5. Relatórios - Azul */}
-            <button
-              onClick={() => setActiveTab('relatorios')}
-              className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center group ${
-                activeTab === 'relatorios'
-                  ? 'bg-blue-600 border-blue-600 text-white shadow-sm ring-2 ring-blue-500/30'
-                  : 'bg-white/80 border-slate-200/80 text-slate-700 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700 shadow-2xs'
-              }`}
-            >
-              <Printer className={`w-4 h-4 shrink-0 mb-0.5 transition-colors ${activeTab === 'relatorios' ? 'text-white' : 'text-blue-600 group-hover:text-blue-700'}`} />
-              <div className="flex flex-col items-center text-[12px] font-bold leading-tight">
-                <span>Relatórios</span>
-              </div>
-            </button>
-
-            {/* 6. Controle de Ofícios - Amarelo/Âmbar com indicador de cadeado */}
+            {/* 7. Controle de Ofícios - Amarelo/Âmbar com indicador de cadeado */}
             <button
               onClick={() => setActiveTab('interrupcoes')}
               className={`relative flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center group ${
@@ -175,7 +200,7 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </button>
 
-            {/* 7. BHDIGITAL - Amarelo/Âmbar */}
+            {/* 8. BHDIGITAL - Amarelo/Âmbar */}
             <button
               onClick={() => setActiveTab('bhdigital')}
               className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center group ${

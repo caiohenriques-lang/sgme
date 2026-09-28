@@ -6,15 +6,90 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.69';
-export const BUILD_DATE = '16/09/2026';
+export const APP_VERSION = 'v3.7.75';
+export const BUILD_DATE = '28/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v3.7.75',
+    date: '28/09/2026',
+    tag: 'Status Crítico para Vencimento no Dia e Quebra de Linha na Coluna Prazo',
+    isLatest: true,
+    changes: [
+      'Status Crítico em Vermelho para "Vence hoje": Registros com vencimento na data atual (diffDays === 0) passam a receber coloração vermelha nos badges de "Vencimento da Aferição" (bg-red-50 text-red-700) e "Prazo" (bg-red-100 text-red-700).',
+      'Preservação do Fundo da Linha para Vencidos: O fundo vermelho suave (bg-red-50/60) e a tipografia em negrito da linha inteira permanecem exclusivos para equipamentos efetivamente vencidos (diffDays < 0), sem poluir as linhas de vencimento no dia.',
+      'Badge de Prazo com Quebra em 2 Linhas: Ajustado o badge da coluna Prazo com classes text-center, leading-tight, whitespace-normal, break-words e largura máxima controlada (max-w-[88px]), permitindo quebra suave em até 2 linhas e liberando respiro na tabela.',
+      'Compactação da Coluna Prazo: Largura da coluna Prazo otimizada para min-w-[80px] max-w-[100px] com padding horizontal suave, mantendo perfeita centralização e legibilidade.',
+      'Preservação Integral do Módulo: Mantidos a ordenação cronológica por prazo, busca universal, modal Eye de ficha técnica completa e autenticação compartilhada com Controle de Ofícios.'
+    ]
+  },
+  {
+    version: 'v3.7.74',
+    date: '28/09/2026',
+    tag: 'Compactação da Tabela de Aferições e Renomeação da Coluna de Prazo',
+    changes: [
+      'Renomeação Visual da Coluna Prazo: Rótulo da 8ª coluna simplificado no cabeçalho de "Status Prazo" para "Prazo", tornando a interface mais concisa e elegante.',
+      'Compactação Horizontal da Tabela: Reduzidos os paddings horizontais (px-2 a px-3 em th/td) e refinadas as larguras mínimas/máximas das colunas, eliminando respiros excessivos e prevenindo estouros visuais.',
+      'Hierarquia Racional de Larguras: Estabelecida a prioridade visual com Endereço Completo (mais larga: min-w-[200px] max-w-[340px]), Bairro (média: 105px), Vencimento da Aferição (125px), Prazo (110px), Aferição (85px), Nº de Série (85px), Velocidade (75px), Código (75px) e Ações (estreita: w-12 min-w-[50px]).',
+      'Badges Compactos e Elegantes: Pílula de Prazo ajustada para dimensões equilibradas (px-2 py-0.5 rounded-full text-[11px]), otimizando a densidade de informação sem comprometer a legibilidade.',
+      'Preservação Total de Funcionalidades: Mantidos a ordenação interativa de Prazo por diferença real de dias, a busca universal, a centralização de todas as colunas, o destaque das linhas vencidas em vermelho claro/negrito e o botão de ficha completa (Eye).'
+    ]
+  },
+  {
+    version: 'v3.7.73',
+    date: '28/09/2026',
+    tag: 'Inclusão da Coluna Status Prazo e Ajustes de Cabeçalho nas Aferições',
+    changes: [
+      'Nova Coluna STATUS PRAZO: Adicionada entre "Vencimento da Aferição" e "Ações" (8ª posição), exibindo pílulas arredondadas (rounded-full) com contagem precisa de dias.',
+      'Cálculo Preciso e Unificado de Prazo: Reutilizada a mesma diferença em dias da aferição — "Vencido há 1 dia / X dias" (bg-red-100/text-red-700), "Vence hoje" e "Vence em 1 dia / X dias" até 20 dias (bg-amber-100/text-amber-700), "Vence em X dias" acima de 20 dias (bg-emerald-100/text-emerald-700) e "-" neutro para datas vazias.',
+      'Coluna STATUS PRAZO Ordenável: Suporte completo à ordenação cronológica/numérica por prazo de vencimento (vencidos antigos primeiro em ASC, maior prazo restante primeiro em DESC, com vazios no final).',
+      'Renomeação Visual de Cabeçalhos: Atualizados os títulos de colunas para "Aferição" (anteriormente "Data Aferição") e "Vencimento da Aferição" (anteriormente "Vencimento Aferição").',
+      'Preservação e Centralização Geral: Mantidas todas as colunas centralizadas, ordenação inicial por vencimento ASC, fundo suave vermelho nas linhas vencidas, botão de visualização da ficha completa e autorização compartilhada com Controle de Ofícios.'
+    ]
+  },
+  {
+    version: 'v3.7.72',
+    date: '28/09/2026',
+    tag: 'Refinamento Visual e Inclusão do Número de Série nas Aferições',
+    changes: [
+      'Fundo Vermelho Muito Suave nas Linhas Vencidas: Adicionada coloração de fundo suave (bg-red-50/60 com hover:bg-red-100/60) exclusivamente para equipamentos com aferição vencida (< hoje), harmonizando com o texto em negrito e o badge vermelho.',
+      'Destaque no Título Controle de Aferições: Ampliação de aproximadamente 2px no título do cabeçalho da tabela (text-lg sm:text-xl font-bold text-slate-900), mantendo o alinhamento e o layout compacto do card.',
+      'Nova Coluna Nº de Série: Inserida na 2ª posição da tabela (imediatamente à direita de Código), mapeando os dados reais da fonte ("Nº DE SÉRIE"), com centralização e fallback para "-" quando vazio.',
+      'Busca e Ordenação Completa do Nº de Série: O número de série foi integrado à caixa de busca geral em tempo real e dotado de ordenação alfanumérica natural (ASC/DESC), mantendo valores vazios ao final.',
+      'Preservação Total de Funcionalidades: Ordenação inicial padrão por Vencimento ASC preservada, botão de visualização da ficha completa (Eye -> EquipmentDetailModal) intacto e autorização compartilhada com Controle de Ofícios 100% mantida.'
+    ]
+  },
+  {
+    version: 'v3.7.71',
+    date: '28/09/2026',
+    tag: 'Refinamento do Controle de Aferições e Integração com Ficha de Equipamentos',
+    changes: [
+      'Reposicionamento da Aba no Menu: Módulo "Controle de Aferições" movido no menu desktop e no menu inferior mobile para a 5ª posição, ficando à direita de "Relatórios" e à esquerda de "Lista de Equipamentos".',
+      'Ordenação Inicial Padrão por Vencimento ASC: Tabela abre ordenada cronologicamente de forma crescente pela "Data de Vencimento da Aferição" (vencidos mais antigos primeiro, datas próximas e futuras em seguida, e registros sem data posicionados ao final).',
+      'Cabeçalho Unificado e Minimalista: Removidos o card superior (contador e subtítulo) e o card de legenda; o título "Controle de Aferições" e o campo de busca geral foram integrados diretamente no topo do card da tabela.',
+      'Nova Coluna AÇÕES com Ficha do Equipamento: Adicionado botão com ícone de olho (Eye) que reutiliza o modal oficial existente (EquipmentDetailModal), exibindo a ficha completa e dados geográficos do radar selecionado.',
+      'Centralização Completa da Tabela: Todos os cabeçalhos e todas as células de dados centralizados (Código, Endereço Completo, Bairro, Velocidade, Data Aferição, Vencimento e Ações).',
+      'Destaque em Negrito para Aferições Vencidas: Linha inteira formatada em negrito quando a data de vencimento for anterior ao dia atual (< hoje), preservando a badge vermelha suave na coluna de vencimento.',
+      'Preservação e Estabilidade Geral: Mantidos a autorização compartilhada única com Controle de Ofícios (sessionStorage geapi_interrupcoes_auth), os filtros fixos CEV + CT 2740/24 e os demais 10 módulos.'
+    ]
+  },
+  {
+    version: 'v3.7.70',
+    date: '28/09/2026',
+    tag: 'Controle de Aferições e Autorização Compartilhada',
+    changes: [
+      'Novo Módulo Controle de Aferições: Criada nova aba e componente independente AfericoesView posicionado estrategicamente entre "Controle de Ofícios" e "BHDIGITAL" no menu desktop (grid-cols-11) e no menu inferior mobile com ícone Gauge.',
+      'Autorização Compartilhada Única: Integração de controle de acesso compartilhado com "Controle de Ofícios" utilizando a mesma sessão segura (geapi_interrupcoes_auth) e endpoint existente. A liberação de um módulo autoriza instantaneamente o outro sem necessidade de redigitar a senha.',
+      'Listagem Fixo-Dedicada dos CEV do CT 2740/24: Visualização independente dos 347 registros de radares do tipo CEV do contrato 2740/24, reutilizando o dataset da Lista Geral da planilha (gid 226357776) sem redundância de fetch ou interferência de filtros globais.',
+      'Controle Cromático de Vencimento de Aferição: Destaque visual por status temporal (Vermelho para aferições vencidas, Âmbar/Amarelo para vencimento em até 20 dias e Verde para mais de 20 dias, com traço neutro para registros sem data).',
+      'Busca e Ordenação Completa: Caixa de busca única em tempo real sobre todas as 6 colunas (Código, Endereço, Bairro, Velocidade, Data Aferição e Vencimento), ordenação alfanumérica natural, cronológica e numérica em todos os cabeçalhos e paginação integrada.',
+      'Preservação Total do Sistema: Manutenção integral e sem regressões de todos os módulos analíticos anteriores, layouts responsivos e ausência de exportações no novo módulo conforme especificação.'
+    ]
+  },
   {
     version: 'v3.7.69',
     date: '16/09/2026',
     tag: 'Integração do Portal de Sistemas à Navegação GEAPI',
-    isLatest: true,
     changes: [
       'Nova Aba de Navegação SISTEMAS: Inserida no menu de navegação do Header desktop e na barra inferior mobile (MobileBottomNav) posicionada estrategicamente entre "Legislação" e "OUTROS".',
       'Navegação e Redirecionamento Direto: Configurado o clique na aba para navegar na mesma página do navegador para https://geapife-sistemas.vercel.app/ sem abrir nova guia e sem criar views ou rotas internas.',

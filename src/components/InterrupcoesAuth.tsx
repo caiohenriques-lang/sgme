@@ -4,11 +4,15 @@ import { Lock, ShieldAlert, KeyRound, Loader2, AlertCircle, ArrowLeft, Eye, EyeO
 interface InterrupcoesAuthProps {
   onSuccess: () => void;
   onFailure: () => void;
+  title?: string;
+  subtitle?: string;
 }
 
 export const InterrupcoesAuth: React.FC<InterrupcoesAuthProps> = ({
   onSuccess,
   onFailure,
+  title = 'Controle de Ofícios',
+  subtitle = 'Módulo com controle restrito de inoperâncias temporárias e ofícios de equipamentos. Digite a senha para acessar o painel.',
 }) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -67,10 +71,10 @@ export const InterrupcoesAuth: React.FC<InterrupcoesAuthProps> = ({
               <span>Acesso Restrito</span>
             </div>
             <h2 className="text-xl font-bold text-slate-900 tracking-tight">
-              Controle de Ofícios
+              {title}
             </h2>
             <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
-              Módulo com controle restrito de inoperâncias temporárias e ofícios de equipamentos. Digite a senha para acessar o painel.
+              {subtitle}
             </p>
           </div>
         </div>

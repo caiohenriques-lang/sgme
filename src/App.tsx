@@ -9,6 +9,7 @@ import { TableView } from './components/TableView';
 import { GestaoContratualView } from './components/GestaoContratualView';
 import { InterrupcoesView } from './components/InterrupcoesView';
 import { InterrupcoesAuth } from './components/InterrupcoesAuth';
+import { AfericoesView } from './components/AfericoesView';
 import { BHDigitalView } from './components/BHDigitalView';
 import { LegislacaoView } from './components/LegislacaoView';
 import { OutrosView } from './components/OutrosView';
@@ -451,8 +452,8 @@ export default function App() {
         isInterrupcoesAuthorized={isInterrupcoesAuthorized}
       />
 
-      {/* Filter Bar - Hidden in Gestão Contratual, Interrupções, BHDIGITAL, Legislação, Outros and Relatórios */}
-      {activeTab !== 'relatorios' && activeTab !== 'gestao_contratual' && activeTab !== 'interrupcoes' && activeTab !== 'bhdigital' && activeTab !== 'legislacao' && activeTab !== 'outros' && (
+      {/* Filter Bar - Hidden in Gestão Contratual, Interrupções, Aferições, BHDIGITAL, Legislação, Outros and Relatórios */}
+      {activeTab !== 'relatorios' && activeTab !== 'gestao_contratual' && activeTab !== 'interrupcoes' && activeTab !== 'afericoes' && activeTab !== 'bhdigital' && activeTab !== 'legislacao' && activeTab !== 'outros' && (
         <FilterBar
           activeTab={activeTab}
           filters={filters}
@@ -540,6 +541,26 @@ export default function App() {
                 <InterrupcoesView />
               ) : (
                 <InterrupcoesAuth
+                  onSuccess={() => setIsInterrupcoesAuthorized(true)}
+                  onFailure={() => setActiveTab('mapa')}
+                />
+              )
+            )}
+
+            {/* Tab: Controle de Aferições - Mesma Proteção Compartilhada de Controle de Ofícios */}
+            {activeTab === 'afericoes' && (
+              isInterrupcoesAuthorized ? (
+                <AfericoesView
+                  records={records}
+                  onSelectRecord={(rec) => setSelectedRecord(rec)}
+                  lastUpdated={lastUpdated}
+                  loading={loading}
+                  onRefresh={loadData}
+                />
+              ) : (
+                <InterrupcoesAuth
+                  title="Controle de Aferições"
+                  subtitle="Acompanhamento restrito das aferições dos equipamentos CEV — CT 2740/24. Digite a senha para acessar o painel."
                   onSuccess={() => setIsInterrupcoesAuthorized(true)}
                   onFailure={() => setActiveTab('mapa')}
                 />
