@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Lock, ShieldAlert, KeyRound, Loader2, AlertCircle, ArrowLeft, Eye, EyeOff, Gauge } from 'lucide-react';
+import { Lock, ShieldAlert, KeyRound, Loader2, AlertCircle, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
 interface InterrupcoesAuthProps {
   onSuccess: () => void;
@@ -71,7 +71,7 @@ export const InterrupcoesAuth: React.FC<InterrupcoesAuthProps> = ({
                 : 'bg-amber-50 border border-amber-200 text-amber-600'
             }`}
           >
-            {isBlue ? <Gauge className="w-7 h-7" /> : <Lock className="w-7 h-7" />}
+            <Lock className="w-7 h-7" />
           </div>
           <div>
             <div

@@ -6,15 +6,25 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.76';
+export const APP_VERSION = 'v3.7.77';
 export const BUILD_DATE = '28/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.77',
+    date: '28/09/2026',
+    tag: 'Cadeado Azul na Tela de Autenticação do Controle de Aferições',
+    isLatest: true,
+    changes: [
+      'Cadeado Azul na Autenticação de Aferições: O ícone superior principal da tela de autenticação restrita de "Controle de Aferições" foi atualizado para um cadeado (Lock) em tom azul (text-blue-600) sobre container suave (bg-blue-50 border border-blue-200), harmonizando com o padrão de autenticação do portal.',
+      'Preservação do Ícone Gauge no Menu: O ícone da aba "Controle de Aferições" na barra de navegação superior desktop (Header) e na barra inferior mobile (MobileBottomNav) permanece estritamente como Gauge, mantendo a identidade visual da navegação.',
+      'Preservação Total de Regras e Segurança: Mantidos a mesma senha de acesso, endpoint seguro /api/interrupcoes/auth, compartilhamento de autorização com Controle de Ofícios, selo de Acesso Restrito e integridade de todos os módulos.'
+    ]
+  },
+  {
     version: 'v3.7.76',
     date: '28/09/2026',
     tag: 'Padronização Visual dos Cadeados e Harmonização das Telas de Autenticação',
-    isLatest: true,
     changes: [
       'Padronização Visual dos Cadeados das Abas Protegidas: Ajustados os ícones de cadeado de "Controle de Aferições" e "Controle de Ofícios" tanto no Header desktop quanto no MobileBottomNav, ficando rigorosamente no mesmo tom de cinza (text-slate-400) quando bloqueados e no mesmo tom de verde (text-emerald-600) quando liberados.',
       'Harmonização Visual em Azul para Autenticação de Aferições: A tela de acesso restrito de "Controle de Aferições" agora adota a identidade visual azul do módulo (ícone Gauge em container azul, badge de Acesso Restrito azul, botão principal em blue-600 e focus ring em blue-500).',
