@@ -6,15 +6,25 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.77';
+export const APP_VERSION = 'v3.7.78';
 export const BUILD_DATE = '28/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.78',
+    date: '28/09/2026',
+    tag: 'Padronização do Badge de Prazo em Duas Linhas Estruturadas',
+    isLatest: true,
+    changes: [
+      'Padronização do Badge de Prazo em 2 Linhas: O badge da coluna "PRAZO" no Controle de Aferições passa a ser renderizado de forma estruturada e determinística em duas linhas perfeitamente centralizadas ("Vence em" / "X dias", "Vence" / "hoje", "Vencido há" / "X dias" e "-" neutro para datas vazias).',
+      'Harmonia Visual e Compactação: Dimensões otimizadas (max-w-[85px] na pílula e min-w-[76px] max-w-[95px] na coluna) com leading compacto e padding suave, eliminando qualquer quebra de linha irregular e preservando o respiro da tabela.',
+      'Preservação Total de Regras: Mantidos o padrão cromático estabelecido (vermelho para vencidos e vence hoje, âmbar até 20 dias, verde acima de 20 dias), a ordenação cronológica por prazo, a busca universal, o modal de detalhes do radar e a segurança compartilhada com Controle de Ofícios.'
+    ]
+  },
+  {
     version: 'v3.7.77',
     date: '28/09/2026',
     tag: 'Cadeado Azul na Tela de Autenticação do Controle de Aferições',
-    isLatest: true,
     changes: [
       'Cadeado Azul na Autenticação de Aferições: O ícone superior principal da tela de autenticação restrita de "Controle de Aferições" foi atualizado para um cadeado (Lock) em tom azul (text-blue-600) sobre container suave (bg-blue-50 border border-blue-200), harmonizando com o padrão de autenticação do portal.',
       'Preservação do Ícone Gauge no Menu: O ícone da aba "Controle de Aferições" na barra de navegação superior desktop (Header) e na barra inferior mobile (MobileBottomNav) permanece estritamente como Gauge, mantendo a identidade visual da navegação.',

@@ -36,6 +36,8 @@ interface VencimentoStatus {
   diffDays: number | null;
   isValid: boolean;
   statusPrazoText: string;
+  statusPrazoLine1: string;
+  statusPrazoLine2: string;
   statusPrazoBadgeClass: string;
 }
 
@@ -87,6 +89,8 @@ function getVencimentoStatus(dateStr?: string): VencimentoStatus {
       diffDays: null,
       isValid: false,
       statusPrazoText: '-',
+      statusPrazoLine1: '-',
+      statusPrazoLine2: '',
       statusPrazoBadgeClass: 'text-slate-400 font-normal'
     };
   }
@@ -101,21 +105,23 @@ function getVencimentoStatus(dateStr?: string): VencimentoStatus {
 
   const cleanText = (dateStr || '').trim();
 
-  // A) VENCIDA: dataVencimento < hoje
+  // A) VENCIDA: dataVencimento < hoje -> 2 linhas padronizadas ("Vencido há" / "X dias")
   if (diffDays < 0) {
     const absDays = Math.abs(diffDays);
-    const prazoText = absDays === 1 ? 'Vencido há 1 dia' : `Vencido há ${absDays} dias`;
+    const line2 = absDays === 1 ? '1 dia' : `${absDays} dias`;
     return {
       formattedText: cleanText,
       badgeClass: 'bg-red-50 text-red-700 border border-red-200 font-semibold',
       diffDays,
       isValid: true,
-      statusPrazoText: prazoText,
+      statusPrazoText: `Vencido há ${line2}`,
+      statusPrazoLine1: 'Vencido há',
+      statusPrazoLine2: line2,
       statusPrazoBadgeClass: 'bg-red-100 text-red-700 border border-red-200 font-semibold'
     };
   }
 
-  // B) VENCE HOJE: dataVencimento = hoje (diffDays === 0) -> Status Crítico Vermelho
+  // B) VENCE HOJE: dataVencimento = hoje (diffDays === 0) -> 2 linhas padronizadas ("Vence" / "hoje")
   if (diffDays === 0) {
     return {
       formattedText: cleanText,
@@ -123,11 +129,13 @@ function getVencimentoStatus(dateStr?: string): VencimentoStatus {
       diffDays,
       isValid: true,
       statusPrazoText: 'Vence hoje',
+      statusPrazoLine1: 'Vence',
+      statusPrazoLine2: 'hoje',
       statusPrazoBadgeClass: 'bg-red-100 text-red-700 border border-red-200 font-semibold'
     };
   }
 
-  // C) VENCE EM 1 DIA: vencimento = amanhã (diffDays === 1)
+  // C) VENCE EM 1 DIA: vencimento = amanhã (diffDays === 1) -> 2 linhas padronizadas ("Vence em" / "1 dia")
   if (diffDays === 1) {
     return {
       formattedText: cleanText,
@@ -135,11 +143,13 @@ function getVencimentoStatus(dateStr?: string): VencimentoStatus {
       diffDays,
       isValid: true,
       statusPrazoText: 'Vence em 1 dia',
+      statusPrazoLine1: 'Vence em',
+      statusPrazoLine2: '1 dia',
       statusPrazoBadgeClass: 'bg-amber-100 text-amber-700 border border-amber-200'
     };
   }
 
-  // D) VENCE EM ATÉ 20 DIAS: diffDays > 1 && diffDays <= 20
+  // D) VENCE EM ATÉ 20 DIAS: diffDays > 1 && diffDays <= 20 -> 2 linhas padronizadas ("Vence em" / "X dias")
   if (diffDays <= 20) {
     return {
       formattedText: cleanText,
@@ -147,17 +157,21 @@ function getVencimentoStatus(dateStr?: string): VencimentoStatus {
       diffDays,
       isValid: true,
       statusPrazoText: `Vence em ${diffDays} dias`,
+      statusPrazoLine1: 'Vence em',
+      statusPrazoLine2: `${diffDays} dias`,
       statusPrazoBadgeClass: 'bg-amber-100 text-amber-700 border border-amber-200'
     };
   }
 
-  // E) VENCE EM MAIS DE 20 DIAS: diffDays > 20
+  // E) VENCE EM MAIS DE 20 DIAS: diffDays > 20 -> 2 linhas padronizadas ("Vence em" / "X dias")
   return {
     formattedText: cleanText,
     badgeClass: 'bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold',
     diffDays,
     isValid: true,
     statusPrazoText: `Vence em ${diffDays} dias`,
+    statusPrazoLine1: 'Vence em',
+    statusPrazoLine2: `${diffDays} dias`,
     statusPrazoBadgeClass: 'bg-emerald-100 text-emerald-700 border border-emerald-200'
   };
 }
@@ -457,10 +471,10 @@ export const AfericoesView: React.FC<AfericoesViewProps> = ({ records, onSelectR
                   </div>
                 </th>
 
-                {/* 8. PRAZO (Média/Compacta com Quebra) */}
+                {/* 8. PRAZO (Média/Compacta) */}
                 <th
                   onClick={() => handleSort('STATUS PRAZO')}
-                  className="py-2.5 px-1.5 cursor-pointer hover:bg-slate-100 transition-colors group text-center whitespace-nowrap min-w-[80px] max-w-[100px]"
+                  className="py-2.5 px-1.5 cursor-pointer hover:bg-slate-100 transition-colors group text-center whitespace-nowrap min-w-[76px] max-w-[95px]"
                 >
                   <div className="flex items-center justify-center gap-1">
                     <span>Prazo</span>
@@ -594,13 +608,14 @@ export const AfericoesView: React.FC<AfericoesViewProps> = ({ records, onSelectR
                         )}
                       </td>
 
-                      {/* 8. PRAZO (PÍLULA COMPACTA COM QUEBRA EM ATÉ 2 LINHAS) */}
-                      <td className="py-2 px-1 text-center min-w-[80px] max-w-[100px]">
+                      {/* 8. PRAZO (PÍLULA COMPACTA COM 2 LINHAS PADRONIZADAS) */}
+                      <td className="py-2 px-1 text-center min-w-[76px] max-w-[95px]">
                         {vencimentoStatus.isValid ? (
                           <span
-                            className={`inline-flex items-center justify-center text-center px-2 py-0.5 rounded-lg text-[10.5px] font-medium leading-tight whitespace-normal break-words max-w-[88px] mx-auto ${vencimentoStatus.statusPrazoBadgeClass}`}
+                            className={`inline-flex flex-col items-center justify-center text-center px-2 py-0.5 rounded-lg text-[10.5px] leading-tight font-medium max-w-[85px] mx-auto ${vencimentoStatus.statusPrazoBadgeClass}`}
                           >
-                            {vencimentoStatus.statusPrazoText}
+                            <span className="whitespace-nowrap">{vencimentoStatus.statusPrazoLine1}</span>
+                            <span className="whitespace-nowrap font-semibold">{vencimentoStatus.statusPrazoLine2}</span>
                           </span>
                         ) : (
                           <span className="text-slate-400 font-normal">-</span>
