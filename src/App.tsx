@@ -560,7 +560,7 @@ export default function App() {
               ) : (
                 <InterrupcoesAuth
                   title="Controle de Aferições"
-                  subtitle="Acompanhamento restrito das aferições dos equipamentos CEV — CT 2740/24. Digite a senha para acessar o painel."
+                  themeColor="blue"
                   onSuccess={() => setIsInterrupcoesAuthorized(true)}
                   onFailure={() => setActiveTab('mapa')}
                 />

@@ -6,15 +6,26 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.75';
+export const APP_VERSION = 'v3.7.76';
 export const BUILD_DATE = '28/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.76',
+    date: '28/09/2026',
+    tag: 'Padronização Visual dos Cadeados e Harmonização das Telas de Autenticação',
+    isLatest: true,
+    changes: [
+      'Padronização Visual dos Cadeados das Abas Protegidas: Ajustados os ícones de cadeado de "Controle de Aferições" e "Controle de Ofícios" tanto no Header desktop quanto no MobileBottomNav, ficando rigorosamente no mesmo tom de cinza (text-slate-400) quando bloqueados e no mesmo tom de verde (text-emerald-600) quando liberados.',
+      'Harmonização Visual em Azul para Autenticação de Aferições: A tela de acesso restrito de "Controle de Aferições" agora adota a identidade visual azul do módulo (ícone Gauge em container azul, badge de Acesso Restrito azul, botão principal em blue-600 e focus ring em blue-500).',
+      'Remoção Completa dos Textos Explicativos: Eliminados os parágrafos descritivos das telas de autenticação de ambos os módulos protegidos ("Controle de Aferições" e "Controle de Ofícios"), proporcionando uma experiência de login limpa, direta e minimalista.',
+      'Preservação Integral de Segurança e Sessão: Mantidos a mesma senha segura, endpoint /api/interrupcoes/auth, compartilhamento de autorização em sessionStorage, botão de retorno e todos os fluxos das demais abas do portal.'
+    ]
+  },
+  {
     version: 'v3.7.75',
     date: '28/09/2026',
     tag: 'Status Crítico para Vencimento no Dia e Quebra de Linha na Coluna Prazo',
-    isLatest: true,
     changes: [
       'Status Crítico em Vermelho para "Vence hoje": Registros com vencimento na data atual (diffDays === 0) passam a receber coloração vermelha nos badges de "Vencimento da Aferição" (bg-red-50 text-red-700) e "Prazo" (bg-red-100 text-red-700).',
       'Preservação do Fundo da Linha para Vencidos: O fundo vermelho suave (bg-red-50/60) e a tipografia em negrito da linha inteira permanecem exclusivos para equipamentos efetivamente vencidos (diffDays < 0), sem poluir as linhas de vencimento no dia.',

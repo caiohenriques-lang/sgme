@@ -149,10 +149,10 @@ export const Header: React.FC<HeaderProps> = ({
                 <span>Aferições</span>
               </div>
 
-              {/* Selo do Cadeado no Canto Inferior Direito */}
+              {/* Selo do Cadeado no Canto Inferior Direito: Cinza quando bloqueado, Verde quando liberado */}
               <div className="absolute bottom-1 right-1 flex items-center justify-center">
                 {!isInterrupcoesAuthorized ? (
-                  <Lock className={`w-3 h-3 ${activeTab === 'afericoes' ? 'text-blue-200' : 'text-slate-400'}`} title="Módulo protegido por senha" />
+                  <Lock className={`w-3 h-3 ${activeTab === 'afericoes' ? 'text-slate-300' : 'text-slate-400'}`} title="Módulo protegido por senha" />
                 ) : (
                   <Unlock className={`w-3 h-3 ${activeTab === 'afericoes' ? 'text-emerald-200' : 'text-emerald-600'}`} title="Módulo autorizado na sessão" />
                 )}
@@ -190,10 +190,10 @@ export const Header: React.FC<HeaderProps> = ({
                 <span>Ofícios</span>
               </div>
 
-              {/* Selo do Cadeado no Canto Inferior Direito */}
+              {/* Selo do Cadeado no Canto Inferior Direito: Cinza quando bloqueado, Verde quando liberado */}
               <div className="absolute bottom-1 right-1 flex items-center justify-center">
                 {!isInterrupcoesAuthorized ? (
-                  <Lock className={`w-3 h-3 ${activeTab === 'interrupcoes' ? 'text-amber-100' : 'text-amber-600'}`} title="Módulo protegido por senha" />
+                  <Lock className={`w-3 h-3 ${activeTab === 'interrupcoes' ? 'text-slate-300' : 'text-slate-400'}`} title="Módulo protegido por senha" />
                 ) : (
                   <Unlock className={`w-3 h-3 ${activeTab === 'interrupcoes' ? 'text-emerald-200' : 'text-emerald-600'}`} title="Módulo autorizado na sessão" />
                 )}

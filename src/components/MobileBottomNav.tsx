@@ -84,12 +84,12 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         <Gauge className={`w-4 h-4 sm:w-5 sm:h-5 ${activeTab === 'afericoes' ? 'text-blue-700' : 'text-blue-600'}`} />
         <span className="text-[9.5px] font-bold mt-0.5 tracking-tight truncate max-w-full">Aferições</span>
 
-        {/* Selo do Cadeado no Canto Inferior Direito */}
+        {/* Selo do Cadeado no Canto Inferior Direito: Cinza quando bloqueado, Verde quando liberado */}
         <div className="absolute bottom-0.5 right-0.5 flex items-center justify-center">
           {!isInterrupcoesAuthorized ? (
-            <Lock className={`w-2.5 h-2.5 ${activeTab === 'afericoes' ? 'text-blue-800' : 'text-slate-400'}`} title="Módulo protegido por senha" />
+            <Lock className={`w-2.5 h-2.5 ${activeTab === 'afericoes' ? 'text-slate-500' : 'text-slate-400'}`} title="Módulo protegido por senha" />
           ) : (
-            <Unlock className={`w-2.5 h-2.5 ${activeTab === 'afericoes' ? 'text-emerald-800' : 'text-emerald-600'}`} title="Módulo autorizado na sessão" />
+            <Unlock className={`w-2.5 h-2.5 ${activeTab === 'afericoes' ? 'text-emerald-700' : 'text-emerald-600'}`} title="Módulo autorizado na sessão" />
           )}
         </div>
       </button>
@@ -119,12 +119,12 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         <AlertTriangle className={`w-4 h-4 sm:w-5 sm:h-5 ${activeTab === 'interrupcoes' ? 'text-amber-700' : 'text-amber-600'}`} />
         <span className="text-[9.5px] font-bold mt-0.5 tracking-tight truncate max-w-full">Controle de Ofícios</span>
 
-        {/* Selo do Cadeado no Canto Inferior Direito */}
+        {/* Selo do Cadeado no Canto Inferior Direito: Cinza quando bloqueado, Verde quando liberado */}
         <div className="absolute bottom-0.5 right-0.5 flex items-center justify-center">
           {!isInterrupcoesAuthorized ? (
-            <Lock className={`w-2.5 h-2.5 ${activeTab === 'interrupcoes' ? 'text-amber-800' : 'text-amber-600'}`} title="Módulo protegido por senha" />
+            <Lock className={`w-2.5 h-2.5 ${activeTab === 'interrupcoes' ? 'text-slate-500' : 'text-slate-400'}`} title="Módulo protegido por senha" />
           ) : (
-            <Unlock className={`w-2.5 h-2.5 ${activeTab === 'interrupcoes' ? 'text-emerald-800' : 'text-emerald-600'}`} title="Módulo autorizado na sessão" />
+            <Unlock className={`w-2.5 h-2.5 ${activeTab === 'interrupcoes' ? 'text-emerald-700' : 'text-emerald-600'}`} title="Módulo autorizado na sessão" />
           )}
         </div>
       </button>
