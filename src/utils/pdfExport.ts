@@ -3,6 +3,7 @@ import autoTable from 'jspdf-autotable';
 import html2canvas from 'html2canvas-pro';
 import { EquipmentRecord, FilterState } from '../types';
 import { captureMap } from './mapExport';
+import { InterrupcaoRecord } from '../services/interrupcoesService';
 
 let cachedLogoDataUrl: string | null = null;
 
@@ -1911,6 +1912,220 @@ export async function exportMapWithFiltersPdf(
   }
 
   doc.save(`GEAPI-Monitoramento-Espacial-Mapa-${new Date().toISOString().slice(0, 10)}.pdf`);
+}
+
+export async function exportHistoricoParadasPDF(
+  records: InterrupcaoRecord[],
+  activeFilters: string[] = []
+): Promise<void> {
+  const doc = new jsPDF({
+    orientation: 'landscape',
+    unit: 'mm',
+    format: 'a4',
+  });
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const logoDataUrl = await getLogoDataUrl();
+
+  const maxTextWidth = logoDataUrl ? pageWidth - 10 - 50 - 15 : pageWidth - 20;
+
+  const renderHeader = (isFirstPage: boolean, pageNum?: number) => {
+    // Fundo branco do cabeçalho
+    doc.setFillColor(255, 255, 255);
+    doc.rect(0, 0, pageWidth, 28, 'F');
+
+    // Divisor institucional sutil
+    doc.setDrawColor(226, 232, 240); // slate-200
+    doc.setLineWidth(0.5);
+    doc.line(10, 27, pageWidth - 10, 27);
+
+    // Timbre / Logotipo Oficial PBH/BHTRANS
+    if (logoDataUrl) {
+      try {
+        const logoWidth = 50;
+        const logoHeight = 12.5;
+        const logoX = pageWidth - 10 - logoWidth;
+        doc.addImage(logoDataUrl, 'PNG', logoX, 7, logoWidth, logoHeight);
+      } catch (e) {
+        console.warn('Erro ao renderizar logotipo no cabeçalho:', e);
+      }
+    }
+
+    // Linha 1: Identificação Institucional GEAPI
+    doc.setTextColor(15, 23, 42); // slate-900
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('GERÊNCIA DE ANÁLISE E PROCESSAMENTO DE INFRAÇÕES - GEAPI', 10, 9, { maxWidth: maxTextWidth });
+
+    // Linha 2: Título Oficial do Documento
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(30, 41, 59); // slate-800
+    doc.text('RELATÓRIO HISTÓRICO DE PARADA E RETORNO DE EQUIPAMENTOS', 10, 15, { maxWidth: maxTextWidth });
+
+    // Linha 3: Metadados e Emissão
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 116, 139); // slate-500
+    const agora = new Date();
+    const dataHoraFormatada = `${agora.toLocaleDateString('pt-BR')} às ${agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+
+    if (isFirstPage) {
+      doc.text(`Total de eventos: ${records.length} | Emitido em: ${dataHoraFormatada}`, 10, 22, { maxWidth: maxTextWidth });
+    } else {
+      doc.text(`Página ${pageNum || ''} | Total de eventos: ${records.length} | Emitido em: ${dataHoraFormatada}`, 10, 22, { maxWidth: maxTextWidth });
+    }
+  };
+
+  // Renderiza cabeçalho da página 1
+  renderHeader(true);
+
+  // Bloco discreto de Filtros Aplicados
+  let startY = 30;
+  if (activeFilters && activeFilters.length > 0) {
+    doc.setFillColor(248, 250, 252); // slate-50
+    doc.setDrawColor(226, 232, 240); // slate-200
+    doc.setLineWidth(0.3);
+    doc.roundedRect(10, startY, pageWidth - 20, 7.5, 1, 1, 'FD');
+
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(30, 41, 59); // slate-800
+    doc.text('Filtros aplicados:', 13, startY + 4.8);
+
+    const filterLabelWidth = doc.getTextWidth('Filtros aplicados:');
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(71, 85, 105); // slate-600
+    doc.text(
+      activeFilters.join('   |   '),
+      15 + filterLabelWidth,
+      startY + 4.8,
+      { maxWidth: pageWidth - 20 - filterLabelWidth - 10 }
+    );
+
+    startY += 10.5;
+  }
+
+  // Tabela com as 8 colunas preservadas
+  const tableHead = [
+    'CT',
+    'CÓDIGO',
+    'TIPO',
+    'MOTIVO DA PARADA',
+    'OFÍCIO DE PARADA',
+    'DATA DE PARADA',
+    'OFÍCIO DE RETORNO',
+    'DATA DE RETORNO'
+  ];
+
+  const tableBody = records.map((r) => [
+    r.ct?.trim() || '-',
+    r.codigo?.trim() || '-',
+    r.tipo?.trim() || '-',
+    r.motivo?.trim() || '-',
+    r.oficioInicial?.trim() || '-',
+    r.dataParada?.trim() || '-',
+    r.oficioRetorno?.trim() || '-',
+    r.dataRetorno?.trim() ? r.dataRetorno.trim() : 'Em aberto'
+  ]);
+
+  autoTable(doc, {
+    startY: startY,
+    margin: { left: 10, right: 10, top: 30, bottom: 18 },
+    head: [tableHead],
+    body: tableBody,
+    theme: 'grid',
+    headStyles: {
+      fillColor: [241, 245, 249], // slate-100 fundo cinza/slate claro institucional
+      textColor: [30, 41, 59],    // slate-800 texto escuro
+      fontSize: 7.5,
+      fontStyle: 'bold',
+      halign: 'center',
+      cellPadding: 2,
+      lineColor: [203, 213, 225], // slate-300 bordas finas
+      lineWidth: 0.2
+    },
+    bodyStyles: {
+      fontSize: 7,
+      textColor: [30, 41, 59],
+      halign: 'center',
+      cellPadding: 1.6,
+      lineColor: [226, 232, 240], // slate-200 bordas finas internas
+      lineWidth: 0.2
+    },
+    alternateRowStyles: {
+      fillColor: [248, 250, 252] // slate-50 zebrado suave
+    },
+    columnStyles: {
+      0: { halign: 'center', cellWidth: 20 }, // CT
+      1: { halign: 'center', fontStyle: 'bold', cellWidth: 22 }, // Código
+      2: { halign: 'center', cellWidth: 22 }, // Tipo
+      3: { halign: 'left', cellPadding: { top: 1.6, bottom: 1.6, left: 3, right: 3 } }, // Motivo da parada (auto-wrap preenchendo o espaço)
+      4: { halign: 'center', cellWidth: 34 }, // Ofício de Parada
+      5: { halign: 'center', cellWidth: 28 }, // Data de Parada
+      6: { halign: 'center', cellWidth: 34 }, // Ofício de Retorno
+      7: { halign: 'center', cellWidth: 28 }  // Data de Retorno
+    },
+    didParseCell: (data) => {
+      // Destaque discreto em tom âmbar e itálico para eventos "Em aberto"
+      if (data.section === 'body' && data.column.index === 7) {
+        if (data.cell.raw === 'Em aberto' || data.cell.text[0] === 'Em aberto') {
+          data.cell.styles.textColor = [180, 83, 9]; // amber-700
+          data.cell.styles.fontStyle = 'italic';
+        }
+      }
+    },
+    didDrawPage: (data) => {
+      // Repete o cabeçalho institucional timbrado em todas as páginas adicionais
+      if (data.pageNumber > 1) {
+        renderHeader(false, data.pageNumber);
+      }
+    }
+  });
+
+  // Aplicação do Rodapé Oficial do Portal GEAPI em todas as páginas com numeração dinâmica
+  const totalPages = (doc.internal as any).getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    addCustomFooter(doc, pageWidth, pageHeight, `Página ${i} de ${totalPages}`);
+  }
+
+  // 1. Salva o PDF no padrão oficial para download imediato
+  doc.save(`GEAPI-Relatorio-Historico-Paradas-Retornos-${new Date().toISOString().slice(0, 10)}.pdf`);
+
+  // 2. Aciona o diálogo de impressão com maior fidelidade visual
+  try {
+    doc.autoPrint();
+    const blob = doc.output('blob');
+    const blobUrl = URL.createObjectURL(blob);
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    iframe.src = blobUrl;
+    document.body.appendChild(iframe);
+
+    setTimeout(() => {
+      try {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+      } catch (err) {
+        console.warn('Impressão direta via iframe ignorada pelo navegador:', err);
+      }
+      setTimeout(() => {
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
+        URL.revokeObjectURL(blobUrl);
+      }, 2000);
+    }, 400);
+  } catch (err) {
+    console.warn('Erro ao acionar impressão autoPrint:', err);
+  }
 }
 
 

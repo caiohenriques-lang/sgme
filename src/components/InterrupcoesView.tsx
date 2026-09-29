@@ -26,7 +26,7 @@ import {
   Loader2,
   Download,
   FileSpreadsheet,
-  Printer,
+  FileDown,
   X,
 } from 'lucide-react';
 import {
@@ -37,6 +37,7 @@ import {
   calculateTipoSummary,
   CONTRATOS_ATIVOS,
 } from '../services/interrupcoesService';
+import { exportHistoricoParadasPDF } from '../utils/pdfExport';
 
 type SortInoperantesKey = 'ct' | 'codigo' | 'tipo' | 'motivo' | 'dataParada';
 type SortHistoricoKey = 'ct' | 'codigo' | 'tipo' | 'motivo' | 'oficioInicial' | 'dataParada' | 'oficioRetorno' | 'dataRetorno';
@@ -120,6 +121,7 @@ export const InterrupcoesView: React.FC = () => {
   const [filterMotivoHistorico, setFilterMotivoHistorico] = useState('TODOS');
   const [filterMesAno, setFilterMesAno] = useState('TODOS');
   const [filterEmAberto, setFilterEmAberto] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
   const [pageHistorico, setPageHistorico] = useState(1);
   const [sortHistorico, setSortHistorico] = useState<{
     key: SortHistoricoKey;
@@ -494,149 +496,28 @@ export const InterrupcoesView: React.FC = () => {
     document.body.removeChild(link);
   };
 
-  // Impressão do Relatório Histórico Completo com filtros ativos
-  const handlePrintHistorico = () => {
-    if (sortedHistorico.length === 0) return;
+  // Exportação em PDF do Relatório Histórico Completo no padrão institucional do Portal GEAPI
+  const handlePrintHistorico = async () => {
+    if (sortedHistorico.length === 0 || isPrinting) return;
 
-    const activeFiltersList: string[] = [];
-    if (selectedCt !== 'TODOS') activeFiltersList.push(`CT: ${selectedCt}`);
-    if (filterMotivoHistorico !== 'TODOS') activeFiltersList.push(`Motivo: ${filterMotivoHistorico}`);
-    if (filterMesAno !== 'TODOS') {
-      const mesObj = mesesDisponiveis.find((m) => m.value === filterMesAno);
-      activeFiltersList.push(`Mês: ${mesObj ? mesObj.label : filterMesAno}`);
-    }
-    if (filterEmAberto) activeFiltersList.push('Em aberto: Sim');
-    if (searchHistorico.trim()) activeFiltersList.push(`Busca: ${searchHistorico.trim()}`);
-
-    const filterSummaryHtml = activeFiltersList.length > 0
-      ? `<div style="margin-bottom: 12px; font-size: 11px; color: #334155; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 12px; line-height: 1.5;"><strong>Filtros:</strong> ${activeFiltersList.join(' &nbsp;|&nbsp; ')}</div>`
-      : '';
-
-    const tableRowsHtml = sortedHistorico.map((row) => `
-      <tr style="border-bottom: 1px solid #e2e8f0;">
-        <td style="padding: 5px 6px; border: 1px solid #cbd5e1; text-align: center; font-family: monospace;">${row.ct || '-'}</td>
-        <td style="padding: 5px 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold;">${row.codigo || '-'}</td>
-        <td style="padding: 5px 6px; border: 1px solid #cbd5e1; text-align: center;">${row.tipo || '-'}</td>
-        <td style="padding: 5px 8px; border: 1px solid #cbd5e1; text-align: left;">${row.motivo || '-'}</td>
-        <td style="padding: 5px 6px; border: 1px solid #cbd5e1; text-align: center; font-family: monospace;">${row.oficioInicial || '-'}</td>
-        <td style="padding: 5px 6px; border: 1px solid #cbd5e1; text-align: center; font-family: monospace;">${row.dataParada || '-'}</td>
-        <td style="padding: 5px 6px; border: 1px solid #cbd5e1; text-align: center; font-family: monospace;">${row.oficioRetorno || '-'}</td>
-        <td style="padding: 5px 6px; border: 1px solid #cbd5e1; text-align: center; font-family: monospace;">${row.dataRetorno ? row.dataRetorno : '<span style="color: #b45309; font-style: italic; font-weight: 600;">Em aberto</span>'}</td>
-      </tr>
-    `).join('');
-
-    const printHtml = `
-      <!DOCTYPE html>
-      <html lang="pt-BR">
-      <head>
-        <meta charset="utf-8" />
-        <title>Relatório Histórico de Parada e Retorno de Equipamentos</title>
-        <style>
-          @page {
-            size: landscape;
-            margin: 10mm;
-          }
-          body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 8px;
-            color: #0f172a;
-            background: #ffffff;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-          }
-          h1 {
-            font-size: 15px;
-            margin: 0 0 4px 0;
-            color: #0f172a;
-            font-weight: bold;
-          }
-          .meta {
-            font-size: 10px;
-            color: #64748b;
-            margin-bottom: 10px;
-          }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 9.5px;
-          }
-          th {
-            background-color: #f1f5f9;
-            color: #334155;
-            font-weight: bold;
-            padding: 6px;
-            border: 1px solid #cbd5e1;
-            text-align: center;
-          }
-          td {
-            padding: 4px 6px;
-            border: 1px solid #e2e8f0;
-          }
-          tr:nth-child(even) {
-            background-color: #f8fafc;
-          }
-        </style>
-      </head>
-      <body>
-        <h1>Relatório Histórico de Parada e Retorno de Equipamentos</h1>
-        <div class="meta">
-          Total de eventos: <strong>${sortedHistorico.length}</strong> &bull; Emissão: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} &bull; Portal GEAPI
-        </div>
-        ${filterSummaryHtml}
-        <table>
-          <thead>
-            <tr>
-              <th style="width: 55px;">CT</th>
-              <th style="width: 65px;">CÓDIGO</th>
-              <th style="width: 65px;">TIPO</th>
-              <th style="text-align: left;">MOTIVO DA PARADA</th>
-              <th style="width: 95px;">OFÍCIO DE PARADA</th>
-              <th style="width: 85px;">DATA DE PARADA</th>
-              <th style="width: 95px;">OFÍCIO DE RETORNO</th>
-              <th style="width: 85px;">DATA DE RETORNO</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${tableRowsHtml}
-          </tbody>
-        </table>
-      </body>
-      </html>
-    `;
-
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'fixed';
-    iframe.style.right = '0';
-    iframe.style.bottom = '0';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = '0';
-    document.body.appendChild(iframe);
-
-    const doc = iframe.contentWindow?.document;
-    if (!doc) {
-      if (document.body.contains(iframe)) document.body.removeChild(iframe);
-      return;
-    }
-    doc.open();
-    doc.write(printHtml);
-    doc.close();
-
-    setTimeout(() => {
-      try {
-        iframe.contentWindow?.focus();
-        iframe.contentWindow?.print();
-      } catch (err) {
-        console.error('Erro ao acionar impressão:', err);
-      } finally {
-        setTimeout(() => {
-          if (document.body.contains(iframe)) {
-            document.body.removeChild(iframe);
-          }
-        }, 1000);
+    setIsPrinting(true);
+    try {
+      const activeFiltersList: string[] = [];
+      if (selectedCt !== 'TODOS') activeFiltersList.push(`CT: ${selectedCt}`);
+      if (filterMesAno !== 'TODOS') {
+        const mesObj = mesesDisponiveis.find((m) => m.value === filterMesAno);
+        activeFiltersList.push(`Mês: ${mesObj ? mesObj.label : filterMesAno}`);
       }
-    }, 250);
+      if (filterMotivoHistorico !== 'TODOS') activeFiltersList.push(`Motivo: ${filterMotivoHistorico}`);
+      if (filterEmAberto) activeFiltersList.push('Em aberto: Sim');
+      if (searchHistorico.trim()) activeFiltersList.push(`Busca: ${searchHistorico.trim()}`);
+
+      await exportHistoricoParadasPDF(sortedHistorico, activeFiltersList);
+    } catch (err) {
+      console.error('Erro ao gerar relatório impresso:', err);
+    } finally {
+      setIsPrinting(false);
+    }
   };
 
   if (loading && records.length === 0) {
@@ -1085,16 +966,21 @@ export const InterrupcoesView: React.FC = () => {
               <span>Exportar CSV</span>
             </button>
 
-            {/* 2. Botão Imprimir */}
+            {/* 2. Botão Exportar PDF */}
             <button
               type="button"
               onClick={handlePrintHistorico}
-              disabled={sortedHistorico.length === 0}
+              disabled={sortedHistorico.length === 0 || isPrinting}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-blue-50 active:bg-blue-100 text-blue-700 border border-blue-200/80 rounded-lg text-xs font-semibold shadow-2xs transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-              title="Imprimir relatório histórico completo com os filtros ativos"
+              title="Exportar relatório histórico completo para PDF com os filtros ativos no padrão institucional"
+              aria-label="Exportar PDF do relatório histórico com filtros ativos"
             >
-              <Printer className="w-3.5 h-3.5 text-blue-600" />
-              <span>Imprimir</span>
+              {isPrinting ? (
+                <Loader2 className="w-3.5 h-3.5 text-blue-600 animate-spin" />
+              ) : (
+                <FileDown className="w-3.5 h-3.5 text-blue-600" />
+              )}
+              <span>{isPrinting ? 'Gerando...' : 'Exportar PDF'}</span>
             </button>
 
             {/* 3. Filtro CT */}
@@ -1118,30 +1004,7 @@ export const InterrupcoesView: React.FC = () => {
               </select>
             </div>
 
-            {/* 4. Filtro Motivo */}
-            <div className="relative shrink-0">
-              <select
-                value={filterMotivoHistorico}
-                onChange={(e) => {
-                  setFilterMotivoHistorico(e.target.value);
-                  setPageHistorico(1);
-                }}
-                className={`text-xs border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer transition-colors ${
-                  filterMotivoHistorico !== 'TODOS'
-                    ? 'bg-blue-50 border-blue-300 text-blue-900 font-semibold shadow-2xs'
-                    : 'bg-white border-slate-200 text-slate-700'
-                }`}
-              >
-                <option value="TODOS">Todos os motivos</option>
-                {motivosDisponiveis.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* 5. Filtro Mês/Ano (baseado exclusivamente na Data de Parada) */}
+            {/* 4. Filtro Mês/Ano (baseado exclusivamente na Data de Parada) */}
             <div className="relative shrink-0">
               <select
                 value={filterMesAno}
@@ -1160,6 +1023,29 @@ export const InterrupcoesView: React.FC = () => {
                 {mesesDisponiveis.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 5. Filtro Motivo */}
+            <div className="relative shrink-0">
+              <select
+                value={filterMotivoHistorico}
+                onChange={(e) => {
+                  setFilterMotivoHistorico(e.target.value);
+                  setPageHistorico(1);
+                }}
+                className={`text-xs border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer transition-colors ${
+                  filterMotivoHistorico !== 'TODOS'
+                    ? 'bg-blue-50 border-blue-300 text-blue-900 font-semibold shadow-2xs'
+                    : 'bg-white border-slate-200 text-slate-700'
+                }`}
+              >
+                <option value="TODOS">Todos os motivos</option>
+                {motivosDisponiveis.map((m) => (
+                  <option key={m} value={m}>
+                    {m}
                   </option>
                 ))}
               </select>

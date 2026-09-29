@@ -6,15 +6,26 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.81';
+export const APP_VERSION = 'v3.7.82';
 export const BUILD_DATE = '29/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.82',
+    date: '29/09/2026',
+    tag: 'Impressão Institucional em PDF e Reordenação de Filtros no Histórico',
+    isLatest: true,
+    changes: [
+      'Impressão no Padrão Institucional dos PDFs do Portal GEAPI: O botão "Imprimir" do Relatório Histórico de Parada e Retorno passa a utilizar a engine oficial de PDF do portal (jsPDF / autoTable) com cabeçalho timbrado completo, logotipo oficial PBH/BHTRANS, identificação institucional GEAPI, divisor visual, data/hora de emissão e metadados de totalização.',
+      'Bloco Elegante de Filtros Aplicados e Tabela Formatada: Exibição estruturada dos filtros efetivamente ativos (CT, Mês, Motivo, Em aberto, Busca) e tabela em modo paisagem com colunas alinhadas, cabeçalhos em cinza/slate claro com texto escuro, zebrado suave, destaque em tom âmbar e itálico para registros "Em aberto", e rodapé oficial em todas as páginas com numeração dinâmica ("Página X de Y").',
+      'Inversão da Ordem dos Filtros: Reordenados os dropdowns de seleção na barra de controles do Histórico, posicionando "Todos os meses" antes de "Todos os motivos", harmonizando o fluxo de recorte temporal antecedendo a categorização do evento.',
+      'Preservação Total de Regras: Mantidos 100% íntegros todos os filtros compartilhados, paginações, buscas em todas as colunas, ordenações cronológicas e exportação CSV.'
+    ]
+  },
+  {
     version: 'v3.7.81',
     date: '29/09/2026',
     tag: 'Reorganização de Tabelas e Impressão Integrada no Histórico de Ofícios',
-    isLatest: true,
     changes: [
       'Inversão Estrutural de Tabelas: A tabela "Relatório Histórico de Parada e Retorno de Equipamentos" passa a figurar como Seção 02 (imediatamente abaixo do painel de inoperantes e gráficos), enquanto a matriz "Acumulado de Interrupções de Equipamentos por Mês" foi reposicionada como Seção 03, otimizando o fluxo de consulta operacional.',
       'Botão Imprimir Institucional: Adicionado o botão "Imprimir" no cabeçalho do Relatório Histórico ao lado de "Exportar CSV", estilizado no padrão claro do portal (fundo branco, borda azul suave, texto azul-700 e ícone Printer da biblioteca lucide-react).',
