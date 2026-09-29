@@ -6,15 +6,26 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.80';
-export const BUILD_DATE = '28/09/2026';
+export const APP_VERSION = 'v3.7.81';
+export const BUILD_DATE = '29/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v3.7.81',
+    date: '29/09/2026',
+    tag: 'Reorganização de Tabelas e Impressão Integrada no Histórico de Ofícios',
+    isLatest: true,
+    changes: [
+      'Inversão Estrutural de Tabelas: A tabela "Relatório Histórico de Parada e Retorno de Equipamentos" passa a figurar como Seção 02 (imediatamente abaixo do painel de inoperantes e gráficos), enquanto a matriz "Acumulado de Interrupções de Equipamentos por Mês" foi reposicionada como Seção 03, otimizando o fluxo de consulta operacional.',
+      'Botão Imprimir Institucional: Adicionado o botão "Imprimir" no cabeçalho do Relatório Histórico ao lado de "Exportar CSV", estilizado no padrão claro do portal (fundo branco, borda azul suave, texto azul-700 e ícone Printer da biblioteca lucide-react).',
+      'Impressão Formatada em Modo Paisagem com Filtros Ativos: O recurso de impressão gera visualização estruturada com todos os registros resultantes dos filtros ativos (CT, Motivo, Mês/Ano, Em aberto e Busca Geral), metadados institucionais com data/hora de emissão e sem limitação de paginação em tela.',
+      'Preservação Integral de Regras e Funcionalidades: Mantidos 100% intactos todos os cálculos de interrupções, exportações CSV, paginações independentes, ordenações por coluna, busca em todas as colunas e autenticação restrita de acesso.'
+    ]
+  },
   {
     version: 'v3.7.80',
     date: '28/09/2026',
     tag: 'Filtros de Mês e Registros em Aberto no Histórico de Ofícios',
-    isLatest: true,
     changes: [
       'Filtro Dinâmico de Mês/Ano: Adicionado dropdown de período ("Todos os meses", "Setembro/2026", "Agosto/2026"...) gerado dinamicamente a partir das Datas de Parada dos registros históricos e ordenado cronologicamente do mais recente ao mais antigo.',
       'Checkbox "Em aberto": Adicionado controle discreto para filtrar eventos de equipamentos ainda sem retorno, reutilizando estritamente a regra real do módulo (isInoperante / ausência de data de retorno).',

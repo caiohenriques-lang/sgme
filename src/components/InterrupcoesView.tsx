@@ -26,6 +26,7 @@ import {
   Loader2,
   Download,
   FileSpreadsheet,
+  Printer,
   X,
 } from 'lucide-react';
 import {
@@ -493,6 +494,151 @@ export const InterrupcoesView: React.FC = () => {
     document.body.removeChild(link);
   };
 
+  // Impressão do Relatório Histórico Completo com filtros ativos
+  const handlePrintHistorico = () => {
+    if (sortedHistorico.length === 0) return;
+
+    const activeFiltersList: string[] = [];
+    if (selectedCt !== 'TODOS') activeFiltersList.push(`CT: ${selectedCt}`);
+    if (filterMotivoHistorico !== 'TODOS') activeFiltersList.push(`Motivo: ${filterMotivoHistorico}`);
+    if (filterMesAno !== 'TODOS') {
+      const mesObj = mesesDisponiveis.find((m) => m.value === filterMesAno);
+      activeFiltersList.push(`Mês: ${mesObj ? mesObj.label : filterMesAno}`);
+    }
+    if (filterEmAberto) activeFiltersList.push('Em aberto: Sim');
+    if (searchHistorico.trim()) activeFiltersList.push(`Busca: ${searchHistorico.trim()}`);
+
+    const filterSummaryHtml = activeFiltersList.length > 0
+      ? `<div style="margin-bottom: 12px; font-size: 11px; color: #334155; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 12px; line-height: 1.5;"><strong>Filtros:</strong> ${activeFiltersList.join(' &nbsp;|&nbsp; ')}</div>`
+      : '';
+
+    const tableRowsHtml = sortedHistorico.map((row) => `
+      <tr style="border-bottom: 1px solid #e2e8f0;">
+        <td style="padding: 5px 6px; border: 1px solid #cbd5e1; text-align: center; font-family: monospace;">${row.ct || '-'}</td>
+        <td style="padding: 5px 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold;">${row.codigo || '-'}</td>
+        <td style="padding: 5px 6px; border: 1px solid #cbd5e1; text-align: center;">${row.tipo || '-'}</td>
+        <td style="padding: 5px 8px; border: 1px solid #cbd5e1; text-align: left;">${row.motivo || '-'}</td>
+        <td style="padding: 5px 6px; border: 1px solid #cbd5e1; text-align: center; font-family: monospace;">${row.oficioInicial || '-'}</td>
+        <td style="padding: 5px 6px; border: 1px solid #cbd5e1; text-align: center; font-family: monospace;">${row.dataParada || '-'}</td>
+        <td style="padding: 5px 6px; border: 1px solid #cbd5e1; text-align: center; font-family: monospace;">${row.oficioRetorno || '-'}</td>
+        <td style="padding: 5px 6px; border: 1px solid #cbd5e1; text-align: center; font-family: monospace;">${row.dataRetorno ? row.dataRetorno : '<span style="color: #b45309; font-style: italic; font-weight: 600;">Em aberto</span>'}</td>
+      </tr>
+    `).join('');
+
+    const printHtml = `
+      <!DOCTYPE html>
+      <html lang="pt-BR">
+      <head>
+        <meta charset="utf-8" />
+        <title>Relatório Histórico de Parada e Retorno de Equipamentos</title>
+        <style>
+          @page {
+            size: landscape;
+            margin: 10mm;
+          }
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 8px;
+            color: #0f172a;
+            background: #ffffff;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          h1 {
+            font-size: 15px;
+            margin: 0 0 4px 0;
+            color: #0f172a;
+            font-weight: bold;
+          }
+          .meta {
+            font-size: 10px;
+            color: #64748b;
+            margin-bottom: 10px;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9.5px;
+          }
+          th {
+            background-color: #f1f5f9;
+            color: #334155;
+            font-weight: bold;
+            padding: 6px;
+            border: 1px solid #cbd5e1;
+            text-align: center;
+          }
+          td {
+            padding: 4px 6px;
+            border: 1px solid #e2e8f0;
+          }
+          tr:nth-child(even) {
+            background-color: #f8fafc;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Relatório Histórico de Parada e Retorno de Equipamentos</h1>
+        <div class="meta">
+          Total de eventos: <strong>${sortedHistorico.length}</strong> &bull; Emissão: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} &bull; Portal GEAPI
+        </div>
+        ${filterSummaryHtml}
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 55px;">CT</th>
+              <th style="width: 65px;">CÓDIGO</th>
+              <th style="width: 65px;">TIPO</th>
+              <th style="text-align: left;">MOTIVO DA PARADA</th>
+              <th style="width: 95px;">OFÍCIO DE PARADA</th>
+              <th style="width: 85px;">DATA DE PARADA</th>
+              <th style="width: 95px;">OFÍCIO DE RETORNO</th>
+              <th style="width: 85px;">DATA DE RETORNO</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRowsHtml}
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `;
+
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document;
+    if (!doc) {
+      if (document.body.contains(iframe)) document.body.removeChild(iframe);
+      return;
+    }
+    doc.open();
+    doc.write(printHtml);
+    doc.close();
+
+    setTimeout(() => {
+      try {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+      } catch (err) {
+        console.error('Erro ao acionar impressão:', err);
+      } finally {
+        setTimeout(() => {
+          if (document.body.contains(iframe)) {
+            document.body.removeChild(iframe);
+          }
+        }, 1000);
+      }
+    }, 250);
+  };
+
   if (loading && records.length === 0) {
     return (
       <div className="bg-white rounded-2xl border border-slate-200 p-16 text-center space-y-4 my-6 shadow-xs">
@@ -910,7 +1056,416 @@ export const InterrupcoesView: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* SEÇÃO 02: Acumulado de Interrupções por Mês (Pivot Matrix)                */}
+      {/* SEÇÃO 02: Relatório Histórico de Parada e Retorno de Equipamentos         */}
+      {/* ========================================================================= */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col overflow-hidden">
+        {/* Cabeçalho Reorganizado em 3 Regiões Estáveis */}
+        <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col gap-3.5 bg-slate-50/50">
+          {/* REGIÃO 1: Título e subtítulo */}
+          <div>
+            <h3 className="font-bold text-base text-slate-900">
+              Relatório Histórico de Parada e Retorno de Equipamentos
+            </h3>
+            <p className="text-xs text-slate-500">
+              Histórico cronológico de paradas e retornos registrados ({sortedHistorico.length} eventos)
+            </p>
+          </div>
+
+          {/* REGIÃO 2: 1ª Linha sequencial fixa de Ações e Filtros */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* 1. Botão Exportar CSV */}
+            <button
+              type="button"
+              onClick={handleExportHistoricoCSV}
+              disabled={sortedHistorico.length === 0}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-800 border border-emerald-300/80 rounded-lg text-xs font-semibold shadow-2xs transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+              title="Exportar histórico de paradas e retornos para CSV (compatível com Excel)"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
+              <span>Exportar CSV</span>
+            </button>
+
+            {/* 2. Botão Imprimir */}
+            <button
+              type="button"
+              onClick={handlePrintHistorico}
+              disabled={sortedHistorico.length === 0}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-blue-50 active:bg-blue-100 text-blue-700 border border-blue-200/80 rounded-lg text-xs font-semibold shadow-2xs transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+              title="Imprimir relatório histórico completo com os filtros ativos"
+            >
+              <Printer className="w-3.5 h-3.5 text-blue-600" />
+              <span>Imprimir</span>
+            </button>
+
+            {/* 3. Filtro CT */}
+            <div className="relative shrink-0">
+              <select
+                value={selectedCt}
+                onChange={(e) => handleSelectCt(e.target.value)}
+                className={`text-xs border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer transition-colors ${
+                  selectedCt !== 'TODOS'
+                    ? 'bg-blue-50 border-blue-300 text-blue-900 font-semibold shadow-2xs'
+                    : 'bg-white border-slate-200 text-slate-700'
+                }`}
+                title="Filtrar por Contrato (CT) em todas as tabelas da aba"
+              >
+                <option value="TODOS">Todos os CTs</option>
+                {ctsDisponiveis.map((ct) => (
+                  <option key={ct} value={ct}>
+                    {ct}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 4. Filtro Motivo */}
+            <div className="relative shrink-0">
+              <select
+                value={filterMotivoHistorico}
+                onChange={(e) => {
+                  setFilterMotivoHistorico(e.target.value);
+                  setPageHistorico(1);
+                }}
+                className={`text-xs border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer transition-colors ${
+                  filterMotivoHistorico !== 'TODOS'
+                    ? 'bg-blue-50 border-blue-300 text-blue-900 font-semibold shadow-2xs'
+                    : 'bg-white border-slate-200 text-slate-700'
+                }`}
+              >
+                <option value="TODOS">Todos os motivos</option>
+                {motivosDisponiveis.map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 5. Filtro Mês/Ano (baseado exclusivamente na Data de Parada) */}
+            <div className="relative shrink-0">
+              <select
+                value={filterMesAno}
+                onChange={(e) => {
+                  setFilterMesAno(e.target.value);
+                  setPageHistorico(1);
+                }}
+                className={`text-xs border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer transition-colors min-w-[150px] max-w-[180px] ${
+                  filterMesAno !== 'TODOS'
+                    ? 'bg-blue-50 border-blue-300 text-blue-900 font-semibold shadow-2xs'
+                    : 'bg-white border-slate-200 text-slate-700'
+                }`}
+                title="Filtrar por Mês/Ano da Data de Parada"
+              >
+                <option value="TODOS">Todos os meses</option>
+                {mesesDisponiveis.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 6. Checkbox Discreto "Em aberto" */}
+            <label
+              className={`inline-flex items-center gap-2 px-2.5 py-1.5 text-xs font-medium rounded-lg border cursor-pointer select-none transition-colors shrink-0 ${
+                filterEmAberto
+                  ? 'bg-amber-50 border-amber-300 text-amber-900 font-semibold shadow-2xs'
+                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+              }`}
+              title="Filtrar apenas registros de equipamentos ainda em aberto (sem data de retorno)"
+            >
+              <input
+                type="checkbox"
+                checked={filterEmAberto}
+                onChange={(e) => {
+                  setFilterEmAberto(e.target.checked);
+                  setPageHistorico(1);
+                }}
+                className="w-3.5 h-3.5 text-blue-600 rounded border-slate-300 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer accent-blue-600"
+              />
+              <span>Em aberto</span>
+            </label>
+
+            {/* 7. Botão Limpar Filtros (ao final da primeira linha) */}
+            {hasActiveHistoricoFilters && (
+              <button
+                type="button"
+                onClick={handleClearHistoricoFilters}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:text-red-700 bg-slate-100 hover:bg-red-50 border border-slate-200 hover:border-red-200 rounded-lg transition-colors cursor-pointer shrink-0 shadow-2xs"
+                title="Limpar todos os filtros do Histórico"
+              >
+                <X className="w-3.5 h-3.5 text-slate-500 hover:text-red-600" />
+                <span>Limpar filtros</span>
+              </button>
+            )}
+          </div>
+
+          {/* REGIÃO 3: Linha 2 — Busca Geral Estável */}
+          <div className="flex items-center">
+            <div className="relative w-full sm:w-80 lg:w-96 shrink-0">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Buscar em todas as colunas..."
+                value={searchHistorico}
+                onChange={(e) => {
+                  setSearchHistorico(e.target.value);
+                  setPageHistorico(1);
+                }}
+                className="w-full pl-9 pr-8 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800"
+              />
+              {searchHistorico && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchHistorico('');
+                    setPageHistorico(1);
+                  }}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer p-0.5"
+                  title="Limpar busca"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Tabela do Histórico */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
+              <tr>
+                <th
+                  onClick={() => handleSortHistorico('ct')}
+                  className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
+                  title="Clique para ordenar por Contrato"
+                >
+                  <div className="inline-flex items-center justify-center gap-1">
+                    <span>CT</span>
+                    {sortHistorico.key === 'ct' ? (
+                      sortHistorico.direction === 'asc' ? (
+                        <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                      ) : (
+                        <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </div>
+                </th>
+                <th
+                  onClick={() => handleSortHistorico('codigo')}
+                  className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
+                  title="Clique para ordenar por Código"
+                >
+                  <div className="inline-flex items-center justify-center gap-1">
+                    <span>CÓDIGO</span>
+                    {sortHistorico.key === 'codigo' ? (
+                      sortHistorico.direction === 'asc' ? (
+                        <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                      ) : (
+                        <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </div>
+                </th>
+                <th
+                  onClick={() => handleSortHistorico('tipo')}
+                  className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
+                  title="Clique para ordenar por Tipo"
+                >
+                  <div className="inline-flex items-center justify-center gap-1">
+                    <span>TIPO</span>
+                    {sortHistorico.key === 'tipo' ? (
+                      sortHistorico.direction === 'asc' ? (
+                        <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                      ) : (
+                        <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </div>
+                </th>
+                <th
+                  onClick={() => handleSortHistorico('motivo')}
+                  className="py-2.5 px-4 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
+                  title="Clique para ordenar por Motivo da parada"
+                >
+                  <div className="inline-flex items-center justify-center gap-1">
+                    <span>Motivo da parada</span>
+                    {sortHistorico.key === 'motivo' ? (
+                      sortHistorico.direction === 'asc' ? (
+                        <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                      ) : (
+                        <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </div>
+                </th>
+                <th
+                  onClick={() => handleSortHistorico('oficioInicial')}
+                  className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
+                  title="Clique para ordenar por Ofício de Parada"
+                >
+                  <div className="inline-flex items-center justify-center gap-1">
+                    <span>Ofício de Parada</span>
+                    {sortHistorico.key === 'oficioInicial' ? (
+                      sortHistorico.direction === 'asc' ? (
+                        <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                      ) : (
+                        <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </div>
+                </th>
+                <th
+                  onClick={() => handleSortHistorico('dataParada')}
+                  className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
+                  title="Clique para ordenar por Data de Parada"
+                >
+                  <div className="inline-flex items-center justify-center gap-1">
+                    <span>Data de Parada</span>
+                    {sortHistorico.key === 'dataParada' ? (
+                      sortHistorico.direction === 'asc' ? (
+                        <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                      ) : (
+                        <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </div>
+                </th>
+                <th
+                  onClick={() => handleSortHistorico('oficioRetorno')}
+                  className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
+                  title="Clique para ordenar por Ofício de Retorno"
+                >
+                  <div className="inline-flex items-center justify-center gap-1">
+                    <span>Ofício de Retorno</span>
+                    {sortHistorico.key === 'oficioRetorno' ? (
+                      sortHistorico.direction === 'asc' ? (
+                        <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                      ) : (
+                        <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </div>
+                </th>
+                <th
+                  onClick={() => handleSortHistorico('dataRetorno')}
+                  className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
+                  title="Clique para ordenar por Data de Retorno"
+                >
+                  <div className="inline-flex items-center justify-center gap-1">
+                    <span>Data de Retorno</span>
+                    {sortHistorico.key === 'dataRetorno' ? (
+                      sortHistorico.direction === 'asc' ? (
+                        <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                      ) : (
+                        <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
+              {paginatedHistorico.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-8 text-center text-slate-400">
+                    Nenhum registro de histórico encontrado para os filtros selecionados.
+                  </td>
+                </tr>
+              ) : (
+                paginatedHistorico.map((row) => (
+                  <tr key={row.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="py-2.5 px-3 text-center whitespace-nowrap text-slate-600 font-mono">
+                      {row.ct}
+                    </td>
+                    <td className="py-2.5 px-3 text-center whitespace-nowrap font-bold text-slate-900">
+                      {row.codigo}
+                    </td>
+                    <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                      <span className="inline-block px-2 py-0.5 rounded-sm text-[11px] bg-slate-100 text-slate-700 font-semibold">
+                        {row.tipo}
+                      </span>
+                    </td>
+                    <td className="py-2.5 px-4 text-center text-slate-700">
+                      {row.motivo}
+                    </td>
+                    <td className="py-2.5 px-3 text-center whitespace-nowrap font-mono text-slate-700">
+                      {row.oficioInicial || '-'}
+                    </td>
+                    <td className="py-2.5 px-3 text-center whitespace-nowrap font-mono text-slate-600">
+                      {row.dataParada}
+                    </td>
+                    <td className="py-2.5 px-3 text-center whitespace-nowrap font-mono text-slate-700">
+                      {row.oficioRetorno || '-'}
+                    </td>
+                    <td className="py-2.5 px-3 text-center whitespace-nowrap font-mono">
+                      {row.dataRetorno ? (
+                        <span className="text-slate-600">{row.dataRetorno}</span>
+                      ) : (
+                        <span className="text-amber-600 italic font-semibold">Em aberto</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Paginação do Histórico */}
+        <div className="p-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-xs text-slate-500">
+          <span>
+            {sortedHistorico.length > 0 ? (
+              <>
+                {(pageHistorico - 1) * rowsPerPageHistorico + 1} -{' '}
+                {Math.min(pageHistorico * rowsPerPageHistorico, sortedHistorico.length)} /{' '}
+                {sortedHistorico.length}
+              </>
+            ) : (
+              '0 / 0'
+            )}
+          </span>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setPageHistorico((p) => Math.max(1, p - 1))}
+              disabled={pageHistorico === 1}
+              className="p-1 rounded-md hover:bg-slate-200 disabled:opacity-30 disabled:pointer-events-none transition"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="px-2 font-medium text-slate-700">
+              {pageHistorico} / {totalPagesHistorico}
+            </span>
+            <button
+              onClick={() => setPageHistorico((p) => Math.min(totalPagesHistorico, p + 1))}
+              disabled={pageHistorico === totalPagesHistorico}
+              className="p-1 rounded-md hover:bg-slate-200 disabled:opacity-30 disabled:pointer-events-none transition"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* SEÇÃO 03: Acumulado de Interrupções de Equipamentos por Mês (Pivot Matrix) */}
       {/* ========================================================================= */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col overflow-hidden">
         {/* Header com Título e Busca */}
@@ -1096,400 +1651,6 @@ export const InterrupcoesView: React.FC = () => {
             >
               <ChevronRight className="w-4 h-4" />
             </button>
-          </div>
-        </div>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* SEÇÃO 03: Relatório Histórico Geral de Paradas e Retornos                 */}
-      {/* ========================================================================= */}
-      <div className="space-y-6">
-        {/* Tabela: Relatório Histórico de Parada e Retorno de Equipamentos */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col overflow-hidden">
-          <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50/50">
-            <div>
-              <h3 className="font-bold text-base text-slate-900">
-                Relatório Histórico de Parada e Retorno de Equipamentos
-              </h3>
-              <p className="text-xs text-slate-500">
-                Histórico cronológico de paradas e retornos registrados ({sortedHistorico.length} eventos)
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2.5">
-              {/* 1. Botão Exportar CSV */}
-              <button
-                type="button"
-                onClick={handleExportHistoricoCSV}
-                disabled={sortedHistorico.length === 0}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-800 border border-emerald-300/80 rounded-lg text-xs font-semibold shadow-2xs transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-                title="Exportar histórico de paradas e retornos para CSV (compatível com Excel)"
-              >
-                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
-                <span>Exportar CSV</span>
-              </button>
-
-              {/* 2. Filtro Compartilhado por CT / Contrato */}
-              <div className="relative shrink-0">
-                <select
-                  value={selectedCt}
-                  onChange={(e) => handleSelectCt(e.target.value)}
-                  className={`text-xs border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer transition-colors ${
-                    selectedCt !== 'TODOS'
-                      ? 'bg-blue-50 border-blue-300 text-blue-900 font-semibold shadow-2xs'
-                      : 'bg-white border-slate-200 text-slate-700'
-                  }`}
-                  title="Filtrar por Contrato (CT) em todas as tabelas da aba"
-                >
-                  <option value="TODOS">Todos os CTs</option>
-                  {ctsDisponiveis.map((ct) => (
-                    <option key={ct} value={ct}>
-                      {ct}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* 3. Filtro de Motivo */}
-              <div className="relative shrink-0">
-                <select
-                  value={filterMotivoHistorico}
-                  onChange={(e) => {
-                    setFilterMotivoHistorico(e.target.value);
-                    setPageHistorico(1);
-                  }}
-                  className={`text-xs border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer transition-colors ${
-                    filterMotivoHistorico !== 'TODOS'
-                      ? 'bg-blue-50 border-blue-300 text-blue-900 font-semibold shadow-2xs'
-                      : 'bg-white border-slate-200 text-slate-700'
-                  }`}
-                >
-                  <option value="TODOS">Todos os motivos</option>
-                  {motivosDisponiveis.map((m) => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* 4. Busca Geral em todas as colunas */}
-              <div className="relative w-full sm:w-56 md:w-64 shrink-0 min-w-[210px]">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <input
-                  type="text"
-                  placeholder="Buscar em todas as colunas..."
-                  value={searchHistorico}
-                  onChange={(e) => {
-                    setSearchHistorico(e.target.value);
-                    setPageHistorico(1);
-                  }}
-                  className="w-full pl-9 pr-8 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800"
-                />
-                {searchHistorico && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSearchHistorico('');
-                      setPageHistorico(1);
-                    }}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer p-0.5"
-                    title="Limpar busca"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
-
-              {/* 5. Filtro Mês/Ano (baseado exclusivamente na Data de Parada) */}
-              <div className="relative shrink-0">
-                <select
-                  value={filterMesAno}
-                  onChange={(e) => {
-                    setFilterMesAno(e.target.value);
-                    setPageHistorico(1);
-                  }}
-                  className={`text-xs border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer transition-colors min-w-[150px] max-w-[180px] ${
-                    filterMesAno !== 'TODOS'
-                      ? 'bg-blue-50 border-blue-300 text-blue-900 font-semibold shadow-2xs'
-                      : 'bg-white border-slate-200 text-slate-700'
-                  }`}
-                  title="Filtrar por Mês/Ano da Data de Parada"
-                >
-                  <option value="TODOS">Todos os meses</option>
-                  {mesesDisponiveis.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* 6. Checkbox Discreto "Em aberto" */}
-              <label
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg border cursor-pointer select-none transition-colors shrink-0 ${
-                  filterEmAberto
-                    ? 'bg-amber-50 border-amber-300 text-amber-900 font-semibold shadow-2xs'
-                    : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                }`}
-                title="Filtrar apenas registros de equipamentos ainda em aberto (sem data de retorno)"
-              >
-                <input
-                  type="checkbox"
-                  checked={filterEmAberto}
-                  onChange={(e) => {
-                    setFilterEmAberto(e.target.checked);
-                    setPageHistorico(1);
-                  }}
-                  className="w-3.5 h-3.5 text-blue-600 rounded border-slate-300 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer accent-blue-600"
-                />
-                <span>Em aberto</span>
-              </label>
-
-              {/* 7. Botão Limpar Filtros (exibido apenas quando há filtros ativos) */}
-              {hasActiveHistoricoFilters && (
-                <button
-                  type="button"
-                  onClick={handleClearHistoricoFilters}
-                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:text-red-700 bg-slate-100 hover:bg-red-50 border border-slate-200 hover:border-red-200 rounded-lg transition-colors cursor-pointer shrink-0 shadow-2xs"
-                  title="Limpar todos os filtros do Histórico"
-                >
-                  <X className="w-3.5 h-3.5 text-slate-500 hover:text-red-600" />
-                  <span>Limpar filtros</span>
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Tabela do Histórico */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
-                <tr>
-                  <th
-                    onClick={() => handleSortHistorico('ct')}
-                    className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
-                    title="Clique para ordenar por Contrato"
-                  >
-                    <div className="inline-flex items-center justify-center gap-1">
-                      <span>CT</span>
-                      {sortHistorico.key === 'ct' ? (
-                        sortHistorico.direction === 'asc' ? (
-                          <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
-                        ) : (
-                          <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-                  </th>
-                  <th
-                    onClick={() => handleSortHistorico('codigo')}
-                    className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
-                    title="Clique para ordenar por Código"
-                  >
-                    <div className="inline-flex items-center justify-center gap-1">
-                      <span>CÓDIGO</span>
-                      {sortHistorico.key === 'codigo' ? (
-                        sortHistorico.direction === 'asc' ? (
-                          <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
-                        ) : (
-                          <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-                  </th>
-                  <th
-                    onClick={() => handleSortHistorico('tipo')}
-                    className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
-                    title="Clique para ordenar por Tipo"
-                  >
-                    <div className="inline-flex items-center justify-center gap-1">
-                      <span>TIPO</span>
-                      {sortHistorico.key === 'tipo' ? (
-                        sortHistorico.direction === 'asc' ? (
-                          <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
-                        ) : (
-                          <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-                  </th>
-                  <th
-                    onClick={() => handleSortHistorico('motivo')}
-                    className="py-2.5 px-4 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
-                    title="Clique para ordenar por Motivo da parada"
-                  >
-                    <div className="inline-flex items-center justify-center gap-1">
-                      <span>Motivo da parada</span>
-                      {sortHistorico.key === 'motivo' ? (
-                        sortHistorico.direction === 'asc' ? (
-                          <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
-                        ) : (
-                          <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-                  </th>
-                  <th
-                    onClick={() => handleSortHistorico('oficioInicial')}
-                    className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
-                    title="Clique para ordenar por Ofício de Parada"
-                  >
-                    <div className="inline-flex items-center justify-center gap-1">
-                      <span>Ofício de Parada</span>
-                      {sortHistorico.key === 'oficioInicial' ? (
-                        sortHistorico.direction === 'asc' ? (
-                          <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
-                        ) : (
-                          <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-                  </th>
-                  <th
-                    onClick={() => handleSortHistorico('dataParada')}
-                    className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
-                    title="Clique para ordenar por Data de Parada"
-                  >
-                    <div className="inline-flex items-center justify-center gap-1">
-                      <span>Data de Parada</span>
-                      {sortHistorico.key === 'dataParada' ? (
-                        sortHistorico.direction === 'asc' ? (
-                          <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
-                        ) : (
-                          <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-                  </th>
-                  <th
-                    onClick={() => handleSortHistorico('oficioRetorno')}
-                    className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
-                    title="Clique para ordenar por Ofício de Retorno"
-                  >
-                    <div className="inline-flex items-center justify-center gap-1">
-                      <span>Ofício de Retorno</span>
-                      {sortHistorico.key === 'oficioRetorno' ? (
-                        sortHistorico.direction === 'asc' ? (
-                          <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
-                        ) : (
-                          <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-                  </th>
-                  <th
-                    onClick={() => handleSortHistorico('dataRetorno')}
-                    className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
-                    title="Clique para ordenar por Data de Retorno"
-                  >
-                    <div className="inline-flex items-center justify-center gap-1">
-                      <span>Data de Retorno</span>
-                      {sortHistorico.key === 'dataRetorno' ? (
-                        sortHistorico.direction === 'asc' ? (
-                          <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
-                        ) : (
-                          <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
-                {paginatedHistorico.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="py-8 text-center text-slate-400">
-                      Nenhum registro de histórico encontrado para os filtros selecionados.
-                    </td>
-                  </tr>
-                ) : (
-                  paginatedHistorico.map((row) => (
-                    <tr key={row.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="py-2.5 px-3 text-center whitespace-nowrap text-slate-600 font-mono">
-                        {row.ct}
-                      </td>
-                      <td className="py-2.5 px-3 text-center whitespace-nowrap font-bold text-slate-900">
-                        {row.codigo}
-                      </td>
-                      <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                        <span className="inline-block px-2 py-0.5 rounded-sm text-[11px] bg-slate-100 text-slate-700 font-semibold">
-                          {row.tipo}
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-4 text-center text-slate-700">
-                        {row.motivo}
-                      </td>
-                      <td className="py-2.5 px-3 text-center whitespace-nowrap font-mono text-slate-700">
-                        {row.oficioInicial || '-'}
-                      </td>
-                      <td className="py-2.5 px-3 text-center whitespace-nowrap font-mono text-slate-600">
-                        {row.dataParada}
-                      </td>
-                      <td className="py-2.5 px-3 text-center whitespace-nowrap font-mono text-slate-700">
-                        {row.oficioRetorno || '-'}
-                      </td>
-                      <td className="py-2.5 px-3 text-center whitespace-nowrap font-mono">
-                        {row.dataRetorno ? (
-                          <span className="text-slate-600">{row.dataRetorno}</span>
-                        ) : (
-                          <span className="text-amber-600 italic font-semibold">Em aberto</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Paginação do Histórico */}
-          <div className="p-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-xs text-slate-500">
-            <span>
-              {sortedHistorico.length > 0 ? (
-                <>
-                  {(pageHistorico - 1) * rowsPerPageHistorico + 1} -{' '}
-                  {Math.min(pageHistorico * rowsPerPageHistorico, sortedHistorico.length)} /{' '}
-                  {sortedHistorico.length}
-                </>
-              ) : (
-                '0 / 0'
-              )}
-            </span>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setPageHistorico((p) => Math.max(1, p - 1))}
-                disabled={pageHistorico === 1}
-                className="p-1 rounded-md hover:bg-slate-200 disabled:opacity-30 disabled:pointer-events-none transition"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <span className="px-2 font-medium text-slate-700">
-                {pageHistorico} / {totalPagesHistorico}
-              </span>
-              <button
-                onClick={() => setPageHistorico((p) => Math.min(totalPagesHistorico, p + 1))}
-                disabled={pageHistorico === totalPagesHistorico}
-                className="p-1 rounded-md hover:bg-slate-200 disabled:opacity-30 disabled:pointer-events-none transition"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
           </div>
         </div>
       </div>
