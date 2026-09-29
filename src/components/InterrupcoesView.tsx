@@ -121,7 +121,7 @@ export const InterrupcoesView: React.FC = () => {
   const [filterMotivoHistorico, setFilterMotivoHistorico] = useState('TODOS');
   const [filterMesAno, setFilterMesAno] = useState('TODOS');
   const [filterEmAberto, setFilterEmAberto] = useState(false);
-  const [isPrinting, setIsPrinting] = useState(false);
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
   const [pageHistorico, setPageHistorico] = useState(1);
   const [sortHistorico, setSortHistorico] = useState<{
     key: SortHistoricoKey;
@@ -497,10 +497,10 @@ export const InterrupcoesView: React.FC = () => {
   };
 
   // Exportação em PDF do Relatório Histórico Completo no padrão institucional do Portal GEAPI
-  const handlePrintHistorico = async () => {
-    if (sortedHistorico.length === 0 || isPrinting) return;
+  const handleExportHistoricoPDF = async () => {
+    if (sortedHistorico.length === 0 || isExportingPDF) return;
 
-    setIsPrinting(true);
+    setIsExportingPDF(true);
     try {
       const activeFiltersList: string[] = [];
       if (selectedCt !== 'TODOS') activeFiltersList.push(`CT: ${selectedCt}`);
@@ -514,9 +514,9 @@ export const InterrupcoesView: React.FC = () => {
 
       await exportHistoricoParadasPDF(sortedHistorico, activeFiltersList);
     } catch (err) {
-      console.error('Erro ao gerar relatório impresso:', err);
+      console.error('Erro ao exportar relatório PDF:', err);
     } finally {
-      setIsPrinting(false);
+      setIsExportingPDF(false);
     }
   };
 
@@ -969,18 +969,18 @@ export const InterrupcoesView: React.FC = () => {
             {/* 2. Botão Exportar PDF */}
             <button
               type="button"
-              onClick={handlePrintHistorico}
-              disabled={sortedHistorico.length === 0 || isPrinting}
+              onClick={handleExportHistoricoPDF}
+              disabled={sortedHistorico.length === 0 || isExportingPDF}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-blue-50 active:bg-blue-100 text-blue-700 border border-blue-200/80 rounded-lg text-xs font-semibold shadow-2xs transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
               title="Exportar relatório histórico completo para PDF com os filtros ativos no padrão institucional"
               aria-label="Exportar PDF do relatório histórico com filtros ativos"
             >
-              {isPrinting ? (
+              {isExportingPDF ? (
                 <Loader2 className="w-3.5 h-3.5 text-blue-600 animate-spin" />
               ) : (
                 <FileDown className="w-3.5 h-3.5 text-blue-600" />
               )}
-              <span>{isPrinting ? 'Gerando...' : 'Exportar PDF'}</span>
+              <span>{isExportingPDF ? 'Gerando...' : 'Exportar PDF'}</span>
             </button>
 
             {/* 3. Filtro CT */}

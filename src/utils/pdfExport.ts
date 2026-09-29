@@ -2091,41 +2091,8 @@ export async function exportHistoricoParadasPDF(
     addCustomFooter(doc, pageWidth, pageHeight, `Página ${i} de ${totalPages}`);
   }
 
-  // 1. Salva o PDF no padrão oficial para download imediato
+  // Salva o PDF no padrão oficial para download imediato
   doc.save(`GEAPI-Relatorio-Historico-Paradas-Retornos-${new Date().toISOString().slice(0, 10)}.pdf`);
-
-  // 2. Aciona o diálogo de impressão com maior fidelidade visual
-  try {
-    doc.autoPrint();
-    const blob = doc.output('blob');
-    const blobUrl = URL.createObjectURL(blob);
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'fixed';
-    iframe.style.right = '0';
-    iframe.style.bottom = '0';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = '0';
-    iframe.src = blobUrl;
-    document.body.appendChild(iframe);
-
-    setTimeout(() => {
-      try {
-        iframe.contentWindow?.focus();
-        iframe.contentWindow?.print();
-      } catch (err) {
-        console.warn('Impressão direta via iframe ignorada pelo navegador:', err);
-      }
-      setTimeout(() => {
-        if (document.body.contains(iframe)) {
-          document.body.removeChild(iframe);
-        }
-        URL.revokeObjectURL(blobUrl);
-      }, 2000);
-    }, 400);
-  } catch (err) {
-    console.warn('Erro ao acionar impressão autoPrint:', err);
-  }
 }
 
 

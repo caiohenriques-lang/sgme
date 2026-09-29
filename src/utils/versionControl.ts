@@ -6,15 +6,25 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.82';
+export const APP_VERSION = 'v3.7.83';
 export const BUILD_DATE = '29/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.83',
+    date: '29/09/2026',
+    tag: 'Correção da Exportação Direta do PDF do Histórico de Ofícios',
+    isLatest: true,
+    changes: [
+      'Exportação Direta de PDF Sem Diálogo de Impressão: Ajustado o fluxo de exportação do "Relatório Histórico de Parada e Retorno de Equipamentos" para realizar exclusivamente a geração e o download direto do arquivo PDF institucional via jsPDF (doc.save), suprimindo qualquer abertura automática de janelas, previews ou diálogos de impressão.',
+      'Renomeação e Harmonização Visual: O botão passa a se chamar formalmente "Exportar PDF" com o ícone FileDown da biblioteca lucide-react e acessibilidade aprimorada, mantendo o padrão executivo e visual do portal.',
+      'Preservação Integral do Documento Institucional: Mantidos 100% intactos o layout oficial timbrado (logo PBH/BHTRANS, identificação GEAPI, título, metadados, filtros ativos, 8 colunas da tabela, destaque em âmbar para eventos em aberto e paginação dinâmica "Página X de Y").'
+    ]
+  },
+  {
     version: 'v3.7.82',
     date: '29/09/2026',
     tag: 'Impressão Institucional em PDF e Reordenação de Filtros no Histórico',
-    isLatest: true,
     changes: [
       'Impressão no Padrão Institucional dos PDFs do Portal GEAPI: O botão "Imprimir" do Relatório Histórico de Parada e Retorno passa a utilizar a engine oficial de PDF do portal (jsPDF / autoTable) com cabeçalho timbrado completo, logotipo oficial PBH/BHTRANS, identificação institucional GEAPI, divisor visual, data/hora de emissão e metadados de totalização.',
       'Bloco Elegante de Filtros Aplicados e Tabela Formatada: Exibição estruturada dos filtros efetivamente ativos (CT, Mês, Motivo, Em aberto, Busca) e tabela em modo paisagem com colunas alinhadas, cabeçalhos em cinza/slate claro com texto escuro, zebrado suave, destaque em tom âmbar e itálico para registros "Em aberto", e rodapé oficial em todas as páginas com numeração dinâmica ("Página X de Y").',
