@@ -39,7 +39,6 @@ import {
 } from '../services/interrupcoesService';
 import { exportHistoricoParadasPDF } from '../utils/pdfExport';
 
-type SortInoperantesKey = 'ct' | 'codigo' | 'tipo' | 'motivo' | 'dataParada';
 type SortHistoricoKey = 'ct' | 'codigo' | 'tipo' | 'motivo' | 'oficioInicial' | 'dataParada' | 'oficioRetorno' | 'dataRetorno';
 
 const renderCustomPieLabel = ({
@@ -100,14 +99,6 @@ export const InterrupcoesView: React.FC = () => {
 
   // Filters, Search and Sorting states
   const [selectedCt, setSelectedCt] = useState<string>('TODOS');
-
-  const [searchInoperantes, setSearchInoperantes] = useState('');
-  const [pageInoperantes, setPageInoperantes] = useState(1);
-  const [sortInoperantes, setSortInoperantes] = useState<{
-    key: SortInoperantesKey;
-    direction: 'asc' | 'desc';
-  }>({ key: 'dataParada', direction: 'desc' });
-  const rowsPerPageInoperantes = 17;
 
   const [searchMensal, setSearchMensal] = useState('');
   const [pageMensal, setPageMensal] = useState(1);
@@ -189,7 +180,6 @@ export const InterrupcoesView: React.FC = () => {
 
   const handleSelectCt = (ct: string) => {
     setSelectedCt(ct);
-    setPageInoperantes(1);
     setPageMensal(1);
     setPageHistorico(1);
   };
@@ -202,14 +192,6 @@ export const InterrupcoesView: React.FC = () => {
   }, []);
 
   // Handlers for sorting
-  const handleSortInoperantes = (key: SortInoperantesKey) => {
-    setSortInoperantes((prev) => ({
-      key,
-      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc',
-    }));
-    setPageInoperantes(1);
-  };
-
   const handleSortMensal = (key: string) => {
     setSortMensal((prev) => ({
       key,
@@ -234,60 +216,6 @@ export const InterrupcoesView: React.FC = () => {
       return matchActive && matchCt && r.isInoperante;
     });
   }, [records, selectedCt]);
-
-  const filteredInoperantes = useMemo(() => {
-    if (!searchInoperantes) return inoperantesList;
-    const q = searchInoperantes.toLowerCase();
-    return inoperantesList.filter(
-      (r) =>
-        r.codigo.toLowerCase().includes(q) ||
-        r.motivo.toLowerCase().includes(q) ||
-        r.tipo.toLowerCase().includes(q) ||
-        r.ct.toLowerCase().includes(q)
-    );
-  }, [inoperantesList, searchInoperantes]);
-
-  const sortedInoperantes = useMemo(() => {
-    return [...filteredInoperantes].sort((a, b) => {
-      const valA = String(a[sortInoperantes.key] || '');
-      const valB = String(b[sortInoperantes.key] || '');
-      const cmp = valA.localeCompare(valB, 'pt-BR', { numeric: true, sensitivity: 'base' });
-      return sortInoperantes.direction === 'asc' ? cmp : -cmp;
-    });
-  }, [filteredInoperantes, sortInoperantes]);
-
-  const paginatedInoperantes = useMemo(() => {
-    const start = (pageInoperantes - 1) * rowsPerPageInoperantes;
-    return sortedInoperantes.slice(start, start + rowsPerPageInoperantes);
-  }, [sortedInoperantes, pageInoperantes]);
-
-  const totalPagesInoperantes = Math.ceil(sortedInoperantes.length / rowsPerPageInoperantes) || 1;
-
-  // Export CSV for Inoperantes
-  const handleExportInoperantesCSV = () => {
-    if (sortedInoperantes.length === 0) return;
-    const headers = ['CONTRATO', 'CÓDIGO', 'TIPO', 'MOTIVO DA PARADA', 'DATA DA PARADA', 'ENDEREÇO COMPLETO', 'REGIONAL', 'BAIRRO'];
-    const rows = sortedInoperantes.map((r) => [
-      `"${r.ct}"`,
-      `"${r.codigo}"`,
-      `"${r.tipo}"`,
-      `"${(r.motivo || '').replace(/"/g, '""')}"`,
-      `"${r.dataParada}"`,
-      `"${(r.enderecoCompleto || '').replace(/"/g, '""')}"`,
-      `"${(r.regional || '').replace(/"/g, '""')}"`,
-      `"${(r.bairro || '').replace(/"/g, '""')}"`,
-    ]);
-
-    const csvContent = [headers.join(';'), ...rows.map((e) => e.join(';'))].join('\n');
-    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `equipamentos_inoperantes_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
   const contratoSummary = useMemo(() => {
     return calculateContratoSummary(records);
@@ -414,7 +342,6 @@ export const InterrupcoesView: React.FC = () => {
     setFilterMesAno('TODOS');
     setFilterEmAberto(false);
     setSearchHistorico('');
-    setPageInoperantes(1);
     setPageMensal(1);
     setPageHistorico(1);
   };
@@ -566,239 +493,25 @@ export const InterrupcoesView: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* SEÇÃO 01: Equipamentos Inoperantes (Esquerda) + Painel Analítico (Direita) */}
+      {/* SEÇÃO 01: Painel Analítico em Linha Única (3 Cards Lado a Lado no Desktop) */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-        {/* Coluna Esquerda: Equipamentos Inoperantes Temporariamente (7 colunas lg, ~58%) */}
-        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col h-full overflow-hidden">
-          {/* Header da Tabela */}
-          <div className="px-4 py-3 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50/50">
-            <div className="min-w-0">
-              <h3 className="font-bold text-sm sm:text-base text-slate-900 leading-tight flex items-center gap-2 flex-wrap">
-                <span>Equipamentos Inoperantes Temporariamente</span>
-                {selectedCt !== 'TODOS' && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">
-                    CT {selectedCt}
-                  </span>
-                )}
-              </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Equipamentos com parada registrada e aguardando retorno ({sortedInoperantes.length} registros)
-              </p>
-            </div>
-            <div className="flex items-center gap-2.5 flex-col sm:flex-row w-full md:w-auto shrink-0">
-              {/* Input Busca */}
-              <div className="relative w-full sm:w-56 md:w-64">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <input
-                  type="text"
-                  placeholder="Buscar..."
-                  value={searchInoperantes}
-                  onChange={(e) => {
-                    setSearchInoperantes(e.target.value);
-                    setPageInoperantes(1);
-                  }}
-                  className="w-full h-9 pl-9 pr-3 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-800 placeholder:text-slate-400 transition-all"
-                />
-              </div>
-
-              {/* Botão Exportar CSV */}
-              <button
-                type="button"
-                onClick={handleExportInoperantesCSV}
-                disabled={sortedInoperantes.length === 0}
-                className="w-full sm:w-auto h-9 inline-flex items-center justify-center gap-1.5 px-3 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-800 border border-emerald-300/80 rounded-lg text-xs font-semibold shadow-2xs transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-                title="Exportar equipamentos inoperantes para CSV (compatível com Excel)"
-              >
-                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
-                <span>Exportar CSV</span>
-              </button>
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+        {/* Card 1: Acumulado de Interrupções por Contrato */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col h-full overflow-hidden">
+          <div className="p-3.5 border-b border-slate-100 bg-slate-50/50">
+            <h3 className="font-bold text-xs sm:text-sm text-slate-900 text-center">
+              Acumulado de Interrupções por Contrato
+            </h3>
           </div>
-
-          {/* Tabela de Inoperantes */}
-          <div className="overflow-x-auto flex-1">
+          <div className="flex-1 flex flex-col justify-between">
             <table className="w-full text-xs">
               <thead className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
                 <tr>
-                  <th
-                    onClick={() => handleSortInoperantes('ct')}
-                    className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
-                    title="Clique para ordenar por Contrato"
-                  >
-                    <div className="inline-flex items-center justify-center gap-1">
-                      <span>CT</span>
-                      {sortInoperantes.key === 'ct' ? (
-                        sortInoperantes.direction === 'asc' ? (
-                          <ArrowUp className="w-3.5 h-3.5 text-amber-600 font-bold" />
-                        ) : (
-                          <ArrowDown className="w-3.5 h-3.5 text-amber-600 font-bold" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-                  </th>
-                  <th
-                    onClick={() => handleSortInoperantes('codigo')}
-                    className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
-                    title="Clique para ordenar por Código"
-                  >
-                    <div className="inline-flex items-center justify-center gap-1">
-                      <span>CÓDIGO</span>
-                      {sortInoperantes.key === 'codigo' ? (
-                        sortInoperantes.direction === 'asc' ? (
-                          <ArrowUp className="w-3.5 h-3.5 text-amber-600 font-bold" />
-                        ) : (
-                          <ArrowDown className="w-3.5 h-3.5 text-amber-600 font-bold" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-                  </th>
-                  <th
-                    onClick={() => handleSortInoperantes('tipo')}
-                    className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
-                    title="Clique para ordenar por Tipo"
-                  >
-                    <div className="inline-flex items-center justify-center gap-1">
-                      <span>TIPO</span>
-                      {sortInoperantes.key === 'tipo' ? (
-                        sortInoperantes.direction === 'asc' ? (
-                          <ArrowUp className="w-3.5 h-3.5 text-amber-600 font-bold" />
-                        ) : (
-                          <ArrowDown className="w-3.5 h-3.5 text-amber-600 font-bold" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-                  </th>
-                  <th
-                    onClick={() => handleSortInoperantes('motivo')}
-                    className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
-                    title="Clique para ordenar por Motivo"
-                  >
-                    <div className="inline-flex items-center justify-center gap-1">
-                      <span>MOTIVO</span>
-                      {sortInoperantes.key === 'motivo' ? (
-                        sortInoperantes.direction === 'asc' ? (
-                          <ArrowUp className="w-3.5 h-3.5 text-amber-600 font-bold" />
-                        ) : (
-                          <ArrowDown className="w-3.5 h-3.5 text-amber-600 font-bold" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-                  </th>
-                  <th
-                    onClick={() => handleSortInoperantes('dataParada')}
-                    className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
-                    title="Clique para ordenar por Data da Parada"
-                  >
-                    <div className="inline-flex items-center justify-center gap-1">
-                      <span>DATA PARADA</span>
-                      {sortInoperantes.key === 'dataParada' ? (
-                        sortInoperantes.direction === 'asc' ? (
-                          <ArrowUp className="w-3.5 h-3.5 text-amber-600 font-bold" />
-                        ) : (
-                          <ArrowDown className="w-3.5 h-3.5 text-amber-600 font-bold" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-                  </th>
+                  <th className="py-2.5 px-3 text-center">Contrato</th>
+                  <th className="py-2.5 px-3 text-center">Quantidade</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
-                {paginatedInoperantes.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="py-8 text-center text-slate-400">
-                      Nenhum equipamento inoperante encontrado com os filtros aplicados.
-                    </td>
-                  </tr>
-                ) : (
-                  paginatedInoperantes.map((row) => (
-                    <tr key={row.id} className="hover:bg-amber-50/40 transition-colors">
-                      <td className="py-2.5 px-3 text-center whitespace-nowrap text-slate-600 font-mono">
-                        {row.ct}
-                      </td>
-                      <td className="py-2.5 px-3 text-center whitespace-nowrap font-bold text-slate-900">
-                        {row.codigo}
-                      </td>
-                      <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                        <span className="inline-block px-2 py-0.5 rounded-sm text-[11px] bg-slate-100 text-slate-700 font-semibold">
-                          {row.tipo}
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-3 text-center text-slate-700 max-w-[200px] truncate" title={row.motivo}>
-                        {row.motivo}
-                      </td>
-                      <td className="py-2.5 px-3 text-center whitespace-nowrap font-mono text-amber-700 font-semibold">
-                        {row.dataParada}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Paginação da Tabela de Inoperantes */}
-          <div className="p-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-xs text-slate-500">
-            <span>
-              {sortedInoperantes.length > 0 ? (
-                <>
-                  {(pageInoperantes - 1) * rowsPerPageInoperantes + 1} -{' '}
-                  {Math.min(pageInoperantes * rowsPerPageInoperantes, sortedInoperantes.length)} /{' '}
-                  {sortedInoperantes.length}
-                </>
-              ) : (
-                '0 / 0'
-              )}
-            </span>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setPageInoperantes((p) => Math.max(1, p - 1))}
-                disabled={pageInoperantes === 1}
-                className="p-1 rounded-md hover:bg-slate-200 disabled:opacity-30 disabled:pointer-events-none transition"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <span className="px-2 font-medium text-slate-700">
-                {pageInoperantes} / {totalPagesInoperantes}
-              </span>
-              <button
-                onClick={() => setPageInoperantes((p) => Math.min(totalPagesInoperantes, p + 1))}
-                disabled={pageInoperantes === totalPagesInoperantes}
-                className="p-1 rounded-md hover:bg-slate-200 disabled:opacity-30 disabled:pointer-events-none transition"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Coluna Direita: Painel Analítico de Indicadores (5 colunas lg, ~42%) */}
-        <div className="lg:col-span-5 flex flex-col gap-5">
-          {/* Card Tabela: Acumulado por Contrato */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="p-3 sm:p-3.5 border-b border-slate-100 bg-slate-50/50">
-              <h3 className="font-bold text-xs sm:text-sm text-slate-900 text-center">
-                Acumulado de Interrupções por Contrato
-              </h3>
-            </div>
-            <table className="w-full text-xs">
-              <thead className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
-                <tr>
-                  <th className="py-2 px-3 text-center">Contrato</th>
-                  <th className="py-2 px-3 text-center">Quantidade</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-800">
+              <tbody className="divide-y divide-slate-100 text-slate-800 font-medium">
                 {contratoSummary.items.map((item) => {
                   const isSelected = selectedCt !== 'TODOS' && selectedCt === item.contrato;
                   return (
@@ -810,7 +523,7 @@ export const InterrupcoesView: React.FC = () => {
                           : 'hover:bg-slate-50'
                       }`}
                     >
-                      <td className="py-2 px-3 text-center">
+                      <td className="py-2.5 px-3 text-center">
                         <div className="inline-flex items-center justify-center gap-2">
                           <span
                             className="w-2.5 h-2.5 rounded-full shrink-0"
@@ -821,7 +534,7 @@ export const InterrupcoesView: React.FC = () => {
                           </span>
                         </div>
                       </td>
-                      <td className="py-2 px-3 text-center font-mono font-bold text-slate-800">
+                      <td className="py-2.5 px-3 text-center font-mono font-bold text-slate-800">
                         {item.quantidade}
                       </td>
                     </tr>
@@ -829,110 +542,109 @@ export const InterrupcoesView: React.FC = () => {
                 })}
                 {/* Linha Total Geral */}
                 <tr className="bg-slate-50/80 font-bold text-slate-900 border-t border-slate-200">
-                  <td className="py-2 px-3 text-center">Total geral</td>
-                  <td className="py-2 px-3 text-center font-mono text-xs sm:text-sm">
+                  <td className="py-2.5 px-3 text-center">Total geral</td>
+                  <td className="py-2.5 px-3 text-center font-mono text-xs sm:text-sm">
                     {contratoSummary.totalGeral}
                   </td>
                 </tr>
               </tbody>
             </table>
-            <div className="p-2 border-t border-slate-100 text-center text-[11px] text-slate-500">
+            <div className="p-2 border-t border-slate-100 text-center text-[11px] text-slate-500 bg-slate-50/30">
               1 - 3 / 3
             </div>
           </div>
+        </div>
 
-          {/* Card Gráfico Pizza: % Acumulado por Contrato */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-3.5 sm:p-4">
-            <h3 className="font-bold text-xs text-slate-900 mb-2.5 text-center sm:text-left">
-              % Acumulado de Interrupções de Equipamentos por Contrato
-            </h3>
-            <div className="w-full h-48 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <div className="w-40 h-40 relative">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={contratoSummary.items}
-                      dataKey="quantidade"
-                      nameKey="contrato"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={70}
-                      labelLine={false}
-                      label={renderCustomPieLabel}
-                      stroke="#ffffff"
-                      strokeWidth={1.5}
-                    >
-                      {contratoSummary.items.map((entry) => (
-                        <Cell key={`cell-${entry.contrato}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      formatter={(val: any, name: any, item: any) => [
-                        `${val} interrupções (${item.payload.percentualFormatted})`,
-                        `Contrato ${name}`,
-                      ]}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-
-              {/* Legenda do Gráfico de Pizza */}
-              <div className="flex flex-col gap-2 text-xs text-slate-700 font-medium">
-                {contratoSummary.items.map((item) => (
-                  <div key={item.contrato} className="flex items-center gap-2">
-                    <span
-                      className="w-3 h-3 rounded-full inline-block"
-                      style={{ backgroundColor: item.color }}
-                    ></span>
-                    <span>{item.contrato}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Card Gráfico de Barras: Quantidade por Tipo de Equipamentos */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-3.5 sm:p-4">
-            <h3 className="font-bold text-xs sm:text-sm text-slate-900 text-center mb-3">
-              Quantidade de Interrupções por Tipo de Equipamentos
-            </h3>
-            <div className="w-full h-60">
+        {/* Card 2: % Acumulado por Contrato */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-3.5 sm:p-4 flex flex-col h-full overflow-hidden">
+          <h3 className="font-bold text-xs sm:text-sm text-slate-900 mb-2 text-center">
+            % Acumulado de Interrupções de Equipamentos por Contrato
+          </h3>
+          <div className="flex-1 flex flex-col items-center justify-center gap-3">
+            <div className="w-full h-44 relative">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={tipoSummary}
-                  margin={{ top: 15, right: 15, left: -10, bottom: 15 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis
-                    dataKey="tipo"
-                    tick={{ fontSize: 11, fill: '#334155', fontWeight: 600 }}
-                    axisLine={{ stroke: '#cbd5e1' }}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    domain={[0, 200]}
-                    ticks={[0, 50, 100, 150, 200]}
-                    tick={{ fontSize: 10, fill: '#64748b' }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <Tooltip
-                    formatter={(val: any) => [`${val} interrupções`, 'Quantidade']}
-                    cursor={{ fill: '#f8fafc' }}
-                  />
-                  <Bar
+                <PieChart>
+                  <Pie
+                    data={contratoSummary.items}
                     dataKey="quantidade"
-                    fill="#059669"
-                    radius={[3, 3, 0, 0]}
-                    maxBarSize={54}
+                    nameKey="contrato"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={65}
+                    labelLine={false}
+                    label={renderCustomPieLabel}
+                    stroke="#ffffff"
+                    strokeWidth={1.5}
                   >
-                    <LabelList dataKey="quantidade" content={renderBarCustomLabel} />
-                  </Bar>
-                </BarChart>
+                    {contratoSummary.items.map((entry) => (
+                      <Cell key={`cell-${entry.contrato}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(val: any, name: any, item: any) => [
+                      `${val} interrupções (${item.payload.percentualFormatted})`,
+                      `Contrato ${name}`,
+                    ]}
+                  />
+                </PieChart>
               </ResponsiveContainer>
             </div>
-          </div>
 
+            {/* Legenda do Gráfico de Pizza */}
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-slate-700 font-medium pb-1">
+              {contratoSummary.items.map((item) => (
+                <div key={item.contrato} className="flex items-center gap-1.5">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full inline-block shrink-0"
+                    style={{ backgroundColor: item.color }}
+                  ></span>
+                  <span>{item.contrato}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Quantidade de Interrupções por Tipo de Equipamentos */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-3.5 sm:p-4 flex flex-col h-full overflow-hidden">
+          <h3 className="font-bold text-xs sm:text-sm text-slate-900 text-center mb-2">
+            Quantidade de Interrupções por Tipo de Equipamentos
+          </h3>
+          <div className="flex-1 w-full min-h-[190px] flex items-center justify-center">
+            <ResponsiveContainer width="100%" height={210}>
+              <BarChart
+                data={tipoSummary}
+                margin={{ top: 15, right: 10, left: -15, bottom: 10 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis
+                  dataKey="tipo"
+                  tick={{ fontSize: 10, fill: '#334155', fontWeight: 600 }}
+                  axisLine={{ stroke: '#cbd5e1' }}
+                  tickLine={false}
+                />
+                <YAxis
+                  domain={[0, 200]}
+                  ticks={[0, 50, 100, 150, 200]}
+                  tick={{ fontSize: 9.5, fill: '#64748b' }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip
+                  formatter={(val: any) => [`${val} interrupções`, 'Quantidade']}
+                  cursor={{ fill: '#f8fafc' }}
+                />
+                <Bar
+                  dataKey="quantidade"
+                  fill="#059669"
+                  radius={[3, 3, 0, 0]}
+                  maxBarSize={48}
+                >
+                  <LabelList dataKey="quantidade" content={renderBarCustomLabel} />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
 

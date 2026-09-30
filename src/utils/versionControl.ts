@@ -6,15 +6,25 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.83';
-export const BUILD_DATE = '29/09/2026';
+export const APP_VERSION = 'v3.7.84';
+export const BUILD_DATE = '30/09/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v3.7.84',
+    date: '30/09/2026',
+    tag: 'Reorganização Analítica do Controle de Ofícios',
+    isLatest: true,
+    changes: [
+      'Reorganização em Linha Única Analítica: A primeira seção analítica do Controle de Ofícios foi reestruturada em 3 cards harmonizados lado a lado no desktop (Acumulado de Interrupções por Contrato, % Acumulado por Contrato e Quantidade de Interrupções por Tipo), otimizando o aproveitamento vertical da tela.',
+      'Remoção da Tabela de Inoperantes Temporários: Eliminado o card/tabela de "Equipamentos Inoperantes Temporariamente" e removido código morto exclusivo, mantendo 100% íntegro o cálculo e a exibição do indicador "Inoperantes Hoje" no painel superior.',
+      'Posicionamento Imediato do Relatório Histórico: O "Relatório Histórico de Parada e Retorno de Equipamentos" passa a figurar em largura total imediatamente abaixo da linha analítica, seguido pela matriz mensal acumulada, preservando todos os filtros compartilhados, exportações CSV/PDF e ordenações.'
+    ]
+  },
   {
     version: 'v3.7.83',
     date: '29/09/2026',
     tag: 'Correção da Exportação Direta do PDF do Histórico de Ofícios',
-    isLatest: true,
     changes: [
       'Exportação Direta de PDF Sem Diálogo de Impressão: Ajustado o fluxo de exportação do "Relatório Histórico de Parada e Retorno de Equipamentos" para realizar exclusivamente a geração e o download direto do arquivo PDF institucional via jsPDF (doc.save), suprimindo qualquer abertura automática de janelas, previews ou diálogos de impressão.',
       'Renomeação e Harmonização Visual: O botão passa a se chamar formalmente "Exportar PDF" com o ícone FileDown da biblioteca lucide-react e acessibilidade aprimorada, mantendo o padrão executivo e visual do portal.',
