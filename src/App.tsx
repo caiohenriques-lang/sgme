@@ -33,6 +33,9 @@ const initialFilters: FilterState = {
   bairros: [],
   tipos: [],
   situacao: 'ALL',
+  statusEmOperacao: false,
+  statusEmImplantacao: false,
+  statusRelocacao: false,
   condicao: 'ALL',
   os: 'ALL',
   codigos: [],
@@ -41,7 +44,6 @@ const initialFilters: FilterState = {
   dataAceiteStart: '',
   dataAceiteEnd: '',
   searchQuery: '',
-  onlyWithCoords: false,
 };
 
 const emptyFilters: FilterState = {
@@ -54,6 +56,9 @@ const emptyFilters: FilterState = {
   bairros: [],
   tipos: [],
   situacao: 'ALL',
+  statusEmOperacao: false,
+  statusEmImplantacao: false,
+  statusRelocacao: false,
   condicao: 'ALL',
   os: 'ALL',
   codigos: [],
@@ -62,7 +67,6 @@ const emptyFilters: FilterState = {
   dataAceiteStart: '',
   dataAceiteEnd: '',
   searchQuery: '',
-  onlyWithCoords: false,
 };
 
 export default function App() {
@@ -165,9 +169,29 @@ export default function App() {
       }
     }
 
-    // 5. Situação
-    if (excludeKey !== 'situacao') {
-      if (currentFilters.situacao !== 'ALL' && r.Situação !== currentFilters.situacao) return false;
+    // 5. Status do Equipamento (3 Checkboxes: Em Operação, Em Implantação, Relocação)
+    if (excludeKey !== 'situacao' && excludeKey !== 'status') {
+      const op = !!currentFilters.statusEmOperacao;
+      const imp = !!currentFilters.statusEmImplantacao;
+      const rel = !!currentFilters.statusRelocacao;
+
+      if (op || imp || rel) {
+        if (!(op && imp && rel)) {
+          const sit = (r.Situação || '').toLowerCase().trim();
+          const isOp = sit.includes('operação') || sit.includes('operacao');
+          const isRel = sit.includes('relocação') || sit.includes('relocacao');
+          const isImp = !isOp && !isRel;
+
+          let match = false;
+          if (op && isOp) match = true;
+          if (imp && isImp) match = true;
+          if (rel && isRel) match = true;
+
+          if (!match) return false;
+        }
+      } else if (currentFilters.situacao && currentFilters.situacao !== 'ALL') {
+        if (r.Situação !== currentFilters.situacao) return false;
+      }
     }
 
     // 6. Condição
@@ -185,11 +209,6 @@ export default function App() {
       if (currentFilters.codigos && currentFilters.codigos.length > 0) {
         if (!r.CÓDIGO || !currentFilters.codigos.includes(r.CÓDIGO.trim())) return false;
       }
-    }
-
-    // 9. Coords
-    if (excludeKey !== 'onlyWithCoords') {
-      if (currentFilters.onlyWithCoords && !r.hasValidCoord) return false;
     }
 
     // 10. Data início operação Range
@@ -503,13 +522,19 @@ export default function App() {
           </div>
         ) : (
           <>
-            {/* Tab 1: Map View */}
+            {/* Tab 1: Map View com Tabela Lista de Equipamentos Integrada Abaixo */}
             {activeTab === 'mapa' && (
-              <MapView
-                records={filteredRecords}
-                filters={filters}
-                onSelectRecord={(rec) => setSelectedRecord(rec)}
-              />
+              <div className="space-y-6">
+                <MapView
+                  records={filteredRecords}
+                  filters={filters}
+                  onSelectRecord={(rec) => setSelectedRecord(rec)}
+                />
+                <TableView
+                  records={filteredRecords}
+                  onSelectRecord={(rec) => setSelectedRecord(rec)}
+                />
+              </div>
             )}
 
             {/* Tab 2: Indicators Dashboard */}

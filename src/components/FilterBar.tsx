@@ -559,8 +559,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
     filters.dataInicioEnd !== '' ||
     filters.dataAceiteStart !== '' ||
     filters.dataAceiteEnd !== '' ||
-    filters.searchQuery !== '' ||
-    filters.onlyWithCoords;
+    filters.searchQuery !== '';
 
   if (activeTab === 'resumo') {
     return (
@@ -625,21 +624,43 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
               {/* 1. STATUS DO EQUIPAMENTO */}
               <div className="lg:col-span-3">
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                  STATUS DO EQUIPAMENTO
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center justify-between">
+                  <span>STATUS DO EQUIPAMENTO</span>
+                  {(filters.statusEmOperacao || filters.statusEmImplantacao || filters.statusRelocacao) && (
+                    <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.2 rounded">
+                      Filtrado
+                    </span>
+                  )}
                 </label>
-                <select
-                  value={filters.situacao}
-                  onChange={(e) => handleFilterChange('situacao', e.target.value)}
-                  className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white font-medium"
-                >
-                  <option value="ALL">Todas as Situações ({availableSituacoes.length})</option>
-                  {availableSituacoes.map((s) => (
-                    <option key={s} value={s}>
-                      {s.replace('\n', ' ')}
-                    </option>
-                  ))}
-                </select>
+                <div className="flex flex-wrap items-center gap-2 border border-slate-300 rounded-lg px-2 py-1 bg-slate-50 min-h-[34px]">
+                  <label className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-700 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={!!filters.statusEmOperacao}
+                      onChange={(e) => handleFilterChange('statusEmOperacao', e.target.checked)}
+                      className="rounded text-blue-600 focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer accent-blue-600"
+                    />
+                    <span>Em Operação</span>
+                  </label>
+                  <label className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-700 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={!!filters.statusEmImplantacao}
+                      onChange={(e) => handleFilterChange('statusEmImplantacao', e.target.checked)}
+                      className="rounded text-blue-600 focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer accent-blue-600"
+                    />
+                    <span>Em Implantação</span>
+                  </label>
+                  <label className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-700 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={!!filters.statusRelocacao}
+                      onChange={(e) => handleFilterChange('statusRelocacao', e.target.checked)}
+                      className="rounded text-blue-600 focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer accent-blue-600"
+                    />
+                    <span>Relocação</span>
+                  </label>
+                </div>
               </div>
 
               {/* 2. Nº DA OS */}
@@ -826,267 +847,266 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           }`}
         >
           <div className="space-y-3">
-          {/* Search & Main Filter Grid - Row 1 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
-          
-          {/* Quick Search */}
-          <div className="lg:col-span-3 relative">
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-              PESQUISA RÁPIDA
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                <Search className="w-4 h-4" />
+            {/* PRIMEIRA LINHA: Pesquisa Rápida, Contrato, Regional, Bairro */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
+              {/* 1. PESQUISA RÁPIDA */}
+              <div className="lg:col-span-3 relative">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  PESQUISA RÁPIDA
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <Search className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Endereço, bairro, código, OS..."
+                    value={filters.searchQuery}
+                    onChange={(e) => handleFilterChange('searchQuery', e.target.value)}
+                    className="w-full pl-9 pr-7 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white text-slate-900 transition-all placeholder:text-slate-400"
+                  />
+                  {filters.searchQuery && (
+                    <button
+                      onClick={() => handleFilterChange('searchQuery', '')}
+                      className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-xs text-slate-400 hover:text-slate-600"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
               </div>
-              <input
-                type="text"
-                placeholder="Endereço, bairro, código, OS..."
-                value={filters.searchQuery}
-                onChange={(e) => handleFilterChange('searchQuery', e.target.value)}
-                className="w-full pl-9 pr-7 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white text-slate-900 transition-all placeholder:text-slate-400"
-              />
-              {filters.searchQuery && (
-                <button
-                  onClick={() => handleFilterChange('searchQuery', '')}
-                  className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-xs text-slate-400 hover:text-slate-600"
+
+              {/* 2. CONTRATO */}
+              <div className="lg:col-span-3">
+                <ContratoMultiSelectDropdown
+                  availableContratos={availableContratos}
+                  selectedContratos={filters.contratos || []}
+                  onChange={(newSelected) => {
+                    handleFilterChange('contratos', newSelected);
+                    if (
+                      newSelected.length === 3 &&
+                      ['2740/24', '2741/24', '2742/24'].every((c) =>
+                        newSelected.some((s) => s.includes(c))
+                      )
+                    ) {
+                      handleFilterChange('contrato', 'PRESET_NOVOS');
+                    } else if (
+                      newSelected.length === 3 &&
+                      ['2586/20', '2585/20', '2587/20'].every((c) =>
+                        newSelected.some((s) => s.includes(c))
+                      )
+                    ) {
+                      handleFilterChange('contrato', 'PRESET_ANTIGOS');
+                    } else if (newSelected.length === availableContratos.length) {
+                      handleFilterChange('contrato', 'ALL');
+                    } else if (newSelected.length === 1) {
+                      handleFilterChange('contrato', newSelected[0]);
+                    } else {
+                      handleFilterChange('contrato', 'CUSTOM');
+                    }
+                  }}
+                />
+              </div>
+
+              {/* 3. REGIONAL */}
+              <div className="lg:col-span-3">
+                <MultiSelectCheckboxDropdown
+                  label="REGIONAL"
+                  placeholderAll="Todas as Regionais"
+                  pluralItemName="regionais"
+                  singularItemName="Regional"
+                  availableOptions={availableRegionais}
+                  selectedValues={filters.regionais || []}
+                  onChange={(newSelected) => handleFilterChange('regionais', newSelected)}
+                  searchPlaceholder="Filtrar regional..."
+                />
+              </div>
+
+              {/* 4. BAIRRO */}
+              <div className="lg:col-span-3">
+                <MultiSelectCheckboxDropdown
+                  label="BAIRRO"
+                  placeholderAll="Todos os Bairros"
+                  pluralItemName="bairros"
+                  singularItemName="Bairro"
+                  availableOptions={availableBairros}
+                  selectedValues={filters.bairros || []}
+                  onChange={(newSelected) => handleFilterChange('bairros', newSelected)}
+                  searchPlaceholder="Filtrar bairro..."
+                />
+              </div>
+            </div>
+
+            {/* SEGUNDA LINHA: Tipo de Equipamento, Número da OS, Seleção de Equipamentos, Situação */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end pt-2 border-t border-slate-100">
+              {/* 1. TIPO DE EQUIPAMENTO */}
+              <div className="lg:col-span-3">
+                <MultiSelectCheckboxDropdown
+                  label="TIPO DE EQUIPAMENTO"
+                  placeholderAll="Todos os Tipos"
+                  pluralItemName="tipos"
+                  singularItemName="Tipo"
+                  availableOptions={availableTipos}
+                  selectedValues={filters.tipos || []}
+                  onChange={(newSelected) => handleFilterChange('tipos', newSelected)}
+                  searchPlaceholder="Filtrar tipo..."
+                />
+              </div>
+
+              {/* 2. NÚMERO DA OS */}
+              <div className="lg:col-span-2">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  <FileText className="w-3 h-3 text-slate-400" /> NÚMERO DA OS
+                </label>
+                <select
+                  value={filters.os}
+                  onChange={(e) => handleFilterChange('os', e.target.value)}
+                  className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white font-medium"
                 >
-                  ✕
-                </button>
-              )}
+                  <option value="ALL">Todas as OS ({availableOS.length})</option>
+                  {availableOS.map((osNum) => (
+                    <option key={osNum} value={osNum}>
+                      OS {osNum}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 3. SELEÇÃO DE EQUIPAMENTOS */}
+              <div className="lg:col-span-4">
+                <MultiSelectCheckboxDropdown
+                  label="SELEÇÃO DE EQUIPAMENTOS"
+                  icon={<Layers className="w-3 h-3 text-blue-500" />}
+                  placeholderAll="Todos os Equipamentos"
+                  pluralItemName="equipamentos"
+                  singularItemName="Código"
+                  availableOptions={availableCodigos}
+                  selectedValues={filters.codigos || []}
+                  onChange={(newSelected) => handleFilterChange('codigos', newSelected)}
+                  searchPlaceholder="Filtrar códigos..."
+                  monoFont={true}
+                />
+              </div>
+
+              {/* 4. SITUAÇÃO (Condição de Implantação) */}
+              <div className="lg:col-span-3">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3 text-slate-400" /> SITUAÇÃO
+                </label>
+                <select
+                  value={filters.condicao}
+                  onChange={(e) => handleFilterChange('condicao', e.target.value)}
+                  className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white font-medium"
+                >
+                  <option value="ALL">Todas ({availableCondicoes.length})</option>
+                  {availableCondicoes.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-          </div>
 
-          {/* CONTRATO (Caixa de Seleção Múltipla com Checkboxes e Presets) */}
-          <div className="lg:col-span-3">
-            <ContratoMultiSelectDropdown
-              availableContratos={availableContratos}
-              selectedContratos={filters.contratos || []}
-              onChange={(newSelected) => {
-                handleFilterChange('contratos', newSelected);
-                // Atualiza também a propriedade de fallback contrato
-                if (
-                  newSelected.length === 3 &&
-                  ['2740/24', '2741/24', '2742/24'].every((c) =>
-                    newSelected.some((s) => s.includes(c))
-                  )
-                ) {
-                  handleFilterChange('contrato', 'PRESET_NOVOS');
-                } else if (
-                  newSelected.length === 3 &&
-                  ['2586/20', '2585/20', '2587/20'].every((c) =>
-                    newSelected.some((s) => s.includes(c))
-                  )
-                ) {
-                  handleFilterChange('contrato', 'PRESET_ANTIGOS');
-                } else if (newSelected.length === availableContratos.length) {
-                  handleFilterChange('contrato', 'ALL');
-                } else if (newSelected.length === 1) {
-                  handleFilterChange('contrato', newSelected[0]);
-                } else {
-                  handleFilterChange('contrato', 'CUSTOM');
-                }
-              }}
-            />
-          </div>
+            {/* TERCEIRA LINHA: 3 Checkboxes de Status, Início de Operação, Aceite */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-12 gap-3 items-end pt-2 border-t border-slate-100">
+              {/* 1. STATUS DO EQUIPAMENTO (3 Checkboxes: Em Operação, Em Implantação, Relocação) */}
+              <div className="lg:col-span-4">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center justify-between">
+                  <span>STATUS DO EQUIPAMENTO</span>
+                  {(filters.statusEmOperacao || filters.statusEmImplantacao || filters.statusRelocacao) && (
+                    <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.2 rounded">
+                      Filtrado
+                    </span>
+                  )}
+                </label>
+                <div className="flex flex-wrap items-center gap-3 border border-slate-300 rounded-lg px-2.5 py-1.5 bg-slate-50 min-h-[34px]">
+                  <label className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={!!filters.statusEmOperacao}
+                      onChange={(e) => handleFilterChange('statusEmOperacao', e.target.checked)}
+                      className="rounded text-blue-600 focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer accent-blue-600"
+                    />
+                    <span>Em Operação</span>
+                  </label>
+                  <label className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={!!filters.statusEmImplantacao}
+                      onChange={(e) => handleFilterChange('statusEmImplantacao', e.target.checked)}
+                      className="rounded text-blue-600 focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer accent-blue-600"
+                    />
+                    <span>Em Implantação</span>
+                  </label>
+                  <label className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={!!filters.statusRelocacao}
+                      onChange={(e) => handleFilterChange('statusRelocacao', e.target.checked)}
+                      className="rounded text-blue-600 focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer accent-blue-600"
+                    />
+                    <span>Relocação</span>
+                  </label>
+                </div>
+              </div>
 
-          {/* REGIONAL (Caixa de Seleção Múltipla) */}
-          <div className="lg:col-span-3">
-            <MultiSelectCheckboxDropdown
-              label="REGIONAL"
-              placeholderAll="Todas as Regionais"
-              pluralItemName="regionais"
-              singularItemName="Regional"
-              availableOptions={availableRegionais}
-              selectedValues={filters.regionais || []}
-              onChange={(newSelected) => handleFilterChange('regionais', newSelected)}
-              searchPlaceholder="Filtrar regional..."
-            />
-          </div>
+              {/* 2. INÍCIO DE OPERAÇÃO */}
+              <div className="lg:col-span-4">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1 h-4">
+                  <Calendar className="w-3 h-3 text-slate-400 shrink-0" />
+                  <span>INÍCIO DE OPERAÇÃO</span>
+                </label>
+                <div className="grid grid-cols-2 gap-1.5 w-full">
+                  <input
+                    type="text"
+                    placeholder="dd/mm/aaaa"
+                    maxLength={10}
+                    inputMode="numeric"
+                    value={filters.dataInicioStart}
+                    onChange={(e) => handleFilterChange('dataInicioStart', maskDateInput(e.target.value))}
+                    className="w-full min-w-0 h-[34px] text-[11px] bg-slate-50 border border-slate-300 rounded-lg px-2 text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500 font-medium placeholder:text-slate-400 transition-all"
+                  />
+                  <input
+                    type="text"
+                    placeholder="dd/mm/aaaa"
+                    maxLength={10}
+                    inputMode="numeric"
+                    value={filters.dataInicioEnd}
+                    onChange={(e) => handleFilterChange('dataInicioEnd', maskDateInput(e.target.value))}
+                    className="w-full min-w-0 h-[34px] text-[11px] bg-slate-50 border border-slate-300 rounded-lg px-2 text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500 font-medium placeholder:text-slate-400 transition-all"
+                  />
+                </div>
+              </div>
 
-          {/* BAIRRO (Caixa de Seleção Múltipla) */}
-          <div className="lg:col-span-3">
-            <MultiSelectCheckboxDropdown
-              label="BAIRRO"
-              placeholderAll="Todos os Bairros"
-              pluralItemName="bairros"
-              singularItemName="Bairro"
-              availableOptions={availableBairros}
-              selectedValues={filters.bairros || []}
-              onChange={(newSelected) => handleFilterChange('bairros', newSelected)}
-              searchPlaceholder="Filtrar bairro..."
-            />
-          </div>
-
-        </div>
-
-        {/* Second Filter Row - TIPO (Multi-select), SITUAÇÃO, OS Dropdown & CÓDIGO Multi-Selection */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
-          
-          {/* TIPO DE EQUIPAMENTO (Caixa de Seleção Múltipla) */}
-          <div className="lg:col-span-3">
-            <MultiSelectCheckboxDropdown
-              label="TIPO DE EQUIPAMENTO"
-              placeholderAll="Todos os Tipos"
-              pluralItemName="tipos"
-              singularItemName="Tipo"
-              availableOptions={availableTipos}
-              selectedValues={filters.tipos || []}
-              onChange={(newSelected) => handleFilterChange('tipos', newSelected)}
-              searchPlaceholder="Filtrar tipo..."
-            />
-          </div>
-
-          {/* STATUS DO EQUIPAMENTO Dropdown */}
-          <div className="lg:col-span-3">
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-              STATUS DO EQUIPAMENTO
-            </label>
-            <select
-              value={filters.situacao}
-              onChange={(e) => handleFilterChange('situacao', e.target.value)}
-              className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white"
-            >
-              <option value="ALL">Todas as Situações ({availableSituacoes.length})</option>
-              {availableSituacoes.map((s) => (
-                <option key={s} value={s}>
-                  {s.replace('\n', ' ')}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* NÚMERO DA OS (Dropdown) */}
-          <div className="lg:col-span-2">
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1">
-              <FileText className="w-3 h-3 text-slate-400" /> NÚMERO DA OS
-            </label>
-            <select
-              value={filters.os}
-              onChange={(e) => handleFilterChange('os', e.target.value)}
-              className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white font-medium"
-            >
-              <option value="ALL">Todas as OS ({availableOS.length})</option>
-              {availableOS.map((osNum) => (
-                <option key={osNum} value={osNum}>
-                  OS {osNum}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* SELEÇÃO DE EQUIPAMENTOS (Múltipla Seleção) */}
-          <div className="lg:col-span-4">
-            <MultiSelectCheckboxDropdown
-              label="SELEÇÃO DE EQUIPAMENTOS"
-              icon={<Layers className="w-3 h-3 text-blue-500" />}
-              placeholderAll="Todos os Equipamentos"
-              pluralItemName="equipamentos"
-              singularItemName="Código"
-              availableOptions={availableCodigos}
-              selectedValues={filters.codigos || []}
-              onChange={(newSelected) => handleFilterChange('codigos', newSelected)}
-              searchPlaceholder="Filtrar códigos..."
-              monoFont={true}
-            />
-          </div>
-
-        </div>
-
-        {/* Third Filter Row - SITUAÇÃO, DATA INÍCIO DE OPERAÇÃO, DATA DE ACEITE & APENAS COM COORDENADAS */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end pt-2 border-t border-slate-100">
-          
-          {/* SITUAÇÃO (Condição de Implantação) */}
-          <div className="lg:col-span-3">
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1">
-              <CheckCircle2 className="w-3 h-3 text-slate-400" /> SITUAÇÃO
-            </label>
-            <select
-              value={filters.condicao}
-              onChange={(e) => handleFilterChange('condicao', e.target.value)}
-              className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white font-medium"
-            >
-              <option value="ALL">Todas ({availableCondicoes.length})</option>
-              {availableCondicoes.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* DATA DE INÍCIO DE OPERAÇÃO */}
-          <div className="lg:col-span-3">
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1">
-              <Calendar className="w-3 h-3 text-slate-400" /> INÍCIO DE OPERAÇÃO
-            </label>
-            <div className="grid grid-cols-2 gap-1">
-              <input
-                type="text"
-                placeholder="Início (DD/MM/AAAA)"
-                maxLength={10}
-                inputMode="numeric"
-                value={filters.dataInicioStart}
-                onChange={(e) => handleFilterChange('dataInicioStart', maskDateInput(e.target.value))}
-                className="w-full text-[11px] bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500 font-medium"
-              />
-              <input
-                type="text"
-                placeholder="Fim (DD/MM/AAAA)"
-                maxLength={10}
-                inputMode="numeric"
-                value={filters.dataInicioEnd}
-                onChange={(e) => handleFilterChange('dataInicioEnd', maskDateInput(e.target.value))}
-                className="w-full text-[11px] bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500 font-medium"
-              />
+              {/* 3. ACEITE */}
+              <div className="lg:col-span-4">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1 h-4">
+                  <Calendar className="w-3 h-3 text-slate-400 shrink-0" />
+                  <span>ACEITE</span>
+                </label>
+                <div className="grid grid-cols-2 gap-1.5 w-full">
+                  <input
+                    type="text"
+                    placeholder="dd/mm/aaaa"
+                    maxLength={10}
+                    inputMode="numeric"
+                    value={filters.dataAceiteStart}
+                    onChange={(e) => handleFilterChange('dataAceiteStart', maskDateInput(e.target.value))}
+                    className="w-full min-w-0 h-[34px] text-[11px] bg-slate-50 border border-slate-300 rounded-lg px-2 text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500 font-medium placeholder:text-slate-400 transition-all"
+                  />
+                  <input
+                    type="text"
+                    placeholder="dd/mm/aaaa"
+                    maxLength={10}
+                    inputMode="numeric"
+                    value={filters.dataAceiteEnd}
+                    onChange={(e) => handleFilterChange('dataAceiteEnd', maskDateInput(e.target.value))}
+                    className="w-full min-w-0 h-[34px] text-[11px] bg-slate-50 border border-slate-300 rounded-lg px-2 text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500 font-medium placeholder:text-slate-400 transition-all"
+                  />
+                </div>
+              </div>
             </div>
-          </div>
-
-          {/* DATA DE ACEITE */}
-          <div className="lg:col-span-3">
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1">
-              <Calendar className="w-3 h-3 text-slate-400" /> ACEITE
-            </label>
-            <div className="grid grid-cols-2 gap-1">
-              <input
-                type="text"
-                placeholder="Início (DD/MM/AAAA)"
-                maxLength={10}
-                inputMode="numeric"
-                value={filters.dataAceiteStart}
-                onChange={(e) => handleFilterChange('dataAceiteStart', maskDateInput(e.target.value))}
-                className="w-full text-[11px] bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500 font-medium"
-              />
-              <input
-                type="text"
-                placeholder="Fim (DD/MM/AAAA)"
-                maxLength={10}
-                inputMode="numeric"
-                value={filters.dataAceiteEnd}
-                onChange={(e) => handleFilterChange('dataAceiteEnd', maskDateInput(e.target.value))}
-                className="w-full text-[11px] bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500 font-medium"
-              />
-            </div>
-          </div>
-
-          {/* APENAS COM COORDENADAS */}
-          <div className="lg:col-span-3 flex items-end">
-            <label className={`flex items-center gap-2 text-xs border rounded-lg px-2.5 py-1.5 w-full cursor-pointer transition-all ${
-              filters.onlyWithCoords
-                ? 'bg-blue-50/90 border-blue-400 text-blue-900 font-semibold ring-1 ring-blue-400/30'
-                : 'bg-slate-50 border-slate-300 text-slate-700 hover:bg-slate-100'
-            }`}>
-              <input
-                type="checkbox"
-                checked={filters.onlyWithCoords}
-                onChange={(e) => handleFilterChange('onlyWithCoords', e.target.checked)}
-                className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
-              />
-              <MapPin className={`w-3.5 h-3.5 ${filters.onlyWithCoords ? 'text-blue-600' : 'text-slate-400'}`} />
-              <span className="font-medium truncate">Apenas com Coordenadas</span>
-            </label>
-          </div>
-
-        </div>
 
         {/* Action Buttons & Active Filter Chips Row */}
         <div className="flex items-center justify-between pt-1 border-t border-slate-100 flex-wrap gap-2">
@@ -1273,19 +1293,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               </span>
             )}
 
-            {/* Apenas com Coordenadas Chip */}
-            {filters.onlyWithCoords && (
-              <span className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-md border border-blue-200">
-                <MapPin className="w-3 h-3 text-blue-600" /> Com Coordenadas
-                <button
-                  onClick={() => handleFilterChange('onlyWithCoords', false)}
-                  className="hover:text-rose-600 ml-0.5 cursor-pointer"
-                  title="Remover filtro de coordenadas"
-                >
-                  ✕
-                </button>
-              </span>
-            )}
+
           </div>
 
           {/* Action Buttons */}

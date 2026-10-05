@@ -91,9 +91,6 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
             <TableIcon className="w-5 h-5 text-blue-600" />
             Lista Completa de Equipamentos
           </h3>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Compilado detalhado de todos os registros da planilha com filtros aplicados ({records.length} itens)
-          </p>
         </div>
 
         <div className="flex items-center gap-3">

@@ -35,11 +35,13 @@ import {
   calculateContratoSummary,
   calculateMensalMatrix,
   calculateTipoSummary,
+  calculateDiasInterrupcao,
+  formatDiasInterrupcao,
   CONTRATOS_ATIVOS,
 } from '../services/interrupcoesService';
 import { exportHistoricoParadasPDF } from '../utils/pdfExport';
 
-type SortHistoricoKey = 'ct' | 'codigo' | 'tipo' | 'motivo' | 'oficioInicial' | 'dataParada' | 'oficioRetorno' | 'dataRetorno';
+type SortHistoricoKey = 'ct' | 'codigo' | 'tipo' | 'motivo' | 'oficioInicial' | 'dataParada' | 'oficioRetorno' | 'dataRetorno' | 'diasInterrupcao';
 
 const renderCustomPieLabel = ({
   cx,
@@ -112,6 +114,7 @@ export const InterrupcoesView: React.FC = () => {
   const [filterMotivoHistorico, setFilterMotivoHistorico] = useState('TODOS');
   const [filterMesAno, setFilterMesAno] = useState('TODOS');
   const [filterEmAberto, setFilterEmAberto] = useState(false);
+  const [filterRetornados, setFilterRetornados] = useState(false);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   const [pageHistorico, setPageHistorico] = useState(1);
   const [sortHistorico, setSortHistorico] = useState<{
@@ -308,13 +311,19 @@ export const InterrupcoesView: React.FC = () => {
         const recordMesAno = `${parts[1].padStart(2, '0')}/${parts[2].trim()}`;
         if (recordMesAno !== filterMesAno) return false;
       }
-      // 4. Filtro Em Aberto (reutiliza a regra real do módulo: isInoperante / sem data de retorno)
-      if (filterEmAberto && !r.isInoperante) {
-        return false;
+      // 4. Filtro Status (Em aberto / Retornados - lógica OR dentro de status)
+      if (filterEmAberto && !filterRetornados) {
+        if (!r.isInoperante) return false;
+      } else if (!filterEmAberto && filterRetornados) {
+        if (r.isInoperante) return false;
       }
-      // 5. Busca Geral em todas as 9 colunas (incluindo Data de Parada e Data de Retorno)
+      // 5. Busca Geral em todas as colunas (incluindo Data de Parada, Data de Retorno e Dias de Interrupção)
       if (!searchHistorico) return true;
       const q = searchHistorico.toLowerCase().trim();
+      const dias = calculateDiasInterrupcao(r.dataParada, r.dataRetorno);
+      const diasFormatted = formatDiasInterrupcao(dias).toLowerCase();
+      const diasStr = dias !== null ? String(dias) : '';
+
       return (
         (r.ct && r.ct.toLowerCase().includes(q)) ||
         (r.codigo && r.codigo.toLowerCase().includes(q)) ||
@@ -324,16 +333,19 @@ export const InterrupcoesView: React.FC = () => {
         (r.dataParada && r.dataParada.toLowerCase().includes(q)) ||
         (r.oficioRetorno && r.oficioRetorno.toLowerCase().includes(q)) ||
         (r.dataRetorno && r.dataRetorno.toLowerCase().includes(q)) ||
+        (diasStr && diasStr === q) ||
+        (diasFormatted && diasFormatted.includes(q)) ||
         (r.enderecoCompleto && r.enderecoCompleto.toLowerCase().includes(q))
       );
     });
-  }, [historicoGeral, selectedCt, filterMotivoHistorico, filterMesAno, filterEmAberto, searchHistorico]);
+  }, [historicoGeral, selectedCt, filterMotivoHistorico, filterMesAno, filterEmAberto, filterRetornados, searchHistorico]);
 
   const hasActiveHistoricoFilters =
     selectedCt !== 'TODOS' ||
     filterMotivoHistorico !== 'TODOS' ||
     filterMesAno !== 'TODOS' ||
     filterEmAberto ||
+    filterRetornados ||
     !!searchHistorico;
 
   const handleClearHistoricoFilters = () => {
@@ -341,6 +353,7 @@ export const InterrupcoesView: React.FC = () => {
     setFilterMotivoHistorico('TODOS');
     setFilterMesAno('TODOS');
     setFilterEmAberto(false);
+    setFilterRetornados(false);
     setSearchHistorico('');
     setPageMensal(1);
     setPageHistorico(1);
@@ -348,6 +361,18 @@ export const InterrupcoesView: React.FC = () => {
 
   const sortedHistorico = useMemo(() => {
     return [...filteredHistorico].sort((a, b) => {
+      // Ordenação numérica para Dias de Interrupção (com valores nulos/em aberto ao final)
+      if (sortHistorico.key === 'diasInterrupcao') {
+        const diasA = calculateDiasInterrupcao(a.dataParada, a.dataRetorno);
+        const diasB = calculateDiasInterrupcao(b.dataParada, b.dataRetorno);
+
+        if (diasA === null && diasB === null) return 0;
+        if (diasA === null) return 1;
+        if (diasB === null) return -1;
+
+        return sortHistorico.direction === 'asc' ? diasA - diasB : diasB - diasA;
+      }
+
       const valA = a[sortHistorico.key] || '';
       const valB = b[sortHistorico.key] || '';
 
@@ -390,27 +415,32 @@ export const InterrupcoesView: React.FC = () => {
       'DATA DA PARADA',
       'OFÍCIO DE RETORNO',
       'DATA DE RETORNO',
+      'DIAS DE INTERRUPÇÃO',
       'STATUS',
       'ENDEREÇO COMPLETO',
       'INFORMADO INICIAL',
       'INFORMADO FINAL',
       'HORÁRIO VANDALISMO',
     ];
-    const rows = sortedHistorico.map((r) => [
-      `"${r.ct}"`,
-      `"${r.codigo}"`,
-      `"${r.tipo}"`,
-      `"${(r.motivo || '').replace(/"/g, '""')}"`,
-      `"${(r.oficioInicial || '').replace(/"/g, '""')}"`,
-      `"${r.dataParada}"`,
-      `"${(r.oficioRetorno || '').replace(/"/g, '""')}"`,
-      `"${r.dataRetorno || ''}"`,
-      `"${r.dataRetorno ? 'RETORNADO' : 'INOPERANTE'}"`,
-      `"${(r.enderecoCompleto || '').replace(/"/g, '""')}"`,
-      `"${(r.informadoInicial || '').replace(/"/g, '""')}"`,
-      `"${(r.informadoFinal || '').replace(/"/g, '""')}"`,
-      `"${(r.horarioVandalismo || '').replace(/"/g, '""')}"`,
-    ]);
+    const rows = sortedHistorico.map((r) => {
+      const dias = calculateDiasInterrupcao(r.dataParada, r.dataRetorno);
+      return [
+        `"${r.ct}"`,
+        `"${r.codigo}"`,
+        `"${r.tipo}"`,
+        `"${(r.motivo || '').replace(/"/g, '""')}"`,
+        `"${(r.oficioInicial || '').replace(/"/g, '""')}"`,
+        `"${r.dataParada}"`,
+        `"${(r.oficioRetorno || '').replace(/"/g, '""')}"`,
+        `"${r.dataRetorno || ''}"`,
+        `"${dias !== null ? dias : ''}"`,
+        `"${r.dataRetorno ? 'RETORNADO' : 'INOPERANTE'}"`,
+        `"${(r.enderecoCompleto || '').replace(/"/g, '""')}"`,
+        `"${(r.informadoInicial || '').replace(/"/g, '""')}"`,
+        `"${(r.informadoFinal || '').replace(/"/g, '""')}"`,
+        `"${(r.horarioVandalismo || '').replace(/"/g, '""')}"`,
+      ];
+    });
 
     const csvContent = [headers.join(';'), ...rows.map((e) => e.join(';'))].join('\n');
     const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -436,7 +466,13 @@ export const InterrupcoesView: React.FC = () => {
         activeFiltersList.push(`Mês: ${mesObj ? mesObj.label : filterMesAno}`);
       }
       if (filterMotivoHistorico !== 'TODOS') activeFiltersList.push(`Motivo: ${filterMotivoHistorico}`);
-      if (filterEmAberto) activeFiltersList.push('Em aberto: Sim');
+      if (filterEmAberto && filterRetornados) {
+        activeFiltersList.push('Status: Em aberto + Retornados');
+      } else if (filterEmAberto) {
+        activeFiltersList.push('Status: Em aberto');
+      } else if (filterRetornados) {
+        activeFiltersList.push('Status: Retornados');
+      }
       if (searchHistorico.trim()) activeFiltersList.push(`Busca: ${searchHistorico.trim()}`);
 
       await exportHistoricoParadasPDF(sortedHistorico, activeFiltersList);
@@ -495,9 +531,9 @@ export const InterrupcoesView: React.FC = () => {
       {/* ========================================================================= */}
       {/* SEÇÃO 01: Painel Analítico em Linha Única (3 Cards Lado a Lado no Desktop) */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6 items-stretch">
         {/* Card 1: Acumulado de Interrupções por Contrato */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col h-full overflow-hidden">
+        <div className="md:col-span-1 lg:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col h-full overflow-hidden">
           <div className="p-3.5 border-b border-slate-100 bg-slate-50/50">
             <h3 className="font-bold text-xs sm:text-sm text-slate-900 text-center">
               Acumulado de Interrupções por Contrato
@@ -556,7 +592,7 @@ export const InterrupcoesView: React.FC = () => {
         </div>
 
         {/* Card 2: % Acumulado por Contrato */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-3.5 sm:p-4 flex flex-col h-full overflow-hidden">
+        <div className="md:col-span-1 lg:col-span-4 bg-white rounded-2xl border border-slate-200 shadow-xs p-3.5 sm:p-4 flex flex-col h-full overflow-hidden">
           <h3 className="font-bold text-xs sm:text-sm text-slate-900 mb-2 text-center">
             % Acumulado de Interrupções de Equipamentos por Contrato
           </h3>
@@ -605,10 +641,10 @@ export const InterrupcoesView: React.FC = () => {
           </div>
         </div>
 
-        {/* Card 3: Quantidade de Interrupções por Tipo de Equipamentos */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-3.5 sm:p-4 flex flex-col h-full overflow-hidden">
+        {/* Card 3: Quantidade de Interrupções por Tipo de Equipamento */}
+        <div className="md:col-span-2 lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-xs p-3.5 sm:p-4 flex flex-col h-full overflow-hidden">
           <h3 className="font-bold text-xs sm:text-sm text-slate-900 text-center mb-2">
-            Quantidade de Interrupções por Tipo de Equipamentos
+            Quantidade de Interrupções por Tipo de Equipamento
           </h3>
           <div className="flex-1 w-full min-h-[190px] flex items-center justify-center">
             <ResponsiveContainer width="100%" height={210}>
@@ -619,7 +655,10 @@ export const InterrupcoesView: React.FC = () => {
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis
                   dataKey="tipo"
-                  tick={{ fontSize: 10, fill: '#334155', fontWeight: 600 }}
+                  interval={0}
+                  tick={{ fontSize: 9.5, fill: '#334155', fontWeight: 600 }}
+                  tickMargin={4}
+                  height={28}
                   axisLine={{ stroke: '#cbd5e1' }}
                   tickLine={false}
                 />
@@ -654,14 +693,11 @@ export const InterrupcoesView: React.FC = () => {
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col overflow-hidden">
         {/* Cabeçalho Reorganizado em 3 Regiões Estáveis */}
         <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col gap-3.5 bg-slate-50/50">
-          {/* REGIÃO 1: Título e subtítulo */}
+          {/* REGIÃO 1: Título */}
           <div>
             <h3 className="font-bold text-base text-slate-900">
               Relatório Histórico de Parada e Retorno de Equipamentos
             </h3>
-            <p className="text-xs text-slate-500">
-              Histórico cronológico de paradas e retornos registrados ({sortedHistorico.length} eventos)
-            </p>
           </div>
 
           {/* REGIÃO 2: 1ª Linha sequencial fixa de Ações e Filtros */}
@@ -784,7 +820,28 @@ export const InterrupcoesView: React.FC = () => {
               <span>Em aberto</span>
             </label>
 
-            {/* 7. Botão Limpar Filtros (ao final da primeira linha) */}
+            {/* 7. Checkbox Discreto "Retornados" */}
+            <label
+              className={`inline-flex items-center gap-2 px-2.5 py-1.5 text-xs font-medium rounded-lg border cursor-pointer select-none transition-colors shrink-0 ${
+                filterRetornados
+                  ? 'bg-emerald-50 border-emerald-300 text-emerald-900 font-semibold shadow-2xs'
+                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+              }`}
+              title="Filtrar apenas registros de equipamentos já retornados (com data de retorno)"
+            >
+              <input
+                type="checkbox"
+                checked={filterRetornados}
+                onChange={(e) => {
+                  setFilterRetornados(e.target.checked);
+                  setPageHistorico(1);
+                }}
+                className="w-3.5 h-3.5 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500 focus:ring-offset-0 cursor-pointer accent-emerald-600"
+              />
+              <span>Retornados</span>
+            </label>
+
+            {/* 8. Botão Limpar Filtros (ao final da primeira linha) */}
             {hasActiveHistoricoFilters && (
               <button
                 type="button"
@@ -978,12 +1035,32 @@ export const InterrupcoesView: React.FC = () => {
                     )}
                   </div>
                 </th>
+                <th
+                  onClick={() => handleSortHistorico('diasInterrupcao')}
+                  className="py-2.5 px-3 text-center cursor-pointer hover:bg-slate-200/80 transition-colors select-none group"
+                  title="Clique para ordenar por Dias de Interrupção"
+                >
+                  <div className="inline-flex items-center justify-center gap-1">
+                    <span className="leading-tight">
+                      Dias de<br className="hidden sm:inline" /> Interrupção
+                    </span>
+                    {sortHistorico.key === 'diasInterrupcao' ? (
+                      sortHistorico.direction === 'asc' ? (
+                        <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold shrink-0" />
+                      ) : (
+                        <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold shrink-0" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                    )}
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
               {paginatedHistorico.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-slate-400">
+                  <td colSpan={9} className="py-8 text-center text-slate-400">
                     Nenhum registro de histórico encontrado para os filtros selecionados.
                   </td>
                 </tr>
@@ -1019,6 +1096,9 @@ export const InterrupcoesView: React.FC = () => {
                       ) : (
                         <span className="text-amber-600 italic font-semibold">Em aberto</span>
                       )}
+                    </td>
+                    <td className="py-2.5 px-3 text-center whitespace-nowrap text-slate-600 font-medium">
+                      {formatDiasInterrupcao(calculateDiasInterrupcao(row.dataParada, row.dataRetorno))}
                     </td>
                   </tr>
                 ))

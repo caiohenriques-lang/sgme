@@ -168,7 +168,6 @@ export const MapView: React.FC<MapViewProps> = ({ records, filters, onSelectReco
         dataAceiteStart: '',
         dataAceiteEnd: '',
         searchQuery: '',
-        onlyWithCoords: false,
       };
       await exportMapWithFiltersPdf(records, activeFilters);
     } catch (err) {

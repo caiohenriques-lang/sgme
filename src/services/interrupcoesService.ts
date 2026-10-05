@@ -318,3 +318,55 @@ export function calculateTipoSummary(records: InterrupcaoRecord[]): TipoSummaryI
 
   return result;
 }
+
+/**
+ * Calcula a quantidade de dias corridos entre dataParada e dataRetorno (Data Retorno - Data Parada).
+ * Retorna null se alguma das datas for ausente, vazia ou inválida, ou se a diferença for negativa.
+ * Utiliza Date.UTC para cálculo civil exato e imune a distorções de timezone.
+ */
+export function calculateDiasInterrupcao(dataParada?: string | null, dataRetorno?: string | null): number | null {
+  if (!dataParada || !dataRetorno) return null;
+  const p1 = dataParada.trim().split('/');
+  const p2 = dataRetorno.trim().split('/');
+  if (p1.length !== 3 || p2.length !== 3) return null;
+
+  const dia1 = parseInt(p1[0], 10);
+  const mes1 = parseInt(p1[1], 10);
+  const ano1 = parseInt(p1[2], 10);
+
+  const dia2 = parseInt(p2[0], 10);
+  const mes2 = parseInt(p2[1], 10);
+  const ano2 = parseInt(p2[2], 10);
+
+  if (
+    isNaN(dia1) || isNaN(mes1) || isNaN(ano1) ||
+    isNaN(dia2) || isNaN(mes2) || isNaN(ano2) ||
+    mes1 < 1 || mes1 > 12 || dia1 < 1 || dia1 > 31 || ano1 < 1900 ||
+    mes2 < 1 || mes2 > 12 || dia2 < 1 || dia2 > 31 || ano2 < 1900
+  ) {
+    return null;
+  }
+
+  const utc1 = Date.UTC(ano1, mes1 - 1, dia1);
+  const utc2 = Date.UTC(ano2, mes2 - 1, dia2);
+
+  const diffMs = utc2 - utc1;
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0 || isNaN(diffDays)) return null;
+
+  return diffDays;
+}
+
+/**
+ * Formata o número de dias para exibição na UI / PDF:
+ * 0 -> "0 dias"
+ * 1 -> "1 dia"
+ * 5 -> "5 dias"
+ * null -> "-"
+ */
+export function formatDiasInterrupcao(dias: number | null | undefined): string {
+  if (dias === null || dias === undefined || isNaN(dias)) return '-';
+  if (dias === 1) return '1 dia';
+  return `${dias} dias`;
+}

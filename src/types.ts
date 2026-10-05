@@ -52,6 +52,9 @@ export interface FilterState {
   bairros: string[];
   tipos: string[];
   situacao: string;
+  statusEmOperacao?: boolean;
+  statusEmImplantacao?: boolean;
+  statusRelocacao?: boolean;
   condicao: string;
   os: string;
   codigos: string[];
@@ -60,7 +63,6 @@ export interface FilterState {
   dataAceiteStart: string;
   dataAceiteEnd: string;
   searchQuery: string;
-  onlyWithCoords: boolean;
 }
 
 export type ActiveTab = 'mapa' | 'indicadores' | 'tabela' | 'gestao_contratual' | 'interrupcoes' | 'afericoes' | 'bhdigital' | 'legislacao' | 'outros' | 'relatorios';

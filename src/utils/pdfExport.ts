@@ -3,7 +3,11 @@ import autoTable from 'jspdf-autotable';
 import html2canvas from 'html2canvas-pro';
 import { EquipmentRecord, FilterState } from '../types';
 import { captureMap } from './mapExport';
-import { InterrupcaoRecord } from '../services/interrupcoesService';
+import {
+  InterrupcaoRecord,
+  calculateDiasInterrupcao,
+  formatDiasInterrupcao,
+} from '../services/interrupcoesService';
 
 let cachedLogoDataUrl: string | null = null;
 
@@ -2007,7 +2011,7 @@ export async function exportHistoricoParadasPDF(
     startY += 10.5;
   }
 
-  // Tabela com as 8 colunas preservadas
+  // Tabela com as 9 colunas
   const tableHead = [
     'CT',
     'CÓDIGO',
@@ -2016,19 +2020,25 @@ export async function exportHistoricoParadasPDF(
     'OFÍCIO DE PARADA',
     'DATA DE PARADA',
     'OFÍCIO DE RETORNO',
-    'DATA DE RETORNO'
+    'DATA DE RETORNO',
+    'DIAS DE INTERRUPÇÃO'
   ];
 
-  const tableBody = records.map((r) => [
-    r.ct?.trim() || '-',
-    r.codigo?.trim() || '-',
-    r.tipo?.trim() || '-',
-    r.motivo?.trim() || '-',
-    r.oficioInicial?.trim() || '-',
-    r.dataParada?.trim() || '-',
-    r.oficioRetorno?.trim() || '-',
-    r.dataRetorno?.trim() ? r.dataRetorno.trim() : 'Em aberto'
-  ]);
+  const tableBody = records.map((r) => {
+    const dias = calculateDiasInterrupcao(r.dataParada, r.dataRetorno);
+    const diasFormatados = formatDiasInterrupcao(dias);
+    return [
+      r.ct?.trim() || '-',
+      r.codigo?.trim() || '-',
+      r.tipo?.trim() || '-',
+      r.motivo?.trim() || '-',
+      r.oficioInicial?.trim() || '-',
+      r.dataParada?.trim() || '-',
+      r.oficioRetorno?.trim() || '-',
+      r.dataRetorno?.trim() ? r.dataRetorno.trim() : 'Em aberto',
+      diasFormatados
+    ];
+  });
 
   autoTable(doc, {
     startY: startY,
@@ -2058,14 +2068,15 @@ export async function exportHistoricoParadasPDF(
       fillColor: [248, 250, 252] // slate-50 zebrado suave
     },
     columnStyles: {
-      0: { halign: 'center', cellWidth: 20 }, // CT
-      1: { halign: 'center', fontStyle: 'bold', cellWidth: 22 }, // Código
-      2: { halign: 'center', cellWidth: 22 }, // Tipo
-      3: { halign: 'left', cellPadding: { top: 1.6, bottom: 1.6, left: 3, right: 3 } }, // Motivo da parada (auto-wrap preenchendo o espaço)
-      4: { halign: 'center', cellWidth: 34 }, // Ofício de Parada
-      5: { halign: 'center', cellWidth: 28 }, // Data de Parada
-      6: { halign: 'center', cellWidth: 34 }, // Ofício de Retorno
-      7: { halign: 'center', cellWidth: 28 }  // Data de Retorno
+      0: { halign: 'center', cellWidth: 18 }, // CT
+      1: { halign: 'center', fontStyle: 'bold', cellWidth: 20 }, // Código
+      2: { halign: 'center', cellWidth: 20 }, // Tipo
+      3: { halign: 'left', cellPadding: { top: 1.6, bottom: 1.6, left: 2.5, right: 2.5 } }, // Motivo da parada (auto-wrap preenchendo o espaço)
+      4: { halign: 'center', cellWidth: 32 }, // Ofício de Parada
+      5: { halign: 'center', cellWidth: 25 }, // Data de Parada
+      6: { halign: 'center', cellWidth: 32 }, // Ofício de Retorno
+      7: { halign: 'center', cellWidth: 25 }, // Data de Retorno
+      8: { halign: 'center', cellWidth: 26 }  // Nº de Dias de Interrupção
     },
     didParseCell: (data) => {
       // Destaque discreto em tom âmbar e itálico para eventos "Em aberto"

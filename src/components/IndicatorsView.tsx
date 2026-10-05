@@ -1,11 +1,8 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { EquipmentRecord } from '../types';
-import {
-  exportFilteredRecordsPDF,
-  exportSingleRecordPDF,
-  exportCompleteIndicatorsPDF,
-} from '../utils/pdfExport';
+import { exportCompleteIndicatorsPDF } from '../utils/pdfExport';
 import { SpeedLimit50Icon } from './SpeedLimit50Icon';
+import { TableView } from './TableView';
 import {
   BarChart,
   Bar,
@@ -28,13 +25,8 @@ import {
   Filter,
   FilterX,
   RotateCcw,
-  Table as TableIcon,
-  Eye,
   FileDown,
-  ChevronLeft,
-  ChevronRight,
   ArrowUpDown,
-  Search,
   Award,
   Route,
   X,
@@ -85,13 +77,6 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
   const [selectedChartCorredor, setSelectedChartCorredor] = useState<string | null>(null);
   const [selectedChartSituacao, setSelectedChartSituacao] = useState<string | null>(null);
 
-  // Mirror Table States
-  const [mirrorSearch, setMirrorSearch] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(15);
-  const [sortField, setSortField] = useState<keyof EquipmentRecord>('CÓDIGO');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-
   // Summary Table Sort States
   const [contratoSortField, setContratoSortField] = useState<SummarySortField>('faixas');
   const [contratoSortOrder, setContratoSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -111,7 +96,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   const [includeEquipmentListInPDF, setIncludeEquipmentListInPDF] = useState(false);
 
-  // Reset chart & table filters when global reset signal changes
+  // Reset chart filters when global reset signal changes
   useEffect(() => {
     if (resetSignal !== undefined && resetSignal > 0) {
       setSelectedChartContrato(null);
@@ -120,8 +105,6 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
       setSelectedChartMes(null);
       setSelectedChartCorredor(null);
       setSelectedChartSituacao(null);
-      setMirrorSearch('');
-      setCurrentPage(1);
     }
   }, [resetSignal]);
 
@@ -200,32 +183,26 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
   // Handler toggles (Bi-directional click interactions)
   const handleContratoClick = (contratoName: string) => {
     setSelectedChartContrato((prev) => (prev === contratoName ? null : contratoName));
-    setCurrentPage(1);
   };
 
   const handleTipoClick = (tipoName: string) => {
     setSelectedChartTipo((prev) => (prev === tipoName ? null : tipoName));
-    setCurrentPage(1);
   };
 
   const handleAnoClick = (anoName: string) => {
     setSelectedChartAno((prev) => (prev === anoName ? null : anoName));
-    setCurrentPage(1);
   };
 
   const handleMesClick = (mesName: string) => {
     setSelectedChartMes((prev) => (prev === mesName ? null : mesName));
-    setCurrentPage(1);
   };
 
   const handleCorredorClick = (corredorName: string) => {
     setSelectedChartCorredor((prev) => (prev === corredorName ? null : corredorName));
-    setCurrentPage(1);
   };
 
   const handleSituacaoClick = (situacaoName: string) => {
     setSelectedChartSituacao((prev) => (prev === situacaoName ? null : situacaoName));
-    setCurrentPage(1);
   };
 
   const handleResetChartFilters = () => {
@@ -235,7 +212,6 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
     setSelectedChartMes(null);
     setSelectedChartCorredor(null);
     setSelectedChartSituacao(null);
-    setCurrentPage(1);
   };
 
   // Records subsets with cross-filtering (allows switching within the same dimension while respecting other dimensions)
@@ -417,69 +393,6 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
       }))
       .sort((a, b) => b.SomaFaixas - a.SomaFaixas);
   }, [tipoRecords]);
-
-  // Mirror List filtering + sorting + pagination
-  const mirrorFilteredRecords = useMemo(() => {
-    let list = [...filteredByChartRecords];
-
-    if (mirrorSearch.trim()) {
-      const q = mirrorSearch.toLowerCase();
-      list = list.filter((r) => {
-        return [
-          r.CÓDIGO,
-          r.CONTRATO,
-          r.TIPO,
-          r.CORREDOR,
-          r.BAIRRO,
-          r['ENDEREÇO COMPLETO'],
-          r.Situação,
-        ]
-          .join(' ')
-          .toLowerCase()
-          .includes(q);
-      });
-    }
-
-    list.sort((a, b) => {
-      let valA = a[sortField] ?? '';
-      let valB = b[sortField] ?? '';
-
-      if (typeof valA === 'number' && typeof valB === 'number') {
-        return sortOrder === 'asc' ? valA - valB : valB - valA;
-      }
-
-      valA = String(valA).toLowerCase();
-      valB = String(valB).toLowerCase();
-
-      if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
-      if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
-      return 0;
-    });
-
-    return list;
-  }, [filteredByChartRecords, mirrorSearch, sortField, sortOrder]);
-
-  const totalPages = Math.ceil(mirrorFilteredRecords.length / pageSize) || 1;
-  const paginatedMirrorRecords = mirrorFilteredRecords.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-
-  const handleSort = (field: keyof EquipmentRecord) => {
-    if (sortField === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortOrder('asc');
-    }
-  };
-
-  const handleExportMirrorPDF = () => {
-    exportFilteredRecordsPDF(
-      mirrorFilteredRecords,
-      `Relatorio-Indicadores-GEAPI-${mirrorFilteredRecords.length}-equipamentos`
-    );
-  };
 
   // --- Summary Tables Calculations ---
   // 1. Group by CONTRATO
@@ -2265,256 +2178,13 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
         </div>
       </div>
 
-      {/* MIRROR LIST BELOW EVERYTHING (LISTA DE EQUIPAMENTOS) */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden mt-8">
-        
-        {/* Header bar of mirror list */}
-        <div className="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
-              <TableIcon className="w-5 h-5 text-blue-600" />
-            </div>
-            <div>
-              <h3 className="font-bold text-base sm:text-lg text-slate-900">
-                Lista de Equipamentos
-              </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Exibindo os {filteredByChartRecords.length} equipamentos filtrados
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleExportMirrorPDF}
-              className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors cursor-pointer shadow-2xs"
-            >
-              <FileDown className="w-4 h-4" />
-              <span>Exportar PDF</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Local Search and Controls Bar */}
-        <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-600">
-          
-          <div className="relative max-w-sm w-full">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Pesquisar dentro desta lista..."
-              value={mirrorSearch}
-              onChange={(e) => {
-                setMirrorSearch(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 focus:ring-1 focus:ring-blue-500 placeholder:text-slate-400"
-            />
-          </div>
-
-          <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
-            <span>
-              Página <strong className="text-slate-900">{currentPage}</strong> de <strong className="text-slate-900">{totalPages}</strong> ({mirrorFilteredRecords.length} itens)
-            </span>
-
-            <label className="flex items-center gap-1.5 font-medium">
-              <span>Por página:</span>
-              <select
-                value={pageSize}
-                onChange={(e) => {
-                  setPageSize(Number(e.target.value));
-                  setCurrentPage(1);
-                }}
-                className="bg-white border border-slate-300 rounded px-2 py-1 text-slate-800 focus:ring-1 focus:ring-blue-500"
-              >
-                <option value={15}>15</option>
-                <option value={25}>25</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-              </select>
-            </label>
-          </div>
-        </div>
-
-        {/* Data Table */}
-        <div className="block lg:hidden text-[10.5px] text-slate-500 font-medium px-4 py-1.5 bg-slate-100/90 border-b border-slate-200">
-          ↔ Deslize para os lados para ver todas as colunas
-        </div>
-        <div className="w-full overflow-x-auto min-h-[300px]">
-          <table className="w-full min-w-[850px] lg:min-w-0 lg:table-fixed text-[11px] sm:text-xs text-center">
-            <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200 text-[10px] sm:text-[11px]">
-              <tr>
-                <th
-                  onClick={() => handleSort('CÓDIGO')}
-                  className="w-[8%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
-                >
-                  <div className="flex items-center justify-center gap-0.5">
-                    <span>Código</span>
-                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                  </div>
-                </th>
-                <th
-                  onClick={() => handleSort('CONTRATO')}
-                  className="w-[8%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
-                >
-                  <div className="flex items-center justify-center gap-0.5">
-                    <span>Contrato</span>
-                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                  </div>
-                </th>
-                <th
-                  onClick={() => handleSort('TIPO')}
-                  className="w-[9%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
-                >
-                  <div className="flex items-center justify-center gap-0.5">
-                    <span>Tipo</span>
-                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                  </div>
-                </th>
-                <th
-                  onClick={() => handleSort('FAIXAS')}
-                  className="w-[5%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
-                >
-                  <div className="flex items-center justify-center gap-0.5">
-                    <span>Faixas</span>
-                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                  </div>
-                </th>
-                <th
-                  onClick={() => handleSort('ENDEREÇO COMPLETO')}
-                  className="w-[43%] py-2.5 px-1.5 cursor-pointer hover:bg-slate-200 transition-colors text-center"
-                >
-                  <div className="flex items-center justify-center gap-0.5">
-                    <span>Endereço Completo</span>
-                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                  </div>
-                </th>
-                <th
-                  onClick={() => handleSort('BAIRRO')}
-                  className="w-[12%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
-                >
-                  <div className="flex items-center justify-center gap-0.5">
-                    <span>Bairro</span>
-                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                  </div>
-                </th>
-                <th
-                  onClick={() => handleSort('Situação')}
-                  className="w-[10%] py-2.5 px-1 cursor-pointer hover:bg-slate-200 transition-colors text-center"
-                >
-                  <div className="flex items-center justify-center gap-0.5">
-                    <span>Situação</span>
-                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                  </div>
-                </th>
-                <th className="w-[6%] py-2.5 px-1 text-center">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-800">
-              {paginatedMirrorRecords.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-400">
-                    Nenhum equipamento encontrado na lista.
-                  </td>
-                </tr>
-              ) : (
-                paginatedMirrorRecords.map((r) => (
-                  <tr
-                    key={r.id}
-                    className="hover:bg-blue-50/50 transition-colors cursor-pointer group"
-                    onClick={() => onSelectRecord && onSelectRecord(r)}
-                  >
-                    <td className="py-2 px-1 font-bold text-slate-900 group-hover:text-blue-700 text-center truncate">
-                      {r.CÓDIGO || '-'}
-                    </td>
-                    <td className="py-2 px-1 font-medium text-slate-700 text-center truncate">
-                      {r.CONTRATO || '-'}
-                    </td>
-                    <td className="py-2 px-1 text-center truncate">
-                      <span className="inline-block bg-slate-100 text-slate-800 font-semibold px-1.5 py-0.5 rounded text-[10px] border border-slate-200 truncate max-w-full">
-                        {r.TIPO || '-'}
-                      </span>
-                    </td>
-                    <td className="py-2 px-1 text-center font-bold text-blue-700">
-                      {r.FAIXAS}
-                    </td>
-                    <td className="py-2 px-1.5 text-center font-normal text-slate-800 break-words whitespace-normal leading-snug">
-                      {r['ENDEREÇO COMPLETO'] || '-'}
-                    </td>
-                    <td className="py-2 px-1 text-slate-600 text-center break-words whitespace-normal leading-snug">
-                      {r.BAIRRO || '-'}
-                    </td>
-                    <td className="py-2 px-1 text-center text-[10px] truncate">
-                      <span
-                        className={`inline-block px-1.5 py-0.5 rounded-full font-medium truncate max-w-full border ${
-                          r.Situação?.toLowerCase().includes('relocação') || r.Situação?.toLowerCase().includes('relocacao')
-                            ? 'bg-purple-100 text-purple-800 border-purple-200/80 font-semibold'
-                            : r.Situação?.toLowerCase().includes('em operação') || r.Situação?.toLowerCase().includes('em operacao') || r.Situação?.toLowerCase().includes('operação') || r.Situação?.toLowerCase().includes('operacao')
-                            ? 'bg-emerald-100 text-emerald-800 border-emerald-200/80'
-                            : r.Situação?.toLowerCase().includes('desligado')
-                            ? 'bg-rose-100 text-rose-800 border-rose-200/80'
-                            : 'bg-amber-100 text-amber-800 border-amber-200/80'
-                        }`}
-                      >
-                        {r.Situação?.replace('\n', ' ') || '-'}
-                      </span>
-                    </td>
-                    <td className="py-2 px-1 text-center" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-center gap-0.5">
-                        <button
-                          onClick={() => onSelectRecord && onSelectRecord(r)}
-                          className="p-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded transition-colors"
-                          title="Ver Ficha Completa do Equipamento"
-                        >
-                          <Eye className="w-3 h-3" />
-                        </button>
-                        <button
-                          onClick={() => exportSingleRecordPDF(r)}
-                          className="p-1 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded transition-colors"
-                          title="Exportar PDF deste registro"
-                        >
-                          <FileDown className="w-3 h-3" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination Controls */}
-        <div className="bg-slate-50 px-4 py-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-600">
-          <div>
-            Página <strong className="text-slate-900">{currentPage}</strong> de {totalPages}
-          </div>
-
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="p-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white text-slate-700 font-medium"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            
-            <span className="px-3 font-semibold text-slate-800">
-              {currentPage} / {totalPages}
-            </span>
-
-            <button
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="p-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white text-slate-700 font-medium"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
+      {/* Tabela Compartilhada de Equipamentos (Idêntica à do Monitoramento Espacial) */}
+      <div className="mt-8">
+        <TableView
+          records={filteredByChartRecords}
+          onSelectRecord={onSelectRecord || (() => {})}
+        />
       </div>
-
     </div>
   );
 };

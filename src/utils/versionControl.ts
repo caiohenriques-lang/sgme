@@ -6,15 +6,86 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.84';
-export const BUILD_DATE = '30/09/2026';
+export const APP_VERSION = 'v3.7.91';
+export const BUILD_DATE = '05/10/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v3.7.91',
+    date: '05/10/2026',
+    tag: 'Limpeza do Subtítulo das Tabelas e Remoção do Filtro de Coordenadas',
+    isLatest: true,
+    changes: [
+      'Remoção Completa do Subtítulo da Tabela "Lista Completa de Equipamentos": Removida a linha de subtítulo/descrição informativa com contadores de itens do componente compartilhado TableView.tsx, mantendo exclusivamente o título oficial "Lista Completa de Equipamentos" no Monitoramento Espacial e na Lista de Equipamentos.',
+      'Remoção Visual do Checkbox "Apenas com Coordenadas": Eliminado 100% o campo de seleção manual de coordenadas do painel de filtros compartilhados FilterBar.tsx em todas as abas do portal.',
+      'Ajuste da Lógica de Filtragem e Distribuição de Colunas: No Monitoramento Espacial, o Mapa Leaflet preserva a filtragem técnica de coordenadas para plotagem dos marcadores, enquanto a Tabela Integrada, Indicadores e Lista de Equipamentos exibem a totalidade dos registros atendendo aos demais filtros ativos; Terceira linha de filtros rebalanceada para proporção simétrica de 4 colunas desktop (4 colunas Status / 4 colunas Início de Operação / 4 colunas Aceite).'
+    ]
+  },
+  {
+    version: 'v3.7.90',
+    date: '05/10/2026',
+    tag: 'Padronização Visual dos Campos de Data dos Filtros',
+    changes: [
+      'Padronização Visual Determinística dos Grupos de Data: Ajustadas as dimensões externas dos grupos "Início de Operação" e "Aceite" no painel de filtros compartilhados para utilizarem col-span simétrico e idêntico no desktop (lg:col-span-3).',
+      'Uniformização dos Quatro Inputs de Período: Todos os quatro campos de data foram calibrados com altura explícita de 34px (h-[34px]), largura fluida com min-w-0 (w-full min-w-0), mesmo padding (px-2), bordas arredondadas (rounded-lg), tipografia (text-[11px] font-medium) e gap interno harmônico (gap-1.5).',
+      'Preservação Integral de Funcionalidades e Regras: Mantidas 100% intactas todas as máscaras de digitação (DD/MM/AAAA), validações civis, parsing sem deslocamento por timezone, estado compartilhado e comportamento responsivo.'
+    ]
+  },
+  {
+    version: 'v3.7.89',
+    date: '05/10/2026',
+    tag: 'Tabela Integrada ao Monitoramento e Filtros Compartilhados por Status',
+    changes: [
+      'Tabela "Lista de Equipamentos" Incorporada ao Monitoramento Espacial: Adicionada a tabela oficial completa e interativa do módulo Lista de Equipamentos diretamente abaixo do mapa no Monitoramento Espacial, com sincronização em tempo real dos filtros compartilhados, paginação/ordenação local, mesmo modal de ficha técnica e sem fetch duplicado de dados.',
+      'Reformulação dos Filtros de Status por Checkboxes: Substituído o antigo dropdown de Status do Equipamento por três checkboxes independentes (Em Operação, Em Implantação e Relocação) operando em lógica OR interna (combinação de status) e lógica AND acumulativa com os demais filtros do painel.',
+      'Organização Visual em 3 Linhas Conceituais: Reestruturado o painel de filtros em 3 linhas de alta legibilidade no desktop (Linha 1: Pesquisa Rápida, Contrato, Regional, Bairro; Linha 2: Tipo de Equipamento, Número da OS, Seleção de Equipamentos, Situação; Linha 3: Checkboxes de Status, Início de Operação, Aceite e Apenas com Coordenadas).',
+      'Máscara Automática e Validação Civil de Datas: Adicionada máscara automática de digitação (DD/MM/AAAA) nos campos de período com limite de 10 caracteres, aceitação exclusiva de numéricos e validação civil imune a distorções de timezone.'
+    ]
+  },
+  {
+    version: 'v3.7.88',
+    date: '05/10/2026',
+    tag: 'Redistribuição Proporcional e Exibição do Eixo X no Controle de Ofícios',
+    changes: [
+      'Redistribuição Proporcional dos 3 Cards Analíticos: Ajustado o grid responsivo do Controle de Ofícios no desktop de proporções iguais para a distribuição privilegiada 3 / 4 / 5 colunas (~25%, ~33% e ~42%), reduzindo a largura do card de contratos, ajustando levemente o card de pizza e expandindo o card de tipos.',
+      'Correção do Eixo X do Gráfico por Tipo de Equipamento: Configurado o XAxis com exibição forçada de todos os ticks (interval={0}), altura e margens otimizadas, garantindo que todas as 5 categorias (CEV, DAS, DAS+DCP, DAS+DIF e DAS+DCP+DIF) apareçam integralmente sem omissão.',
+      'Harmonização do Título e Preservação de Regras: Título do gráfico ajustado para o singular ("Quantidade de Interrupções por Tipo de Equipamento") com preservação de 100% dos dados, tabelas históricas, matrizes e regras de negócio.'
+    ]
+  },
+  {
+    version: 'v3.7.87',
+    date: '05/10/2026',
+    tag: 'Remoção da Tabela na Aba Indicadores e Nova Ordem dos Módulos',
+    changes: [
+      'Remoção da Tabela "Lista de Equipamentos" na Aba Indicadores: Eliminado o card/tabela incorporado ao final da aba Indicadores com limpeza de estados, handlers de busca, paginação e ordenação locais, preservando 100% dos indicadores analíticos, gráficos, filtros dinâmicos e o módulo independente Lista de Equipamentos.',
+      'Nova Sequência Canônica dos Módulos de Navegação: Reordenados os módulos do menu principal (desktop e mobile) na sequência oficial: 1. Gestão Contratual, 2. Monitoramento Espacial, 3. Indicadores, 4. Controle de Aferições, 5. Lista de Equipamentos, 6. Relatórios, 7. Controle de Ofícios, 8. BHDIGITAL, 9. Legislação, 10. SISTEMAS, 11. OUTROS.',
+      'Preservação de Regras e Exportações: Mantidos intactos todos os recursos institucionais de emissão de PDF de Indicadores, gestão de sessões autorizadas, filtros globais e atalhos rápidos.'
+    ]
+  },
+  {
+    version: 'v3.7.86',
+    date: '05/10/2026',
+    tag: 'Filtro de Retornados e Refinamentos no Histórico de Ofícios',
+    changes: [
+      'Novo Filtro de Status "Retornados": Adicionado checkbox complementar ao lado de "Em aberto", permitindo filtrar exclusivamente eventos com data de retorno concluída, eventos em aberto, ambos (combinação completa) ou todos os registros (ambos desmarcados), com integração total aos filtros de CT, Mês, Motivo e Busca Geral.',
+      'Harmonização do Nome da Coluna: Rótulo da 9ª coluna atualizado para "Dias de Interrupção" na tabela interativa, no arquivo CSV ("DIAS DE INTERRUPÇÃO") e no PDF institucional, preservando o cálculo exato em dias corridos, ordenação numérica e formatação segura.',
+      'Limpeza Visual do Cabeçalho do Histórico: Removido o subtítulo com contador de eventos abaixo do título principal da tabela, proporcionando uma interface mais limpa e foco direto na barra de ações e filtros.'
+    ]
+  },
+  {
+    version: 'v3.7.85',
+    date: '05/10/2026',
+    tag: 'Número de Dias de Interrupção no Histórico de Ofícios',
+    changes: [
+      'Coluna Calculada "Nº de Dias de Interrupção": Adicionada a 9ª coluna ao Relatório Histórico de Parada e Retorno de Equipamentos, calculando a diferença exata em dias corridos (Data Retorno - Data Parada) via Date.UTC civil, com formatação singular/plural ("0 dias", "1 dia", "5 dias") e exibição segura de traço ("-") para eventos em aberto ou datas inválidas.',
+      'Ordenação Numérica e Busca Integrada: A nova coluna suporta ordenação crescente e decrescente por valor numérico real (alocando registros em aberto e nulos sempre ao final) e participa da busca global em todas as colunas.',
+      'Integração Completa em CSV e PDF: A coluna foi incluída no arquivo CSV (com valores numéricos puros para manipulação em planilhas) e no PDF institucional gerado via jsPDF / autoTable com cabeçalhos e larguras perfeitamente balanceadas em modo paisagem.'
+    ]
+  },
   {
     version: 'v3.7.84',
     date: '30/09/2026',
     tag: 'Reorganização Analítica do Controle de Ofícios',
-    isLatest: true,
     changes: [
       'Reorganização em Linha Única Analítica: A primeira seção analítica do Controle de Ofícios foi reestruturada em 3 cards harmonizados lado a lado no desktop (Acumulado de Interrupções por Contrato, % Acumulado por Contrato e Quantidade de Interrupções por Tipo), otimizando o aproveitamento vertical da tela.',
       'Remoção da Tabela de Inoperantes Temporários: Eliminado o card/tabela de "Equipamentos Inoperantes Temporariamente" e removido código morto exclusivo, mantendo 100% íntegro o cálculo e a exibição do indicador "Inoperantes Hoje" no painel superior.',
