@@ -632,7 +632,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                     </span>
                   )}
                 </label>
-                <div className="flex flex-wrap items-center gap-2 border border-slate-300 rounded-lg px-2 py-1 bg-slate-50 min-h-[34px]">
+                <div className="flex flex-wrap items-center justify-center gap-2 border border-slate-300 rounded-lg px-2 py-1 bg-slate-50 min-h-[34px]">
                   <label className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-700 cursor-pointer select-none">
                     <input
                       type="checkbox"
@@ -1020,7 +1020,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                     </span>
                   )}
                 </label>
-                <div className="flex flex-wrap items-center gap-3 border border-slate-300 rounded-lg px-2.5 py-1.5 bg-slate-50 min-h-[34px]">
+                <div className="flex flex-wrap items-center justify-center gap-3 border border-slate-300 rounded-lg px-2.5 py-1.5 bg-slate-50 min-h-[34px]">
                   <label className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700 cursor-pointer select-none">
                     <input
                       type="checkbox"
