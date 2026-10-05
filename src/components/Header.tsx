@@ -119,7 +119,38 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </button>
 
-            {/* 4. Controle de Aferições - Azul com indicador de cadeado */}
+            {/* 4. Lista de Equipamentos - Azul */}
+            <button
+              onClick={() => setActiveTab('tabela')}
+              className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center group ${
+                activeTab === 'tabela'
+                  ? 'bg-blue-600 border-blue-600 text-white shadow-sm ring-2 ring-blue-500/30'
+                  : 'bg-white/80 border-slate-200/80 text-slate-700 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700 shadow-2xs'
+              }`}
+            >
+              <Table className={`w-4 h-4 shrink-0 mb-0.5 transition-colors ${activeTab === 'tabela' ? 'text-white' : 'text-blue-600 group-hover:text-blue-700'}`} />
+              <div className="flex flex-col items-center text-[12px] font-bold leading-tight">
+                <span>Lista de</span>
+                <span>Equipamentos</span>
+              </div>
+            </button>
+
+            {/* 5. Relatórios - Azul */}
+            <button
+              onClick={() => setActiveTab('relatorios')}
+              className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center group ${
+                activeTab === 'relatorios'
+                  ? 'bg-blue-600 border-blue-600 text-white shadow-sm ring-2 ring-blue-500/30'
+                  : 'bg-white/80 border-slate-200/80 text-slate-700 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700 shadow-2xs'
+              }`}
+            >
+              <Printer className={`w-4 h-4 shrink-0 mb-0.5 transition-colors ${activeTab === 'relatorios' ? 'text-white' : 'text-blue-600 group-hover:text-blue-700'}`} />
+              <div className="flex flex-col items-center text-[12px] font-bold leading-tight">
+                <span>Relatórios</span>
+              </div>
+            </button>
+
+            {/* 6. Controle de Aferições - Azul com indicador de cadeado */}
             <button
               onClick={() => setActiveTab('afericoes')}
               className={`relative flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center group ${
@@ -141,37 +172,6 @@ export const Header: React.FC<HeaderProps> = ({
                 ) : (
                   <Unlock className={`w-3 h-3 ${activeTab === 'afericoes' ? 'text-emerald-200' : 'text-emerald-600'}`} title="Módulo autorizado na sessão" />
                 )}
-              </div>
-            </button>
-
-            {/* 5. Lista de Equipamentos - Azul */}
-            <button
-              onClick={() => setActiveTab('tabela')}
-              className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center group ${
-                activeTab === 'tabela'
-                  ? 'bg-blue-600 border-blue-600 text-white shadow-sm ring-2 ring-blue-500/30'
-                  : 'bg-white/80 border-slate-200/80 text-slate-700 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700 shadow-2xs'
-              }`}
-            >
-              <Table className={`w-4 h-4 shrink-0 mb-0.5 transition-colors ${activeTab === 'tabela' ? 'text-white' : 'text-blue-600 group-hover:text-blue-700'}`} />
-              <div className="flex flex-col items-center text-[12px] font-bold leading-tight">
-                <span>Lista de</span>
-                <span>Equipamentos</span>
-              </div>
-            </button>
-
-            {/* 6. Relatórios - Azul */}
-            <button
-              onClick={() => setActiveTab('relatorios')}
-              className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-150 cursor-pointer min-h-[52px] text-center group ${
-                activeTab === 'relatorios'
-                  ? 'bg-blue-600 border-blue-600 text-white shadow-sm ring-2 ring-blue-500/30'
-                  : 'bg-white/80 border-slate-200/80 text-slate-700 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700 shadow-2xs'
-              }`}
-            >
-              <Printer className={`w-4 h-4 shrink-0 mb-0.5 transition-colors ${activeTab === 'relatorios' ? 'text-white' : 'text-blue-600 group-hover:text-blue-700'}`} />
-              <div className="flex flex-col items-center text-[12px] font-bold leading-tight">
-                <span>Relatórios</span>
               </div>
             </button>
 

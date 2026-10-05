@@ -82,7 +82,7 @@ const renderContractBadge = (contrato: string, size: 'sm' | 'md' = 'md') => {
         target="_blank"
         rel="noopener noreferrer"
         title={`Abrir PDF do Contrato ${contrato} (Portal de Transparência PBH)`}
-        className={`group inline-flex items-center gap-1 bg-blue-50 hover:bg-blue-100 text-blue-800 hover:text-blue-900 border border-blue-200/90 hover:border-blue-300 ${paddingClass} rounded-md font-mono font-bold transition-all duration-150 shadow-2xs hover:shadow-xs`}
+        className={`group inline-flex items-center justify-center gap-1 bg-blue-50 hover:bg-blue-100 text-blue-800 hover:text-blue-900 border border-blue-200/90 hover:border-blue-300 ${paddingClass} rounded-md font-mono font-bold transition-all duration-150 shadow-2xs hover:shadow-xs mx-auto text-center`}
       >
         <span>{contrato}</span>
         <ExternalLink className="w-3 h-3 text-blue-600 group-hover:text-blue-800 opacity-70 group-hover:opacity-100 transition-opacity shrink-0" />
@@ -91,7 +91,7 @@ const renderContractBadge = (contrato: string, size: 'sm' | 'md' = 'md') => {
   }
 
   return (
-    <span className={`bg-slate-100 text-slate-800 border border-slate-200/90 ${paddingClass} rounded-md font-mono font-bold inline-block`}>
+    <span className={`bg-slate-100 text-slate-800 border border-slate-200/90 ${paddingClass} rounded-md font-mono font-bold inline-block text-center mx-auto`}>
       {contrato}
     </span>
   );
@@ -108,7 +108,7 @@ const renderReajusteValue = (contrato: string, reajusteNum: 1 | 2, value: string
         target="_blank"
         rel="noopener noreferrer"
         title={`Abrir documento de ${reajusteNum}º Reajuste do CT ${contrato} (Portal PBH)`}
-        className="group inline-flex items-center justify-center gap-1 text-blue-600 hover:text-blue-800 font-bold hover:underline"
+        className="group inline-flex items-center justify-center gap-1 text-blue-600 hover:text-blue-800 font-bold hover:underline mx-auto text-center"
       >
         <span>{displayVal}</span>
         <ExternalLink className="w-2.5 h-2.5 text-blue-500 group-hover:text-blue-700 opacity-70 group-hover:opacity-100 shrink-0" />
@@ -116,7 +116,7 @@ const renderReajusteValue = (contrato: string, reajusteNum: 1 | 2, value: string
     );
   }
 
-  return <span>{displayVal}</span>;
+  return <span className="block text-center">{displayVal}</span>;
 };
 
 interface GestaoContratualViewProps {
@@ -306,12 +306,12 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
               <div className="block sm:hidden text-[10px] text-slate-400 font-medium px-4 py-1.5 bg-slate-50 border-b border-slate-200">
                 ↔ Deslize a tabela para o lado para ver todas as colunas
               </div>
-              <table className="w-full text-left border-collapse min-w-[1050px]">
+              <table className="w-full text-center border-collapse min-w-[1050px]">
                 <thead>
                   <tr className="bg-slate-100/90 text-slate-700 font-bold border-b border-slate-200 uppercase tracking-wider text-[10px] sm:text-[11px]">
-                    <th className="py-2.5 px-3 w-24">CONTRATO</th>
-                    <th className="py-2.5 px-3 min-w-[170px]">EMPRESA</th>
-                    <th className="py-2.5 px-2 min-w-[100px]">TIPO EQUIP.</th>
+                    <th className="py-2.5 px-3 w-24 text-center">CONTRATO</th>
+                    <th className="py-2.5 px-3 min-w-[170px] text-center">EMPRESA</th>
+                    <th className="py-2.5 px-2 min-w-[100px] text-center">TIPO EQUIP.</th>
                     <th className="py-2.5 px-2 text-center bg-blue-50/70 text-blue-900 min-w-[90px]">CONTRATADAS</th>
                     {data.osColumns.map((osHeader) => (
                       <th key={osHeader} className="py-2.5 px-1.5 text-center min-w-[65px]">
@@ -331,18 +331,18 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
                     <tr key={row.contrato} className="hover:bg-slate-50/80 transition-colors">
                       
                       {/* Contrato */}
-                      <td className="py-3 px-3 font-bold text-slate-900 align-middle">
+                      <td className="py-3 px-3 font-bold text-slate-900 align-middle text-center">
                         {renderContractBadge(row.contrato, 'sm')}
                       </td>
 
                       {/* Empresa */}
-                      <td className="py-3 px-3 font-semibold text-slate-800 align-middle text-[11px] leading-tight">
+                      <td className="py-3 px-3 font-semibold text-slate-800 align-middle text-[11px] leading-tight text-center">
                         {row.empresa}
                       </td>
 
                       {/* Tipo de Equipamento */}
-                      <td className="py-3 px-2 font-medium text-slate-700 align-middle">
-                        <span className="bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded text-[10px] block text-center truncate" title={row.tipoEquipamento}>
+                      <td className="py-3 px-2 font-medium text-slate-700 align-middle text-center">
+                        <span className="bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded text-[10px] inline-block text-center truncate mx-auto max-w-full" title={row.tipoEquipamento}>
                           {row.tipoEquipamento}
                         </span>
                       </td>
@@ -356,12 +356,12 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
                       {row.osList.map((os, idx) => (
                         <td key={idx} className="py-3 px-1.5 text-center align-middle">
                           {os.faixas !== undefined && os.faixas !== '' ? (
-                            <div className="leading-tight">
-                              <span className="font-bold text-slate-900 text-xs bg-slate-100 px-1.5 py-0.5 rounded">
+                            <div className="leading-tight flex flex-col items-center justify-center">
+                              <span className="font-bold text-slate-900 text-xs bg-slate-100 px-1.5 py-0.5 rounded inline-block text-center">
                                 {os.faixas}
                               </span>
                               {os.data && (
-                                <span className={`block text-[9px] font-mono mt-1 px-1 py-0.2 rounded ${
+                                <span className={`block text-[9px] font-mono mt-1 px-1 py-0.2 rounded text-center ${
                                   os.data.includes('AGUARDANDO')
                                     ? 'text-amber-700 font-semibold bg-amber-50 border border-amber-200'
                                     : 'text-slate-500'
@@ -371,21 +371,21 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
                               )}
                             </div>
                           ) : (
-                            <span className="text-slate-300">-</span>
+                            <span className="text-slate-300 block text-center">-</span>
                           )}
                         </td>
                       ))}
 
                       {/* % em Implantação/Operação */}
                       <td className="py-3 px-2 text-center bg-emerald-50/30 align-middle">
-                        <span className="font-bold text-emerald-800 text-[11px] bg-emerald-100/80 px-2 py-0.5 rounded border border-emerald-200 inline-block">
+                        <span className="font-bold text-emerald-800 text-[11px] bg-emerald-100/80 px-2 py-0.5 rounded border border-emerald-200 inline-block text-center">
                           {row.percentualImplantacaoOperacao}
                         </span>
                       </td>
 
                       {/* Faixas Restantes */}
                       <td className="py-3 px-2 text-center bg-amber-50/30 align-middle">
-                        <span className="font-bold text-amber-900 text-xs bg-amber-100/80 px-2 py-0.5 rounded border border-amber-200 inline-block">
+                        <span className="font-bold text-amber-900 text-xs bg-amber-100/80 px-2 py-0.5 rounded border border-amber-200 inline-block text-center">
                           {row.faixasRestantes}
                         </span>
                       </td>
@@ -430,12 +430,12 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
               <div className="block sm:hidden text-[10px] text-slate-400 font-medium px-4 py-1.5 bg-slate-50 border-b border-slate-200">
                 ↔ Deslize a tabela para o lado para ver todas as colunas
               </div>
-              <table className="w-full text-left text-xs border-collapse min-w-[750px]">
+              <table className="w-full text-center text-xs border-collapse min-w-[750px]">
                 <thead>
                   <tr className="bg-slate-100/90 text-slate-700 font-bold border-b border-slate-200 uppercase tracking-wider text-[11px]">
-                    <th className="py-3 px-4 w-28">CONTRATO</th>
-                    <th className="py-3 px-4 min-w-[200px]">EMPRESA</th>
-                    <th className="py-3 px-4 min-w-[150px]">TIPO DE EQUIPAMENTO</th>
+                    <th className="py-3 px-4 w-28 text-center">CONTRATO</th>
+                    <th className="py-3 px-4 min-w-[200px] text-center">EMPRESA</th>
+                    <th className="py-3 px-4 min-w-[150px] text-center">TIPO DE EQUIPAMENTO</th>
                     <th className="py-3 px-4 text-center bg-indigo-50/60 text-indigo-900">FAIXAS DE RELOCAÇÃO</th>
                     <th className="py-3 px-4 text-center">1º USO</th>
                     <th className="py-3 px-4 text-center">2º USO</th>
@@ -445,14 +445,14 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
                 <tbody className="divide-y divide-slate-100 text-slate-800">
                   {data.tabelaRelocacoes.map((row) => (
                     <tr key={row.contrato} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3.5 px-4 font-bold text-slate-900 align-middle">
+                      <td className="py-3.5 px-4 font-bold text-slate-900 align-middle text-center">
                         {renderContractBadge(row.contrato)}
                       </td>
-                      <td className="py-3.5 px-4 font-semibold text-slate-800 align-middle">
+                      <td className="py-3.5 px-4 font-semibold text-slate-800 align-middle text-center">
                         {row.empresa}
                       </td>
-                      <td className="py-3.5 px-4 font-medium text-slate-700 align-middle">
-                        <span className="bg-slate-50 border border-slate-200 px-2 py-0.5 rounded text-[11px]">
+                      <td className="py-3.5 px-4 font-medium text-slate-700 align-middle text-center">
+                        <span className="bg-slate-50 border border-slate-200 px-2 py-0.5 rounded text-[11px] inline-block text-center">
                           {row.tipoEquipamento}
                         </span>
                       </td>
@@ -461,28 +461,28 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
                       </td>
                       <td className="py-3.5 px-4 text-center align-middle">
                         {row.primeiroUso.faixas !== undefined ? (
-                          <div>
-                            <span className="font-bold text-slate-900 text-xs bg-slate-100 px-2 py-0.5 rounded">
+                          <div className="flex flex-col items-center justify-center">
+                            <span className="font-bold text-slate-900 text-xs bg-slate-100 px-2 py-0.5 rounded inline-block text-center">
                               {row.primeiroUso.faixas}
                             </span>
                             {row.primeiroUso.data && (
-                              <span className="block text-[10px] text-slate-500 font-mono mt-1">
+                              <span className="block text-[10px] text-slate-500 font-mono mt-1 text-center">
                                 {row.primeiroUso.data}
                               </span>
                             )}
                           </div>
                         ) : (
-                          <span className="text-slate-300 font-bold">-</span>
+                          <span className="text-slate-300 font-bold block text-center">-</span>
                         )}
                       </td>
                       <td className="py-3.5 px-4 text-center align-middle">
                         {row.segundoUso.faixas !== undefined ? (
-                          <div>
-                            <span className="font-bold text-slate-900 text-xs bg-slate-100 px-2 py-0.5 rounded">
+                          <div className="flex flex-col items-center justify-center">
+                            <span className="font-bold text-slate-900 text-xs bg-slate-100 px-2 py-0.5 rounded inline-block text-center">
                               {row.segundoUso.faixas}
                             </span>
                             {row.segundoUso.data && (
-                              <span className={`block text-[10px] font-mono mt-1 px-1.5 py-0.5 rounded ${
+                              <span className={`block text-[10px] font-mono mt-1 px-1.5 py-0.5 rounded text-center ${
                                 row.segundoUso.data.includes('AGUARDANDO')
                                   ? 'text-amber-700 font-semibold bg-amber-50 border border-amber-200'
                                   : 'text-slate-500'
@@ -492,11 +492,11 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
                             )}
                           </div>
                         ) : (
-                          <span className="text-slate-300 font-bold">-</span>
+                          <span className="text-slate-300 font-bold block text-center">-</span>
                         )}
                       </td>
                       <td className="py-3.5 px-4 text-center bg-emerald-50/30 align-middle">
-                        <span className="font-bold text-emerald-800 text-xs bg-emerald-100/80 px-2.5 py-1 rounded-md border border-emerald-200">
+                        <span className="font-bold text-emerald-800 text-xs bg-emerald-100/80 px-2.5 py-1 rounded-md border border-emerald-200 inline-block text-center">
                           {row.restante}
                         </span>
                       </td>
@@ -527,16 +527,16 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
               <div className="block sm:hidden text-[10px] text-slate-400 font-medium px-4 py-1.5 bg-slate-50 border-b border-slate-200">
                 ↔ Deslize a tabela para o lado para ver todas as colunas
               </div>
-              <table className="w-full text-left text-xs border-collapse min-w-[800px]">
+              <table className="w-full text-center text-xs border-collapse min-w-[800px]">
                 <thead>
                   <tr className="bg-slate-100/90 text-slate-700 font-bold border-b border-slate-200 uppercase tracking-wider text-[11px]">
-                    <th className="py-3 px-4 w-28">CONTRATO</th>
-                    <th className="py-3 px-4 min-w-[220px]">EMPRESA</th>
-                    <th className="py-3 px-4 text-right bg-slate-50/60">VALOR DE FAIXA (CONTRATADO)</th>
+                    <th className="py-3 px-4 w-28 text-center">CONTRATO</th>
+                    <th className="py-3 px-4 min-w-[220px] text-center">EMPRESA</th>
+                    <th className="py-3 px-4 text-center bg-slate-50/60">VALOR DE FAIXA (CONTRATADO)</th>
                     <th className="py-3 px-4 text-center">BDI</th>
                     <th className="py-3 px-4 text-center">1º REAJUSTE</th>
                     <th className="py-3 px-4 text-center">2º REAJUSTE</th>
-                    <th className="py-3 px-4 text-right bg-emerald-50/60 text-emerald-950">
+                    <th className="py-3 px-4 text-center bg-emerald-50/60 text-emerald-950">
                       VALOR DE FAIXA ATUAL + BDI
                     </th>
                   </tr>
@@ -544,13 +544,13 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
                 <tbody className="divide-y divide-slate-100 text-slate-800">
                   {data.tabelaCustos.map((row) => (
                     <tr key={row.contrato} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3.5 px-4 font-bold text-slate-900 align-middle">
+                      <td className="py-3.5 px-4 font-bold text-slate-900 align-middle text-center">
                         {renderContractBadge(row.contrato)}
                       </td>
-                      <td className="py-3.5 px-4 font-semibold text-slate-800 align-middle">
+                      <td className="py-3.5 px-4 font-semibold text-slate-800 align-middle text-center">
                         {row.empresa}
                       </td>
-                      <td className="py-3.5 px-4 text-right font-mono font-medium text-slate-700 bg-slate-50/30 align-middle">
+                      <td className="py-3.5 px-4 text-center font-mono font-medium text-slate-700 bg-slate-50/30 align-middle">
                         {row.valorContratado}
                       </td>
                       <td className="py-3.5 px-4 text-center font-mono font-medium text-slate-700 align-middle">
@@ -562,7 +562,7 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
                       <td className="py-3.5 px-4 text-center font-mono font-medium text-slate-700 align-middle">
                         {renderReajusteValue(row.contrato, 2, row.segundoReajuste || row.segundaTA)}
                       </td>
-                      <td className="py-3.5 px-4 text-right font-mono font-bold text-emerald-800 bg-emerald-50/30 text-sm align-middle">
+                      <td className="py-3.5 px-4 text-center font-mono font-bold text-emerald-800 bg-emerald-50/30 text-sm align-middle">
                         {row.valorAtualBDI}
                       </td>
                     </tr>
@@ -592,16 +592,16 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
               <div className="block sm:hidden text-[10px] text-slate-400 font-medium px-4 py-1.5 bg-slate-50 border-b border-slate-200">
                 ↔ Deslize a tabela para o lado para ver todas as colunas
               </div>
-              <table className="w-full text-left text-xs border-collapse min-w-[800px]">
+              <table className="w-full text-center text-xs border-collapse min-w-[800px]">
                 <thead>
                   <tr className="bg-slate-100/90 text-slate-700 font-bold border-b border-slate-200 uppercase tracking-wider text-[11px]">
-                    <th className="py-3 px-4 w-28">CONTRATO</th>
-                    <th className="py-3 px-4 min-w-[220px]">EMPRESA</th>
-                    <th className="py-3 px-4 text-right bg-slate-50/60">VALOR DE RELOCAÇÃO (CONTRATADO)</th>
+                    <th className="py-3 px-4 w-28 text-center">CONTRATO</th>
+                    <th className="py-3 px-4 min-w-[220px] text-center">EMPRESA</th>
+                    <th className="py-3 px-4 text-center bg-slate-50/60">VALOR DE RELOCAÇÃO (CONTRATADO)</th>
                     <th className="py-3 px-4 text-center">BDI</th>
                     <th className="py-3 px-4 text-center">1º REAJUSTE</th>
                     <th className="py-3 px-4 text-center">2º REAJUSTE</th>
-                    <th className="py-3 px-4 text-right bg-indigo-50/60 text-indigo-950">
+                    <th className="py-3 px-4 text-center bg-indigo-50/60 text-indigo-950">
                       VALOR DE RELOCAÇÃO ATUAL
                     </th>
                   </tr>
@@ -609,13 +609,13 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
                 <tbody className="divide-y divide-slate-100 text-slate-800">
                   {(data.tabelaCustosRelocacao || []).map((row) => (
                     <tr key={row.contrato} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3.5 px-4 font-bold text-slate-900 align-middle">
+                      <td className="py-3.5 px-4 font-bold text-slate-900 align-middle text-center">
                         {renderContractBadge(row.contrato)}
                       </td>
-                      <td className="py-3.5 px-4 font-semibold text-slate-800 align-middle">
+                      <td className="py-3.5 px-4 font-semibold text-slate-800 align-middle text-center">
                         {row.empresa}
                       </td>
-                      <td className="py-3.5 px-4 text-right font-mono font-medium text-slate-700 bg-slate-50/30 align-middle">
+                      <td className="py-3.5 px-4 text-center font-mono font-medium text-slate-700 bg-slate-50/30 align-middle">
                         {row.valorContratado}
                       </td>
                       <td className="py-3.5 px-4 text-center font-mono font-medium text-slate-700 align-middle">
@@ -627,7 +627,7 @@ export const GestaoContratualView: React.FC<GestaoContratualViewProps> = ({ last
                       <td className="py-3.5 px-4 text-center font-mono font-medium text-slate-700 align-middle">
                         {renderReajusteValue(row.contrato, 2, row.segundoReajuste || row.segundaTA)}
                       </td>
-                      <td className="py-3.5 px-4 text-right font-mono font-bold text-indigo-900 bg-indigo-50/30 text-sm align-middle">
+                      <td className="py-3.5 px-4 text-center font-mono font-bold text-indigo-900 bg-indigo-50/30 text-sm align-middle">
                         {row.valorAtual}
                       </td>
                     </tr>

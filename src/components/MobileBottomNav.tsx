@@ -59,7 +59,33 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         <span className="text-[9.5px] font-bold mt-0.5 tracking-tight truncate max-w-full">Indicadores</span>
       </button>
 
-      {/* Tab 4: Controle de Aferições */}
+      {/* Tab 4: Lista de Equipamentos */}
+      <button
+        onClick={() => setActiveTab('tabela')}
+        className={`flex-1 min-w-[48px] flex flex-col items-center justify-center py-1 px-0.5 rounded-lg transition-all duration-150 min-h-[44px] cursor-pointer ${
+          activeTab === 'tabela'
+            ? 'text-blue-700 font-bold bg-blue-100/90 border border-blue-300/80 shadow-2xs'
+            : 'text-slate-600 font-medium hover:text-blue-700 hover:bg-slate-100/80'
+        }`}
+      >
+        <Table className={`w-4 h-4 sm:w-5 sm:h-5 ${activeTab === 'tabela' ? 'text-blue-700' : 'text-blue-600'}`} />
+        <span className="text-[9.5px] font-bold mt-0.5 tracking-tight truncate max-w-full">Lista</span>
+      </button>
+
+      {/* Tab 5: Relatórios */}
+      <button
+        onClick={() => setActiveTab('relatorios')}
+        className={`flex-1 min-w-[48px] flex flex-col items-center justify-center py-1 px-0.5 rounded-lg transition-all duration-150 min-h-[44px] cursor-pointer ${
+          activeTab === 'relatorios'
+            ? 'text-blue-700 font-bold bg-blue-100/90 border border-blue-300/80 shadow-2xs'
+            : 'text-slate-600 font-medium hover:text-blue-700 hover:bg-slate-100/80'
+        }`}
+      >
+        <Printer className={`w-4 h-4 sm:w-5 sm:h-5 ${activeTab === 'relatorios' ? 'text-blue-700' : 'text-blue-600'}`} />
+        <span className="text-[9.5px] font-bold mt-0.5 tracking-tight truncate max-w-full">Relatórios</span>
+      </button>
+
+      {/* Tab 6: Controle de Aferições */}
       <button
         onClick={() => setActiveTab('afericoes')}
         className={`relative flex-1 min-w-[48px] flex flex-col items-center justify-center py-1 px-0.5 rounded-lg transition-all duration-150 min-h-[44px] cursor-pointer ${
@@ -79,32 +105,6 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
             <Unlock className={`w-2.5 h-2.5 ${activeTab === 'afericoes' ? 'text-emerald-700' : 'text-emerald-600'}`} title="Módulo autorizado na sessão" />
           )}
         </div>
-      </button>
-
-      {/* Tab 5: Lista de Equipamentos */}
-      <button
-        onClick={() => setActiveTab('tabela')}
-        className={`flex-1 min-w-[48px] flex flex-col items-center justify-center py-1 px-0.5 rounded-lg transition-all duration-150 min-h-[44px] cursor-pointer ${
-          activeTab === 'tabela'
-            ? 'text-blue-700 font-bold bg-blue-100/90 border border-blue-300/80 shadow-2xs'
-            : 'text-slate-600 font-medium hover:text-blue-700 hover:bg-slate-100/80'
-        }`}
-      >
-        <Table className={`w-4 h-4 sm:w-5 sm:h-5 ${activeTab === 'tabela' ? 'text-blue-700' : 'text-blue-600'}`} />
-        <span className="text-[9.5px] font-bold mt-0.5 tracking-tight truncate max-w-full">Lista</span>
-      </button>
-
-      {/* Tab 6: Relatórios */}
-      <button
-        onClick={() => setActiveTab('relatorios')}
-        className={`flex-1 min-w-[48px] flex flex-col items-center justify-center py-1 px-0.5 rounded-lg transition-all duration-150 min-h-[44px] cursor-pointer ${
-          activeTab === 'relatorios'
-            ? 'text-blue-700 font-bold bg-blue-100/90 border border-blue-300/80 shadow-2xs'
-            : 'text-slate-600 font-medium hover:text-blue-700 hover:bg-slate-100/80'
-        }`}
-      >
-        <Printer className={`w-4 h-4 sm:w-5 sm:h-5 ${activeTab === 'relatorios' ? 'text-blue-700' : 'text-blue-600'}`} />
-        <span className="text-[9.5px] font-bold mt-0.5 tracking-tight truncate max-w-full">Relatórios</span>
       </button>
 
       {/* Tab 7: Controle de Ofícios */}

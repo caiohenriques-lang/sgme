@@ -6,15 +6,24 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.91';
+export const APP_VERSION = 'v3.7.92';
 export const BUILD_DATE = '05/10/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: 'v3.7.92',
+    date: '05/10/2026',
+    tag: 'Reordenação de Navegação e Centralização da Gestão Contratual',
+    isLatest: true,
+    changes: [
+      'Reordenação do Módulo "Controle de Aferições": Reposicionado o módulo "Controle de Aferições" para a 6ª posição da barra de navegação no desktop (Header.tsx) e mobile (MobileBottomNav.tsx), posicionando-o entre "Relatórios" (5ª posição) e "Controle de Ofícios" (7ª posição), preservando integralmente o ícone Gauge, estado de bloqueio/cadeado, autorização por senha na sessão, sessionStorage e o componente AfericoesView.',
+      'Centralização Rigorosa de Todas as Tabelas da Gestão Contratual: Auditadas e calibradas as 4 tabelas oficiais do módulo Gestão Contratual (1. Quantidade de Faixas por Ordem de Serviço, 2. Quantidade de Relocações, 3. Custo por Faixa e por Contrato, 4. Custo por Relocação e por Contrato) com alinhamento centralizado obrigatório em todos os <th>, <td>, badges de contrato, datas de OS/reajuste, valores em moeda, percentuais e wrappers internos (flex/inline-flex com mx-auto e justify-center).'
+    ]
+  },
+  {
     version: 'v3.7.91',
     date: '05/10/2026',
     tag: 'Limpeza do Subtítulo das Tabelas e Remoção do Filtro de Coordenadas',
-    isLatest: true,
     changes: [
       'Remoção Completa do Subtítulo da Tabela "Lista Completa de Equipamentos": Removida a linha de subtítulo/descrição informativa com contadores de itens do componente compartilhado TableView.tsx, mantendo exclusivamente o título oficial "Lista Completa de Equipamentos" no Monitoramento Espacial e na Lista de Equipamentos.',
       'Remoção Visual do Checkbox "Apenas com Coordenadas": Eliminado 100% o campo de seleção manual de coordenadas do painel de filtros compartilhados FilterBar.tsx em todas as abas do portal.',
