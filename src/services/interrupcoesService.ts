@@ -37,6 +37,7 @@ export interface EquipamentoMensalRow {
   contrato: string;
   codigo: string;
   tipo: string;
+  enderecoCompleto?: string;
   ano2025: number;
   jan2026: number;
   fev2026: number;
@@ -218,6 +219,7 @@ export function calculateMensalMatrix(records: InterrupcaoRecord[]): {
         contrato: r.ct,
         codigo: r.codigo,
         tipo: r.tipo,
+        enderecoCompleto: r.enderecoCompleto || '',
         ano2025: 0,
         jan2026: 0,
         fev2026: 0,
@@ -229,6 +231,8 @@ export function calculateMensalMatrix(records: InterrupcaoRecord[]): {
         ago2026: 0,
         totalGeral: 0,
       };
+    } else if (!map[r.codigo].enderecoCompleto && r.enderecoCompleto) {
+      map[r.codigo].enderecoCompleto = r.enderecoCompleto;
     }
 
     const row = map[r.codigo];

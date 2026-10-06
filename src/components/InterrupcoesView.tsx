@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
   PieChart,
   Pie,
@@ -39,9 +40,217 @@ import {
   formatDiasInterrupcao,
   CONTRATOS_ATIVOS,
 } from '../services/interrupcoesService';
+import { EquipmentRecord } from '../types';
 import { exportHistoricoParadasPDF } from '../utils/pdfExport';
 
 type SortHistoricoKey = 'ct' | 'codigo' | 'tipo' | 'motivo' | 'oficioInicial' | 'dataParada' | 'oficioRetorno' | 'dataRetorno' | 'diasInterrupcao';
+
+interface InterrupcoesViewProps {
+  equipmentRecords?: EquipmentRecord[];
+}
+
+interface EquipmentCodeWithAddressProps {
+  codigo: string;
+  enderecoCompleto: string;
+}
+
+const EquipmentCodeWithAddress: React.FC<EquipmentCodeWithAddressProps> = ({
+  codigo,
+  enderecoCompleto,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [coords, setCoords] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    placement: 'top' | 'bottom';
+  } | null>(null);
+
+  const triggerRef = useRef<HTMLSpanElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const closeTimerRef = useRef<number | null>(null);
+  const isTouchRef = useRef(false);
+
+  const clearCloseTimer = useCallback(() => {
+    if (closeTimerRef.current !== null) {
+      window.clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  }, []);
+
+  const updatePosition = useCallback(() => {
+    if (!triggerRef.current || typeof window === 'undefined') return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const popoverWidth = Math.min(320, window.innerWidth - 24);
+    let left = rect.left + rect.width / 2 - popoverWidth / 2;
+    left = Math.max(12, Math.min(left, window.innerWidth - popoverWidth - 12));
+
+    const placement: 'top' | 'bottom' = rect.top > 160 ? 'top' : 'bottom';
+    const top = placement === 'top' ? rect.top - 6 : rect.bottom + 6;
+
+    setCoords({ top, left, width: popoverWidth, placement });
+  }, []);
+
+  const openPopover = useCallback(() => {
+    clearCloseTimer();
+    updatePosition();
+    setIsOpen(true);
+  }, [clearCloseTimer, updatePosition]);
+
+  const scheduleClose = useCallback(() => {
+    clearCloseTimer();
+    closeTimerRef.current = window.setTimeout(() => {
+      setIsOpen(false);
+    }, 120);
+  }, [clearCloseTimer]);
+
+  const closeImmediately = useCallback(() => {
+    clearCloseTimer();
+    setIsOpen(false);
+  }, [clearCloseTimer]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleOutsideTouchOrClick = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as Node | null;
+      if (
+        target &&
+        !triggerRef.current?.contains(target) &&
+        !popoverRef.current?.contains(target)
+      ) {
+        closeImmediately();
+      }
+    };
+
+    const handleScrollOrResize = (e: Event) => {
+      if (popoverRef.current && e.target instanceof Node && popoverRef.current.contains(e.target)) {
+        return;
+      }
+      closeImmediately();
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeImmediately();
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideTouchOrClick);
+    document.addEventListener('touchstart', handleOutsideTouchOrClick, { passive: true });
+    window.addEventListener('scroll', handleScrollOrResize, true);
+    window.addEventListener('resize', handleScrollOrResize);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideTouchOrClick);
+      document.removeEventListener('touchstart', handleOutsideTouchOrClick);
+      window.removeEventListener('scroll', handleScrollOrResize, true);
+      window.removeEventListener('resize', handleScrollOrResize);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, closeImmediately]);
+
+  useEffect(() => {
+    return () => clearCloseTimer();
+  }, [clearCloseTimer]);
+
+  return (
+    <>
+      <span
+        ref={triggerRef}
+        role="button"
+        tabIndex={0}
+        aria-label={`Ver endereço completo do equipamento ${codigo}`}
+        aria-expanded={isOpen}
+        onTouchStart={() => {
+          isTouchRef.current = true;
+        }}
+        onMouseEnter={() => {
+          if (!isTouchRef.current) {
+            openPopover();
+          }
+        }}
+        onMouseLeave={() => {
+          if (!isTouchRef.current) {
+            scheduleClose();
+          }
+        }}
+        onFocus={() => {
+          if (!isTouchRef.current) {
+            openPopover();
+          }
+        }}
+        onBlur={() => {
+          closeImmediately();
+        }}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (isOpen && isTouchRef.current) {
+            closeImmediately();
+          } else {
+            openPopover();
+          }
+          window.setTimeout(() => {
+            isTouchRef.current = false;
+          }, 300);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            e.stopPropagation();
+            if (isOpen) {
+              closeImmediately();
+            } else {
+              openPopover();
+            }
+          }
+        }}
+        className="inline-block font-bold text-slate-900 cursor-help underline decoration-dotted decoration-slate-400 underline-offset-2 hover:text-blue-700 hover:decoration-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors"
+      >
+        {codigo}
+      </span>
+
+      {isOpen &&
+        coords &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            ref={popoverRef}
+            role="tooltip"
+            onClick={(e) => e.stopPropagation()}
+            onMouseEnter={() => {
+              if (!isTouchRef.current) {
+                clearCloseTimer();
+              }
+            }}
+            onMouseLeave={() => {
+              if (!isTouchRef.current) {
+                scheduleClose();
+              }
+            }}
+            style={{
+              position: 'fixed',
+              top: `${coords.top}px`,
+              left: `${coords.left}px`,
+              width: `${coords.width}px`,
+              transform: coords.placement === 'top' ? 'translateY(-100%)' : 'none',
+              zIndex: 9999,
+            }}
+            className="bg-white rounded-lg border border-slate-200 shadow-lg p-2.5 text-left pointer-events-auto animate-in fade-in duration-100"
+          >
+            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pb-1 mb-1.5 border-b border-slate-100">
+              Endereço Completo
+            </div>
+            <div className="text-[11px] leading-relaxed text-slate-800 font-normal whitespace-pre-wrap break-words max-h-[200px] overflow-y-auto">
+              {enderecoCompleto}
+            </div>
+          </div>,
+          document.body
+        )}
+    </>
+  );
+};
 
 const renderCustomPieLabel = ({
   cx,
@@ -95,7 +304,7 @@ const renderBarCustomLabel = (props: any) => {
   );
 };
 
-export const InterrupcoesView: React.FC = () => {
+export const InterrupcoesView: React.FC<InterrupcoesViewProps> = ({ equipmentRecords = [] }) => {
   const [records, setRecords] = useState<InterrupcaoRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -223,6 +432,31 @@ export const InterrupcoesView: React.FC = () => {
   const contratoSummary = useMemo(() => {
     return calculateContratoSummary(records);
   }, [records]);
+
+  // Mapa em memória de Endereço Completo por Código (a partir dos registros já carregados)
+  const addressByCodeMap = useMemo(() => {
+    const map = new Map<string, string>();
+    records.forEach((r) => {
+      const codeKey = (r.codigo || '').trim().toUpperCase();
+      const addr = (r.enderecoCompleto || '').trim();
+      if (codeKey && addr && !map.has(codeKey)) {
+        map.set(codeKey, addr);
+      }
+    });
+    equipmentRecords.forEach((eq) => {
+      const codeKey = (eq.CÓDIGO || '').trim().toUpperCase();
+      const addr = (
+        eq['ENDEREÇO COMPLETO'] ||
+        eq.rawFields?.['ENDEREÇO COMPLETO'] ||
+        eq['ENDEREÇOS DOS EQUIPAMENTOS'] ||
+        ''
+      ).trim();
+      if (codeKey && addr && !map.has(codeKey)) {
+        map.set(codeKey, addr);
+      }
+    });
+    return map;
+  }, [records, equipmentRecords]);
 
   // 2. Calculations for Section 02 (Monthly Matrix)
   const mensalData = useMemo(() => {
@@ -1065,13 +1299,27 @@ export const InterrupcoesView: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                paginatedHistorico.map((row) => (
+                paginatedHistorico.map((row) => {
+                  const resolvedAddress = (
+                    row.enderecoCompleto ||
+                    addressByCodeMap.get((row.codigo || '').trim().toUpperCase()) ||
+                    ''
+                  ).trim();
+
+                  return (
                   <tr key={row.id} className="hover:bg-slate-50 transition-colors">
                     <td className="py-2.5 px-3 text-center whitespace-nowrap text-slate-600 font-mono">
                       {row.ct}
                     </td>
                     <td className="py-2.5 px-3 text-center whitespace-nowrap font-bold text-slate-900">
-                      {row.codigo}
+                      {resolvedAddress ? (
+                        <EquipmentCodeWithAddress
+                          codigo={row.codigo}
+                          enderecoCompleto={resolvedAddress}
+                        />
+                      ) : (
+                        row.codigo
+                      )}
                     </td>
                     <td className="py-2.5 px-3 text-center whitespace-nowrap">
                       <span className="inline-block px-2 py-0.5 rounded-sm text-[11px] bg-slate-100 text-slate-700 font-semibold">
@@ -1101,7 +1349,8 @@ export const InterrupcoesView: React.FC = () => {
                       {formatDiasInterrupcao(calculateDiasInterrupcao(row.dataParada, row.dataRetorno))}
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -1157,9 +1406,6 @@ export const InterrupcoesView: React.FC = () => {
                 </span>
               )}
             </h3>
-            <p className="text-xs text-slate-500">
-              Matriz mensal consolidada por equipamento e tipologia ({sortedMensalRows.length} equipamentos)
-            </p>
           </div>
           <div className="relative min-w-[220px]">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -1228,13 +1474,27 @@ export const InterrupcoesView: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                paginatedMensalRows.map((row) => (
+                paginatedMensalRows.map((row) => {
+                  const resolvedAddress = (
+                    row.enderecoCompleto ||
+                    addressByCodeMap.get((row.codigo || '').trim().toUpperCase()) ||
+                    ''
+                  ).trim();
+
+                  return (
                   <tr key={row.codigo} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-2.5 px-3 text-center font-mono text-slate-600 whitespace-nowrap">
                       {row.contrato}
                     </td>
                     <td className="py-2.5 px-3 text-center font-bold text-slate-900 whitespace-nowrap">
-                      {row.codigo}
+                      {resolvedAddress ? (
+                        <EquipmentCodeWithAddress
+                          codigo={row.codigo}
+                          enderecoCompleto={resolvedAddress}
+                        />
+                      ) : (
+                        row.codigo
+                      )}
                     </td>
                     <td className="py-2.5 px-3 text-center whitespace-nowrap">
                       <span className="text-slate-600">{row.tipo}</span>
@@ -1272,7 +1532,8 @@ export const InterrupcoesView: React.FC = () => {
                       {row.totalGeral}
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
             {/* Totais Gerais do Rodapé da Tabela */}

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { EquipmentRecord } from '../types';
 import { exportFilteredRecordsPDF, exportSingleRecordPDF } from '../utils/pdfExport';
 import {
@@ -14,6 +15,230 @@ interface TableViewProps {
   records: EquipmentRecord[];
   onSelectRecord: (record: EquipmentRecord) => void;
 }
+
+export function isEligibleForOperationPlan(tipo?: string): boolean {
+  if (!tipo || typeof tipo !== 'string') return false;
+  const tokens = tipo
+    .toUpperCase()
+    .split(/[+/,\s-]+/)
+    .map((t) => t.trim())
+    .filter(Boolean);
+  return tokens.includes('DIF') || tokens.includes('DTLP');
+}
+
+export function getOperationPlanText(record: EquipmentRecord): string {
+  const raw =
+    record['Plano de Operação'] ??
+    record.rawFields?.['Plano de Operação'] ??
+    record.rawFields?.['PLANO DE OPERAÇÃO'] ??
+    record.rawFields?.['Plano de Operacao'] ??
+    record.rawFields?.['PLANO DE OPERACAO'] ??
+    '';
+  return String(raw).trim();
+}
+
+interface EquipmentTypeWithOperationPlanProps {
+  tipo: string;
+  planoOperacao: string;
+}
+
+const EquipmentTypeWithOperationPlan: React.FC<EquipmentTypeWithOperationPlanProps> = ({
+  tipo,
+  planoOperacao,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [coords, setCoords] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    placement: 'top' | 'bottom';
+  } | null>(null);
+
+  const triggerRef = useRef<HTMLSpanElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const closeTimerRef = useRef<number | null>(null);
+  const isTouchRef = useRef(false);
+
+  const clearCloseTimer = useCallback(() => {
+    if (closeTimerRef.current !== null) {
+      window.clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  }, []);
+
+  const updatePosition = useCallback(() => {
+    if (!triggerRef.current || typeof window === 'undefined') return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const popoverWidth = Math.min(300, window.innerWidth - 24);
+    let left = rect.left + rect.width / 2 - popoverWidth / 2;
+    left = Math.max(12, Math.min(left, window.innerWidth - popoverWidth - 12));
+
+    const placement: 'top' | 'bottom' = rect.top > 180 ? 'top' : 'bottom';
+    const top = placement === 'top' ? rect.top - 6 : rect.bottom + 6;
+
+    setCoords({ top, left, width: popoverWidth, placement });
+  }, []);
+
+  const openPopover = useCallback(() => {
+    clearCloseTimer();
+    updatePosition();
+    setIsOpen(true);
+  }, [clearCloseTimer, updatePosition]);
+
+  const scheduleClose = useCallback(() => {
+    clearCloseTimer();
+    closeTimerRef.current = window.setTimeout(() => {
+      setIsOpen(false);
+    }, 120);
+  }, [clearCloseTimer]);
+
+  const closeImmediately = useCallback(() => {
+    clearCloseTimer();
+    setIsOpen(false);
+  }, [clearCloseTimer]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleOutsideTouchOrClick = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as Node | null;
+      if (
+        target &&
+        !triggerRef.current?.contains(target) &&
+        !popoverRef.current?.contains(target)
+      ) {
+        closeImmediately();
+      }
+    };
+
+    const handleScrollOrResize = (e: Event) => {
+      if (popoverRef.current && e.target instanceof Node && popoverRef.current.contains(e.target)) {
+        return;
+      }
+      closeImmediately();
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeImmediately();
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideTouchOrClick);
+    document.addEventListener('touchstart', handleOutsideTouchOrClick, { passive: true });
+    window.addEventListener('scroll', handleScrollOrResize, true);
+    window.addEventListener('resize', handleScrollOrResize);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideTouchOrClick);
+      document.removeEventListener('touchstart', handleOutsideTouchOrClick);
+      window.removeEventListener('scroll', handleScrollOrResize, true);
+      window.removeEventListener('resize', handleScrollOrResize);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, closeImmediately]);
+
+  useEffect(() => {
+    return () => clearCloseTimer();
+  }, [clearCloseTimer]);
+
+  return (
+    <>
+      <span
+        ref={triggerRef}
+        role="button"
+        tabIndex={0}
+        aria-label="Ver Plano de Operação do equipamento"
+        aria-expanded={isOpen}
+        onTouchStart={() => {
+          isTouchRef.current = true;
+        }}
+        onMouseEnter={() => {
+          if (!isTouchRef.current) {
+            openPopover();
+          }
+        }}
+        onMouseLeave={() => {
+          if (!isTouchRef.current) {
+            scheduleClose();
+          }
+        }}
+        onFocus={() => {
+          if (!isTouchRef.current) {
+            openPopover();
+          }
+        }}
+        onBlur={() => {
+          closeImmediately();
+        }}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (isOpen && isTouchRef.current) {
+            closeImmediately();
+          } else {
+            openPopover();
+          }
+          window.setTimeout(() => {
+            isTouchRef.current = false;
+          }, 300);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            e.stopPropagation();
+            if (isOpen) {
+              closeImmediately();
+            } else {
+              openPopover();
+            }
+          }
+        }}
+        className="inline-block bg-slate-100 text-slate-800 font-semibold px-1 py-0.5 rounded text-[9.5px] border border-slate-200 truncate max-w-full cursor-help underline decoration-dotted decoration-slate-400 underline-offset-2 hover:border-blue-300 hover:bg-blue-50/70 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors"
+      >
+        {tipo}
+      </span>
+
+      {isOpen &&
+        coords &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            ref={popoverRef}
+            role="tooltip"
+            onClick={(e) => e.stopPropagation()}
+            onMouseEnter={() => {
+              if (!isTouchRef.current) {
+                clearCloseTimer();
+              }
+            }}
+            onMouseLeave={() => {
+              if (!isTouchRef.current) {
+                scheduleClose();
+              }
+            }}
+            style={{
+              position: 'fixed',
+              top: `${coords.top}px`,
+              left: `${coords.left}px`,
+              width: `${coords.width}px`,
+              transform: coords.placement === 'top' ? 'translateY(-100%)' : 'none',
+              zIndex: 9999,
+            }}
+            className="bg-white rounded-lg border border-slate-200 shadow-lg p-2.5 text-left pointer-events-auto animate-in fade-in duration-100"
+          >
+            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pb-1 mb-1.5 border-b border-slate-100">
+              Plano de Operação
+            </div>
+            <div className="text-[11px] leading-relaxed text-slate-800 font-normal whitespace-pre-wrap break-words max-h-[200px] overflow-y-auto">
+              {planoOperacao}
+            </div>
+          </div>,
+          document.body
+        )}
+    </>
+  );
+};
 
 export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -321,9 +546,22 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
 
                   {/* 6. TIPO */}
                   <td className="py-1.5 px-1 text-center truncate">
-                    <span className="inline-block bg-slate-100 text-slate-800 font-semibold px-1 py-0.5 rounded text-[9.5px] border border-slate-200 truncate max-w-full">
-                      {r.TIPO || '-'}
-                    </span>
+                    {(() => {
+                      const planoText = getOperationPlanText(r);
+                      if (r.TIPO && isEligibleForOperationPlan(r.TIPO) && planoText) {
+                        return (
+                          <EquipmentTypeWithOperationPlan
+                            tipo={r.TIPO}
+                            planoOperacao={planoText}
+                          />
+                        );
+                      }
+                      return (
+                        <span className="inline-block bg-slate-100 text-slate-800 font-semibold px-1 py-0.5 rounded text-[9.5px] border border-slate-200 truncate max-w-full">
+                          {r.TIPO || '-'}
+                        </span>
+                      );
+                    })()}
                   </td>
 
                   {/* 7. FAIXAS */}

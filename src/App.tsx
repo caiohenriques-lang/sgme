@@ -563,7 +563,7 @@ export default function App() {
             {/* Tab 5: Interrupções de Equipamentos (EQUIPAMENTOS OFF) - Proteção Exclusiva */}
             {activeTab === 'interrupcoes' && (
               isInterrupcoesAuthorized ? (
-                <InterrupcoesView />
+                <InterrupcoesView equipmentRecords={records} />
               ) : (
                 <InterrupcoesAuth
                   onSuccess={() => setIsInterrupcoesAuthorized(true)}

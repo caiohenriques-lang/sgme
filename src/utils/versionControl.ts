@@ -6,15 +6,45 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.92';
-export const BUILD_DATE = '05/10/2026';
+export const APP_VERSION = 'v3.7.95';
+export const BUILD_DATE = '06/10/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v3.7.95',
+    date: '06/10/2026',
+    tag: 'Consulta de Endereço no Histórico de Ofícios',
+    isLatest: true,
+    changes: [
+      'Consulta Rápida de Endereço no Relatório Histórico de Parada e Retorno (InterrupcoesView.tsx): Reutilizado o componente unificado EquipmentCodeWithAddress na coluna CÓDIGO da tabela de histórico, exibindo via popover compacto (createPortal) o endereço completo do equipamento acionado por hover no desktop, toque no mobile/tablet ou navegação por teclado.',
+      'Resolução 100% em Memória via Lookup Compartilhado: O endereço é obtido diretamente dos registros já carregados na sessão (InterrupcaoRecord.enderecoCompleto com fallback em memória para a Lista Geral) através da mesma estrutura addressByCodeMap, sem requisições adicionais de rede.',
+      'Preservação Estrita de Exportações, Filtros e Cálculos: Mantidas 100% inalteradas todas as exportações de CSV e PDF (sem alteração de colunas ou inclusão indevida de campos), bem como ordenações, busca, paginação, filtros e cálculo de Dias de Interrupção.'
+    ]
+  },
+  {
+    version: 'v3.7.94',
+    date: '06/10/2026',
+    tag: 'Ajustes Cirúrgicos no Acumulado de Interrupções por Mês (Subtítulo e Endereço no Código)',
+    changes: [
+      'Remoção do Subtítulo da Tabela "Acumulado de Interrupções de Equipamentos por Mês": Removido o texto descritivo auxiliar abaixo do título principal da matriz mensal em Controle de Ofícios (InterrupcoesView.tsx), mantendo exclusivamente o título oficial e o indicador de CT selecionado.',
+      'Endereço Completo ao Passar o Mouse no Código (Matriz Mensal): Implementado popover compacto e discreto via Portal na coluna CÓDIGO da tabela "Acumulado de Interrupções de Equipamentos por Mês", acionado por hover (desktop), toque (mobile/tablet) ou foco de teclado, exibindo literalmente o Endereço Completo já carregado em memória sem novas requisições.',
+      'Preservação Integral das Regras de Cálculo: Mantidas inalteradas a consolidação da matriz mensal por equipamento, destaques de reincidência (>= 3), totais gerais por coluna, ordenação, busca, paginação e filtro de CT.'
+    ]
+  },
+  {
+    version: 'v3.7.93',
+    date: '06/10/2026',
+    tag: 'Consulta Rápida do Plano de Operação na Lista de Equipamentos',
+    changes: [
+      'Consulta Rápida do Plano de Operação na Coluna TIPO (TableView.tsx): Implementado popover compacto e discreto acionado por hover (desktop), toque (mobile/tablet) ou foco de teclado na coluna TIPO das tabelas "Lista Completa de Equipamentos" (Monitoramento Espacial e Lista de Equipamentos) exclusivamente para registros que contenham DIF ou DTLP (isolados ou em composições como DAS+DIF, DAS+DCP+DIF, CEV+DIF, DAS+DTLP) e possuam Plano de Operação preenchido.',
+      'Fidelidade Integral ao Conteúdo da Planilha (LISTA GERAL): Exibição literal e inalterada do campo "Plano de Operação" já carregado via dataService no EquipmentRecord, preservando quebras de linha (whitespace-pre-wrap), horários, abreviações e pontuação sem nenhuma requisição adicional por hover.',
+      'Preservação Visual e Comportamental: Registros sem DIF/DTLP ou com Plano de Operação vazio permanecem inalterados sem popover ou textos inventados; posicionamento inteligente via Portal com ajuste automático na viewport e preservação do clique em "Ver Ficha".'
+    ]
+  },
   {
     version: 'v3.7.92',
     date: '05/10/2026',
     tag: 'Reordenação de Navegação e Centralização da Gestão Contratual',
-    isLatest: true,
     changes: [
       'Reordenação do Módulo "Controle de Aferições": Reposicionado o módulo "Controle de Aferições" para a 6ª posição da barra de navegação no desktop (Header.tsx) e mobile (MobileBottomNav.tsx), posicionando-o entre "Relatórios" (5ª posição) e "Controle de Ofícios" (7ª posição), preservando integralmente o ícone Gauge, estado de bloqueio/cadeado, autorização por senha na sessão, sessionStorage e o componente AfericoesView.',
       'Centralização Rigorosa de Todas as Tabelas da Gestão Contratual: Auditadas e calibradas as 4 tabelas oficiais do módulo Gestão Contratual (1. Quantidade de Faixas por Ordem de Serviço, 2. Quantidade de Relocações, 3. Custo por Faixa e por Contrato, 4. Custo por Relocação e por Contrato) com alinhamento centralizado obrigatório em todos os <th>, <td>, badges de contrato, datas de OS/reajuste, valores em moeda, percentuais e wrappers internos (flex/inline-flex com mx-auto e justify-center).'
