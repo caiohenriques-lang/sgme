@@ -151,7 +151,7 @@ const addCustomFooter = (doc: any, pageWidth: number, pageHeight: number, pageNu
   doc.setFont('helvetica', 'normal');
   
   doc.text('GEAPI — Gerência de Análise e Processamento de Infrações | Prefeitura de Belo Horizonte', 12, pageHeight - 10);
-  doc.text('Desenvolvido por Caio Henriques de O. L. Cordeiro - caiohenriques@pbh.gov.br', 12, pageHeight - 6);
+  doc.text('Desenvolvido por Caio Henriques de O. L. Cordeiro', 12, pageHeight - 6);
   doc.text('https://geapife.vercel.app/', 12, pageHeight - 2);
 
   if (pageNumText) {

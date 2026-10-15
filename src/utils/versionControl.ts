@@ -6,15 +6,25 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.95';
-export const BUILD_DATE = '06/10/2026';
+export const APP_VERSION = 'v3.7.96';
+export const BUILD_DATE = '15/10/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v3.7.96',
+    date: '15/10/2026',
+    tag: 'Auditoria Global e Remoção de E-mail nos Geradores de PDF',
+    isLatest: true,
+    changes: [
+      'Auditoria Global de Geradores de PDF (src/utils/pdfExport.ts): Removido o e-mail pessoal/institucional do desenvolvedor (caiohenriques@pbh.gov.br) do rodapé padrão (addCustomFooter), unificando a identificação autoral exclusivamente para "Desenvolvido por Caio Henriques de O. L. Cordeiro".',
+      'Preservação da URL e Metadados do Portal: Mantido intacto o link institucional do portal (https://geapife.vercel.app/), numeração de páginas, cabeçalhos, títulos oficiais e layout de todos os relatórios PDF.',
+      'Validação Exhaustiva do Código-fonte: Confirmada a ausência total da ocorrência caiohenriques@pbh.gov.br em todos os arquivos de script, estilos e componentes do projeto.'
+    ]
+  },
   {
     version: 'v3.7.95',
     date: '06/10/2026',
     tag: 'Consulta de Endereço no Histórico de Ofícios',
-    isLatest: true,
     changes: [
       'Consulta Rápida de Endereço no Relatório Histórico de Parada e Retorno (InterrupcoesView.tsx): Reutilizado o componente unificado EquipmentCodeWithAddress na coluna CÓDIGO da tabela de histórico, exibindo via popover compacto (createPortal) o endereço completo do equipamento acionado por hover no desktop, toque no mobile/tablet ou navegação por teclado.',
       'Resolução 100% em Memória via Lookup Compartilhado: O endereço é obtido diretamente dos registros já carregados na sessão (InterrupcaoRecord.enderecoCompleto com fallback em memória para a Lista Geral) através da mesma estrutura addressByCodeMap, sem requisições adicionais de rede.',
