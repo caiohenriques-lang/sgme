@@ -5,7 +5,7 @@ interface InterrupcoesAuthProps {
   onSuccess: () => void;
   onFailure: () => void;
   title?: string;
-  themeColor?: 'amber' | 'blue';
+  themeColor?: 'amber' | 'blue' | 'red';
   subtitle?: string; // Mantido por retrocompatibilidade de tipo
 }
 
@@ -15,7 +15,8 @@ export const InterrupcoesAuth: React.FC<InterrupcoesAuthProps> = ({
   title = 'Controle de Ofícios',
   themeColor,
 }) => {
-  const isBlue = themeColor === 'blue' || title.toLowerCase().includes('aferi');
+  const isRed = themeColor === 'red' || title.toLowerCase().includes('gestão') || title.toLowerCase().includes('gestao') || title.toLowerCase().includes('contrat');
+  const isBlue = !isRed && (themeColor === 'blue' || title.toLowerCase().includes('aferi'));
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -66,7 +67,9 @@ export const InterrupcoesAuth: React.FC<InterrupcoesAuthProps> = ({
         <div className="text-center space-y-3">
           <div
             className={`inline-flex items-center justify-center w-14 h-14 rounded-2xl shadow-2xs mx-auto ${
-              isBlue
+              isRed
+                ? 'bg-red-50 border border-red-200 text-red-800'
+                : isBlue
                 ? 'bg-blue-50 border border-blue-200 text-blue-600'
                 : 'bg-amber-50 border border-amber-200 text-amber-600'
             }`}
@@ -76,12 +79,14 @@ export const InterrupcoesAuth: React.FC<InterrupcoesAuthProps> = ({
           <div>
             <div
               className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider mb-2 ${
-                isBlue
+                isRed
+                  ? 'bg-red-100/80 text-red-900'
+                  : isBlue
                   ? 'bg-blue-100/80 text-blue-800'
                   : 'bg-amber-100/80 text-amber-800'
               }`}
             >
-              <ShieldAlert className={`w-3.5 h-3.5 ${isBlue ? 'text-blue-600' : 'text-amber-600'}`} />
+              <ShieldAlert className={`w-3.5 h-3.5 ${isRed ? 'text-red-800' : isBlue ? 'text-blue-600' : 'text-amber-600'}`} />
               <span>Acesso Restrito</span>
             </div>
             <h2 className="text-xl font-bold text-slate-900 tracking-tight">
@@ -113,7 +118,9 @@ export const InterrupcoesAuth: React.FC<InterrupcoesAuthProps> = ({
                 autoFocus
                 disabled={loading}
                 className={`w-full pl-10 pr-10 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:bg-white transition-all disabled:opacity-60 ${
-                  isBlue
+                  isRed
+                    ? 'focus:ring-red-700/30 focus:border-red-800'
+                    : isBlue
                     ? 'focus:ring-blue-500/30 focus:border-blue-500'
                     : 'focus:ring-amber-500/30 focus:border-amber-500'
                 }`}
@@ -148,7 +155,9 @@ export const InterrupcoesAuth: React.FC<InterrupcoesAuthProps> = ({
               type="submit"
               disabled={loading || !password.trim()}
               className={`w-full flex items-center justify-center gap-2 font-bold text-xs py-2.5 px-4 rounded-xl shadow-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-white ${
-                isBlue
+                isRed
+                  ? 'bg-red-800 hover:bg-red-900 active:bg-red-950'
+                  : isBlue
                   ? 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800'
                   : 'bg-amber-600 hover:bg-amber-700 active:bg-amber-800'
               }`}

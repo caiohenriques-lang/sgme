@@ -555,9 +555,18 @@ export default function App() {
               />
             )}
 
-            {/* Tab 4: Gestao Contratual (Replica Oficial da aba CONTROLE GERAL CTs) */}
+            {/* Tab 4: Gestao Contratual (Replica Oficial da aba CONTROLE GERAL CTs) - Proteção Compartilhada */}
             {activeTab === 'gestao_contratual' && (
-              <GestaoContratualView records={records} lastUpdated={lastUpdated} />
+              isInterrupcoesAuthorized ? (
+                <GestaoContratualView records={records} lastUpdated={lastUpdated} />
+              ) : (
+                <InterrupcoesAuth
+                  title="Gestão Contratual"
+                  themeColor="red"
+                  onSuccess={() => setIsInterrupcoesAuthorized(true)}
+                  onFailure={() => setActiveTab('mapa')}
+                />
+              )
             )}
 
             {/* Tab 5: Interrupções de Equipamentos (EQUIPAMENTOS OFF) - Proteção Exclusiva */}

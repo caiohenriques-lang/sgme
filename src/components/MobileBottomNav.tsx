@@ -20,10 +20,10 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       aria-label="Navegação inferior mobile"
       className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-lg px-1 py-1 pb-[max(0.35rem,env(safe-area-inset-bottom))] flex items-center justify-around select-none overflow-x-auto gap-0.5"
     >
-      {/* Tab 1: Gestão Contratual - Ícone Vermelho-Escuro */}
+      {/* Tab 1: Gestão Contratual - Ícone Vermelho-Escuro com indicador de cadeado */}
       <button
         onClick={() => setActiveTab('gestao_contratual')}
-        className={`flex-1 min-w-[48px] flex flex-col items-center justify-center py-1 px-0.5 rounded-lg transition-all duration-150 min-h-[44px] cursor-pointer ${
+        className={`relative flex-1 min-w-[48px] flex flex-col items-center justify-center py-1 px-0.5 rounded-lg transition-all duration-150 min-h-[44px] cursor-pointer ${
           activeTab === 'gestao_contratual'
             ? 'text-red-900 font-bold bg-red-100/90 border border-red-300/80 shadow-2xs'
             : 'text-slate-700 font-medium hover:text-red-900 hover:bg-slate-100/80'
@@ -31,6 +31,15 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       >
         <FileSignature className={`w-4 h-4 sm:w-5 sm:h-5 ${activeTab === 'gestao_contratual' ? 'text-red-900' : 'text-red-800'}`} />
         <span className="text-[9.5px] font-bold mt-0.5 tracking-tight truncate max-w-full">Contratos</span>
+
+        {/* Selo do Cadeado no Canto Inferior Direito: Cinza quando bloqueado, Verde quando liberado */}
+        <div className="absolute bottom-0.5 right-0.5 flex items-center justify-center">
+          {!isInterrupcoesAuthorized ? (
+            <Lock className={`w-2.5 h-2.5 ${activeTab === 'gestao_contratual' ? 'text-slate-500' : 'text-slate-400'}`} title="Módulo protegido por senha" />
+          ) : (
+            <Unlock className={`w-2.5 h-2.5 ${activeTab === 'gestao_contratual' ? 'text-emerald-700' : 'text-emerald-600'}`} title="Módulo autorizado na sessão" />
+          )}
+        </div>
       </button>
 
       {/* Tab 2: Monitoramento Espacial (Mapa) */}

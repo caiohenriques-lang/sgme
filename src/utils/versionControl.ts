@@ -6,15 +6,26 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.96';
-export const BUILD_DATE = '15/10/2026';
+export const APP_VERSION = 'v3.7.97';
+export const BUILD_DATE = '23/10/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v3.7.97',
+    date: '23/10/2026',
+    tag: 'Integração da Gestão Contratual ao Sistema de Autenticação Compartilhada',
+    isLatest: true,
+    changes: [
+      'Autenticação Unificada dos Módulos Sensíveis (App.tsx & server.ts): A aba Gestão Contratual foi integrada ao mesmo sistema de autenticação segura compartilhado por Controle de Aferições e Controle de Ofícios. A autorização é única por sessão (sessionStorage "geapi_interrupcoes_auth"): desbloquear qualquer uma das três abas libera imediatamente todas as três sem necessidade de reinserção de credencial.',
+      'Reutilização Parametrizada da Tela de Acesso Restrito (InterrupcoesAuth.tsx): A tela de bloqueio adota a identidade visual nativa da Gestão Contratual com tema vermelho-escuro (red-800 / red-900), mantendo título "Gestão Contratual", validação contra o endpoint existente (/api/interrupcoes/auth), feedback imediato de senha incorreta e botão de retorno direto ao Monitoramento Espacial.',
+      'Indicadores de Cadeado Dinâmicos (Header.tsx & MobileBottomNav.tsx): Adicionado o selo de status no canto inferior direito do botão da aba Gestão Contratual no desktop e na navegação mobile, exibindo cadeado fechado cinza (Lock) quando bloqueado e cadeado aberto verde esmeralda (Unlock) quando liberado na sessão, preservando estritamente a ordem oficial do menu.',
+      'Segurança e Isolamento Estrito: Validação de credencial mantida 100% no servidor Express (server.ts), sem segredos no bundle do cliente, sem persistência em localStorage e com integridade total dos dados, filtros e cálculos das quatro tabelas da Gestão Contratual.'
+    ]
+  },
   {
     version: 'v3.7.96',
     date: '15/10/2026',
     tag: 'Auditoria Global e Remoção de E-mail nos Geradores de PDF',
-    isLatest: true,
     changes: [
       'Auditoria Global de Geradores de PDF (src/utils/pdfExport.ts): Removido o e-mail pessoal/institucional do desenvolvedor (caiohenriques@pbh.gov.br) do rodapé padrão (addCustomFooter), unificando a identificação autoral exclusivamente para "Desenvolvido por Caio Henriques de O. L. Cordeiro".',
       'Preservação da URL e Metadados do Portal: Mantido intacto o link institucional do portal (https://geapife.vercel.app/), numeração de páginas, cabeçalhos, títulos oficiais e layout de todos os relatórios PDF.',
