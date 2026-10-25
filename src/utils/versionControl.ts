@@ -6,15 +6,25 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.97';
-export const BUILD_DATE = '23/10/2026';
+export const APP_VERSION = 'v3.7.98';
+export const BUILD_DATE = '25/10/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v3.7.98',
+    date: '25/10/2026',
+    tag: 'Ocultação Temporária do Card SISTEMAS do Menu',
+    isLatest: true,
+    changes: [
+      'Ocultação do Card SISTEMAS (Header.tsx & MobileBottomNav.tsx): O atalho externo para o portal SISTEMAS foi temporariamente ocultado tanto na barra de módulos desktop quanto na barra de navegação inferior mobile (PWA), conforme diretriz operacional.',
+      'Rebalanceamento da Grade de Navegação Desktop (Header.tsx): A grade do menu principal foi recalculada de grid-cols-11 para grid-cols-10, mantendo o espaçamento uniforme, proporção simétrica e alinhamento visual exato dos 10 módulos ativos.',
+      'Preservação Integral de Fluxos e Módulos: Preservados intactos a ordem relativa dos demais módulos (Gestão Contratual, Monitoramento Espacial, Indicadores, Lista de Equipamentos, Relatórios, Controle de Aferições, Controle de Ofícios, BHDIGITAL, Legislação e OUTROS), bem como o sistema de autenticação, filtros compartilhados e exportações.'
+    ]
+  },
   {
     version: 'v3.7.97',
     date: '23/10/2026',
     tag: 'Integração da Gestão Contratual ao Sistema de Autenticação Compartilhada',
-    isLatest: true,
     changes: [
       'Autenticação Unificada dos Módulos Sensíveis (App.tsx & server.ts): A aba Gestão Contratual foi integrada ao mesmo sistema de autenticação segura compartilhado por Controle de Aferições e Controle de Ofícios. A autorização é única por sessão (sessionStorage "geapi_interrupcoes_auth"): desbloquear qualquer uma das três abas libera imediatamente todas as três sem necessidade de reinserção de credencial.',
       'Reutilização Parametrizada da Tela de Acesso Restrito (InterrupcoesAuth.tsx): A tela de bloqueio adota a identidade visual nativa da Gestão Contratual com tema vermelho-escuro (red-800 / red-900), mantendo título "Gestão Contratual", validação contra o endpoint existente (/api/interrupcoes/auth), feedback imediato de senha incorreta e botão de retorno direto ao Monitoramento Espacial.',
