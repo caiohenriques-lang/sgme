@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { ActiveTab, EquipmentRecord, FilterState } from './types';
 import { fetchEquipmentData, parseBRDate } from './services/dataService';
 import { Header } from './components/Header';
 import { FilterBar } from './components/FilterBar';
-import { MapView } from './components/MapView';
+import { MapView, MapViewHandle, isValidLatLng } from './components/MapView';
 import { IndicatorsView } from './components/IndicatorsView';
 import { TableView } from './components/TableView';
 import { GestaoContratualView } from './components/GestaoContratualView';
@@ -87,6 +87,7 @@ export default function App() {
   const [resetSignal, setResetSignal] = useState<number>(0);
   
   const [selectedRecord, setSelectedRecord] = useState<EquipmentRecord | null>(null);
+  const mapViewRef = useRef<MapViewHandle | null>(null);
   const [isVercelGuideOpen, setIsVercelGuideOpen] = useState<boolean>(false);
   const [isAIAssistantOpen, setIsAIAssistantOpen] = useState<boolean>(false);
   
@@ -526,6 +527,7 @@ export default function App() {
             {activeTab === 'mapa' && (
               <div className="space-y-6">
                 <MapView
+                  ref={mapViewRef}
                   records={filteredRecords}
                   filters={filters}
                   onSelectRecord={(rec) => setSelectedRecord(rec)}
@@ -533,6 +535,11 @@ export default function App() {
                 <TableView
                   records={filteredRecords}
                   onSelectRecord={(rec) => setSelectedRecord(rec)}
+                  onRowClick={(rec) => {
+                    if (rec && isValidLatLng(rec.lat, rec.lng)) {
+                      mapViewRef.current?.focusEquipment(rec.lat!, rec.lng!, 18);
+                    }
+                  }}
                 />
               </div>
             )}

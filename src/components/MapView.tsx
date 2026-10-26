@@ -1,9 +1,13 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useImperativeHandle } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { EquipmentRecord, FilterState } from '../types';
 import { exportMapWithFiltersPdf } from '../utils/pdfExport';
 import { FileDown, Loader2, Layers } from 'lucide-react';
+
+export interface MapViewHandle {
+  focusEquipment: (lat: number, lng: number, zoom?: number) => void;
+}
 
 interface MapViewProps {
   records: EquipmentRecord[];
@@ -129,17 +133,35 @@ export const getSituacaoBadgeHtml = (situacaoRaw?: string): string => {
   return `<span style="display: inline-block; padding: 1px 7.5px; font-size: 10px; font-weight: 700; border-radius: 9999px; background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a;">${sit}</span>`;
 };
 
-export const MapView: React.FC<MapViewProps> = ({ records, filters, onSelectRecord }) => {
-  const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<L.Map | null>(null);
-  const markersLayerRef = useRef<L.LayerGroup | null>(null);
-  const isInitialViewSettledRef = useRef<boolean>(false);
-  const prevFiltersKeyRef = useRef<string>('');
-  const onSelectRecordRef = useRef(onSelectRecord);
+export const MapView = React.forwardRef<MapViewHandle, MapViewProps>(
+  ({ records, filters, onSelectRecord }, ref) => {
+    const mapContainerRef = useRef<HTMLDivElement>(null);
+    const mapInstanceRef = useRef<L.Map | null>(null);
+    const markersLayerRef = useRef<L.LayerGroup | null>(null);
+    const isInitialViewSettledRef = useRef<boolean>(false);
+    const prevFiltersKeyRef = useRef<string>('');
+    const onSelectRecordRef = useRef(onSelectRecord);
 
-  useEffect(() => {
-    onSelectRecordRef.current = onSelectRecord;
-  });
+    useEffect(() => {
+      onSelectRecordRef.current = onSelectRecord;
+    });
+
+    useImperativeHandle(ref, () => ({
+      focusEquipment: (lat: number, lng: number, zoom = 18) => {
+        const map = mapInstanceRef.current;
+        if (!map || !isValidLatLng(lat, lng)) return;
+        try {
+          map.invalidateSize({ pan: false });
+          const targetZoom = Math.min(zoom, map.getMaxZoom() || 18);
+          map.flyTo([lat, lng], targetZoom, {
+            animate: true,
+            duration: 0.8,
+          });
+        } catch (err) {
+          console.warn('Falha ao focar equipamento no mapa:', err);
+        }
+      },
+    }), []);
   
   const [isExportingPdf, setIsExportingPdf] = useState<boolean>(false);
   const [showLegend, setShowLegend] = useState<boolean>(false);
@@ -521,5 +543,7 @@ export const MapView: React.FC<MapViewProps> = ({ records, filters, onSelectReco
 
     </div>
   );
-};
+});
+
+MapView.displayName = 'MapView';
 

@@ -6,15 +6,27 @@ export interface VersionRelease {
   changes: string[];
 }
 
-export const APP_VERSION = 'v3.7.98';
-export const BUILD_DATE = '25/10/2026';
+export const APP_VERSION = 'v3.7.99';
+export const BUILD_DATE = '26/10/2026';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: 'v3.7.99',
+    date: '26/10/2026',
+    tag: 'Foco Cartográfico pela Lista do Monitoramento Espacial',
+    isLatest: true,
+    changes: [
+      'Foco Cartográfico Automático pela Tabela Abaixo do Mapa (MapView.tsx & TableView.tsx & App.tsx): Ao clicar em qualquer linha da tabela Lista de Equipamentos integrada no Monitoramento Espacial, caso o registro possua coordenadas geográficas válidas, o mapa realiza um deslocamento e aproximação suave (flyTo) em zoom 18 com animação fluida (0.8s) diretamente para a localização do equipamento selecionado.',
+      'Abertura Concomitante da Ficha e Preservação de Posição: A abertura do modal de ficha completa do equipamento (EquipmentDetailModal) ocorre normalmente em conjunto com a animação cartográfica. Ao fechar a ficha, o mapa preserva com fidelidade a posição e o nível de zoom focado, sem reset indevido para a visão geral.',
+      'Validação Robusta de Coordenadas e Tratamento Silencioso: Registros sem coordenadas ou com dados inválidos abrem a ficha cadastral sem tentar deslocar o mapa e sem lançar erros no console.',
+      'Isolamento Estrito de Instâncias: O comportamento de foco no mapa é exclusivo da instância de TableView do Monitoramento Espacial; a aba independente Lista de Equipamentos permanece 100% inalterada, sem acoplamento à instância do Leaflet.',
+      'Preservação de Ações Internas da Tabela: Mantidos com stopPropagation intactos o popover de Plano de Operação (DIF/DTLP), o botão de visualização de ficha e o exportador de PDF individual.'
+    ]
+  },
   {
     version: 'v3.7.98',
     date: '25/10/2026',
     tag: 'Ocultação Temporária do Card SISTEMAS do Menu',
-    isLatest: true,
     changes: [
       'Ocultação do Card SISTEMAS (Header.tsx & MobileBottomNav.tsx): O atalho externo para o portal SISTEMAS foi temporariamente ocultado tanto na barra de módulos desktop quanto na barra de navegação inferior mobile (PWA), conforme diretriz operacional.',
       'Rebalanceamento da Grade de Navegação Desktop (Header.tsx): A grade do menu principal foi recalculada de grid-cols-11 para grid-cols-10, mantendo o espaçamento uniforme, proporção simétrica e alinhamento visual exato dos 10 módulos ativos.',

@@ -14,6 +14,7 @@ import {
 interface TableViewProps {
   records: EquipmentRecord[];
   onSelectRecord: (record: EquipmentRecord) => void;
+  onRowClick?: (record: EquipmentRecord) => void;
 }
 
 export function isEligibleForOperationPlan(tipo?: string): boolean {
@@ -240,7 +241,7 @@ const EquipmentTypeWithOperationPlan: React.FC<EquipmentTypeWithOperationPlanPro
   );
 };
 
-export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord }) => {
+export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord, onRowClick }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [sortField, setSortField] = useState<keyof EquipmentRecord>('CÓDIGO');
@@ -517,7 +518,10 @@ export const TableView: React.FC<TableViewProps> = ({ records, onSelectRecord })
                 <tr
                   key={r.id}
                   className="hover:bg-blue-50/50 transition-colors cursor-pointer group"
-                  onClick={() => onSelectRecord(r)}
+                  onClick={() => {
+                    onRowClick?.(r);
+                    onSelectRecord(r);
+                  }}
                 >
                   {/* 1. CONTRATO */}
                   <td className="py-1.5 px-1 font-medium text-slate-700 text-center truncate">
